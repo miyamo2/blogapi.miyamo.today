@@ -1,0 +1,56 @@
+name: ci_go_1_21
+
+on:
+  push:
+    branches:
+      - "main"
+      - "develop"
+      - "feature*"
+      - "refactor*"
+      - "bugfix*"
+      - "doc*"
+      - "ci*"
+  pull_request:
+    branches:
+      - "main"
+      - "develop"
+  workflow_call:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.21.0'
+          # cache: true
+          # cache-dependency-path: go.sum
+
+      - name: Go Lint
+        uses: golangci/golangci-lint-action@v3
+
+      - name: Go Build
+        run: |
+          go mod tidy
+          go build -v ./...
+
+      - name: Go Test
+        run: |
+          go test -v -cover -race -coverpkg=./... -covermode=atomic -coverprofile='coverage.tmp.out' -outputdir=/tmp
+
+      - name: Exclude TestHelper files from coverage
+        run: |
+          cat coverage.tmp.out | grep -v "test_helper.go" > coverage.out
+          go tool cover -func coverage.out
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.out
+          fail_ci_if_error: true
+          verbose: true
