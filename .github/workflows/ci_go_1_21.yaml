@@ -40,7 +40,7 @@ jobs:
 
       - name: Go Test
         run: |
-          go test -v -cover -race -coverpkg=./... -covermode=atomic -coverprofile='coverage.tmp.out' -outputdir=/tmp
+          go test ./... -v -cover -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.tmp.out
 
       - name: Exclude TestHelper files from coverage
         run: |
