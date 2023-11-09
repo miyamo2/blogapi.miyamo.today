@@ -44,7 +44,8 @@ jobs:
 
       - name: Go Test
         run: |
-          go test ./... -v -cover -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.tmp.out
+          go test ./... -v -cover -race -coverpkg=./... -covermode=atomic -coverprofile=coverage.tmp.out | tee test_output.txt
+          exit ${PIPESTATUS[0]}
 
       - name: Exclude TestHelper files from coverage
         run: |
