@@ -67,6 +67,14 @@ jobs:
           mv coverage_with_header.txt coverage.txt
           rm test_output.txt
 
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          token: ${{ secrets.COVERAGE_COMMENT_ON_PR }}
+          issue-number: ${{ github.event.number }}
+          body-path: "coverage.txt"
+
       - name: Upload coverage to Codecov
         if: startsWith(github.head_ref, 'release')
         uses: codecov/codecov-action@v3
