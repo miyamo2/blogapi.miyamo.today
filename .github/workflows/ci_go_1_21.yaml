@@ -40,6 +40,10 @@ jobs:
         with:
           reviewdog_version: latest
 
+      - name: Setup staticcheck
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+
       - name: staticcheck with reviewdog
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
