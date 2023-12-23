@@ -52,7 +52,7 @@ jobs:
 
       - name: Go Test
         run: |
-          go test ./... -v -covermode=atomic -race  -coverpkg=./... -coverprofile=coverage.out | tee test_output.txt
+          go test ./... -v -coverpkg=./... -coverprofile=coverage.out | tee test_output.txt
           exit ${PIPESTATUS[0]}
 
       - name: Create Coverage Report to PR comment
