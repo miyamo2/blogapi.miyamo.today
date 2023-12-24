@@ -58,7 +58,7 @@ jobs:
       - name: Create Coverage Report to PR comment
         if: github.event_name == 'pull_request'
         run: |
-          cat coverage.tmp.out | grep -v "mock" > coverage.out
+          cat coverage.tmp.out | grep -v "mock" | grep -v "github.com/miyamo2/blogapi-core/infra/dynamodb/client" > coverage.out
           go tool cover -func=coverage.out | awk '/total/ {print "| **" $1 "** | **" $3 "** |"}' | tee coverage.txt
           cat test_output.txt | grep 'ok.*coverage' | awk '{print "| " $2 " | " $5 " |"}' | tee -a coverage.txt
           echo "## Test Coverage Report" > coverage_with_header.txt
