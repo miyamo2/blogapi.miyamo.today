@@ -39,8 +39,6 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.goversion }}
-          cache: true
-          cache-dependency-path: go.sum
 
       - name: Go Build
         working-directory: ${{ matrix.module }}
