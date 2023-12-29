@@ -31,7 +31,6 @@ jobs:
           cat coverage.tmp.out | grep -v "mock" | grep -v "github.com/miyamo2/blogapi-core/infra/dynamodb/client" > coverage.out
 
       - name: Upload coverage to Codecov
-        if: startsWith(github.head_ref, 'release')
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
