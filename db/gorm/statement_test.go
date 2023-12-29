@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/infra"
+	"github.com/miyamo2/blogapi-core/db"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"regexp"
@@ -39,7 +39,7 @@ func TestStatement_Execute(t *testing.T) {
 	}
 
 	type args struct {
-		opts []infra.ExecuteOption
+		opts []db.ExecuteOption
 	}
 
 	type want struct {
@@ -48,8 +48,8 @@ func TestStatement_Execute(t *testing.T) {
 	}
 
 	type testCase struct {
-		statementResult func() *infra.SingleStatementResult[string]
-		statement       func(result infra.StatementResult) infra.Statement
+		statementResult func() *db.SingleStatementResult[string]
+		statement       func(result db.StatementResult) db.Statement
 		args            args
 		want            want
 		wantErr         bool
@@ -57,71 +57,31 @@ func TestStatement_Execute(t *testing.T) {
 	}
 
 	tests := map[string]testCase{
-		"happy_path/with_context&transaction": {
-			statementResult: func() *infra.SingleStatementResult[string] {
-				return infra.NewSingleStatementResult[string]()
-			},
-			statement: func(result infra.StatementResult) infra.Statement {
-				return NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
-						out.Set("happy_path/with_context&transaction")
-						return nil
-					}, result)
-			},
-			args: args{
-				opts: []infra.ExecuteOption{
-					WithContext(context.Background()),
-					WithTransaction(&gorm.DB{}),
-				},
-			},
-			want: want{out: "happy_path/with_context&transaction", err: nil},
-		},
 		"happy_path/with_transaction": {
-			statementResult: func() *infra.SingleStatementResult[string] {
-				return infra.NewSingleStatementResult[string]()
+			statementResult: func() *db.SingleStatementResult[string] {
+				return db.NewSingleStatementResult[string]()
 			},
-			statement: func(result infra.StatementResult) infra.Statement {
+			statement: func(result db.StatementResult) db.Statement {
 				return NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
+					func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
 						out.Set("happy_path/with_transaction")
 						return nil
 					}, result)
 			},
 			args: args{
-				opts: []infra.ExecuteOption{
+				opts: []db.ExecuteOption{
 					WithTransaction(&gorm.DB{}),
 				},
 			},
 			want: want{out: "happy_path/with_transaction", err: nil},
 		},
-		"happy_path/with_context": {
-			statementResult: func() *infra.SingleStatementResult[string] {
-				return infra.NewSingleStatementResult[string]()
-			},
-			statement: func(result infra.StatementResult) infra.Statement {
-				return NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
-						d := Dummy{}
-						tx.Select("id").Find(&d)
-						out.Set(strconv.Itoa(d.ID))
-						return nil
-					}, result)
-			},
-			args: args{
-				opts: []infra.ExecuteOption{
-					WithContext(context.Background()),
-				},
-			},
-			want:       want{out: "1", err: nil},
-			beforeFunc: initializeConn,
-		},
 		"happy_path/without_option": {
-			statementResult: func() *infra.SingleStatementResult[string] {
-				return infra.NewSingleStatementResult[string]()
+			statementResult: func() *db.SingleStatementResult[string] {
+				return db.NewSingleStatementResult[string]()
 			},
-			statement: func(result infra.StatementResult) infra.Statement {
+			statement: func(result db.StatementResult) db.Statement {
 				return NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
+					func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
 						d := Dummy{}
 						tx.Select("id").Find(&d)
 						out.Set(strconv.Itoa(d.ID))
@@ -129,25 +89,25 @@ func TestStatement_Execute(t *testing.T) {
 					}, result)
 			},
 			args: args{
-				opts: []infra.ExecuteOption{},
+				opts: []db.ExecuteOption{},
 			},
 			want:       want{out: "1", err: nil},
 			beforeFunc: initializeConn,
 		},
 		"unhappy_path/statement_returned_error": {
-			statementResult: func() *infra.SingleStatementResult[string] {
-				return infra.NewSingleStatementResult[string]()
+			statementResult: func() *db.SingleStatementResult[string] {
+				return db.NewSingleStatementResult[string]()
 			},
-			statement: func(result infra.StatementResult) infra.Statement {
+			statement: func(result db.StatementResult) db.Statement {
 				return NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
+					func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
 						d := Dummy{}
 						tx.Select("id").Find(&d)
 						return errStatementTest
 					}, result)
 			},
 			args: args{
-				opts: []infra.ExecuteOption{},
+				opts: []db.ExecuteOption{},
 			},
 			want:    want{out: "", err: errStatementTest},
 			wantErr: true,
@@ -171,18 +131,18 @@ func TestStatement_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/dialector_is_nil": {
-			statementResult: func() *infra.SingleStatementResult[string] {
-				return infra.NewSingleStatementResult[string]()
+			statementResult: func() *db.SingleStatementResult[string] {
+				return db.NewSingleStatementResult[string]()
 			},
-			statement: func(result infra.StatementResult) infra.Statement {
+			statement: func(result db.StatementResult) db.Statement {
 				return NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
+					func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
 						out.Set("unhappy_path/client_is_nil")
 						return nil
 					}, result)
 			},
 			args: args{
-				opts: []infra.ExecuteOption{},
+				opts: []db.ExecuteOption{},
 			},
 			want:    want{out: "", err: ErrDialectorNotInitialized},
 			wantErr: true,
@@ -191,12 +151,12 @@ func TestStatement_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/statement_is_already_executed": {
-			statementResult: func() *infra.SingleStatementResult[string] {
-				return infra.NewSingleStatementResult[string]()
+			statementResult: func() *db.SingleStatementResult[string] {
+				return db.NewSingleStatementResult[string]()
 			},
-			statement: func(result infra.StatementResult) infra.Statement {
+			statement: func(result db.StatementResult) db.Statement {
 				stmt := NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
+					func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
 						out.Set("unhappy_path/statement_is_already_executed")
 						return nil
 					}, result)
@@ -204,7 +164,7 @@ func TestStatement_Execute(t *testing.T) {
 				return stmt
 			},
 			args: args{
-				opts: []infra.ExecuteOption{},
+				opts: []db.ExecuteOption{},
 			},
 			want:    want{out: "", err: ErrAlreadyExecuted},
 			wantErr: true,
@@ -230,7 +190,7 @@ func TestStatement_Execute(t *testing.T) {
 			}
 			result := tt.statementResult()
 			stmt := tt.statement(result)
-			err := stmt.Execute(tt.args.opts...)
+			err := stmt.Execute(context.Background(), tt.args.opts...)
 			if tt.wantErr {
 				if !errors.Is(err, tt.want.err) {
 					t.Errorf("Execute() error = %+v, want %+v", err, tt.want.err)

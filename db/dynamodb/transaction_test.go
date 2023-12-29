@@ -1,13 +1,14 @@
-package gorm
+package dynamodb
 
 import (
 	"context"
-	"github.com/DATA-DOG/go-sqlmock"
+	dynamotypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/infra"
-	"github.com/miyamo2/blogapi-core/infra/internal"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/miyamo2/blogapi-core/db/dynamodb/client"
+	"github.com/miyamo2/blogapi-core/db/internal"
+	mclient "github.com/miyamo2/blogapi-core/internal/mock/infra/dynamodb/client"
+	"go.uber.org/mock/gomock"
+	"log/slog"
 	"testing"
 )
 
@@ -54,17 +55,11 @@ func TestTransaction_Commit(t *testing.T) {
 }
 
 func TestTransaction_ExecuteStatement(t *testing.T) {
-	type expect struct {
-		err error
-	}
 	type testCase struct {
 		stmtQueue      func() chan *internal.StatementRequest
 		sut            func(commit chan *internal.StatementRequest) Transaction
 		mockSubscriber func(chan *internal.StatementRequest)
-		expect         expect
-		wantErr        bool
 	}
-	testErr := errors.New("test error")
 
 	tests := map[string]testCase{
 		"happy_path": {
@@ -79,10 +74,7 @@ func TestTransaction_ExecuteStatement(t *testing.T) {
 			},
 			mockSubscriber: func(stmtQueue chan *internal.StatementRequest) {
 				nx := <-stmtQueue
-				nx.ErrCh <- nil
-			},
-			expect: expect{
-				err: nil,
+				slog.Info("receive", slog.Any("Statement", nx.Statement))
 			},
 		},
 		"unhappy_path/returns_error": {
@@ -97,12 +89,8 @@ func TestTransaction_ExecuteStatement(t *testing.T) {
 			},
 			mockSubscriber: func(stmtQueue chan *internal.StatementRequest) {
 				nx := <-stmtQueue
-				nx.ErrCh <- testErr
+				slog.Info("receive", slog.Any("Statement", nx.Statement))
 			},
-			expect: expect{
-				err: testErr,
-			},
-			wantErr: true,
 		},
 	}
 
@@ -113,13 +101,8 @@ func TestTransaction_ExecuteStatement(t *testing.T) {
 			tx := tt.sut(stmtQueue)
 			go tt.mockSubscriber(stmtQueue)
 
-			err := tx.ExecuteStatement(context.Background(), &Statement{})
-			if (err != nil) == tt.wantErr {
-				if !errors.Is(err, tt.expect.err) {
-					t.Errorf("ExecuteStatement() error = %v, want %v", err, tt.expect.err)
-				}
-			} else {
-				t.Errorf("ExecuteStatement() error = %v, wantErr %v", err, tt.wantErr)
+			if err := tx.ExecuteStatement(context.Background(), &Statement{}); err != nil {
+				t.Errorf("ExecuteStatement() returns error = %v", err)
 			}
 		})
 	}
@@ -170,7 +153,8 @@ func TestTransaction_Rollback(t *testing.T) {
 func TestManager_GetAndStart(t *testing.T) {
 	type testCase struct {
 		sut        func() *Transaction
-		action     func(t *testing.T, sut *Transaction)
+		client     func(ctrl *gomock.Controller) client.Client
+		action     func(sut *Transaction)
 		beforeFunc func()
 	}
 
@@ -184,133 +168,112 @@ func TestManager_GetAndStart(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path": {
 			sut: sut,
-			action: func(t *testing.T, sut *Transaction) {
+			client: func(ctrl *gomock.Controller) client.Client {
+				clt := mclient.NewMockClient(ctrl)
+				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Return(nil, nil)
+				return clt
+			},
+			action: func(sut *Transaction) {
 				ctx := context.Background()
-				stmt := NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
-						out.Set("some string")
-						return nil
-					}, infra.NewSingleStatementResult[string]())
-				err := sut.ExecuteStatement(ctx, stmt)
+				errCh := sut.SubscribeError()
+				err := sut.ExecuteStatement(ctx, NewStatement(make([]dynamotypes.ParameterizedStatement, 0)))
 				if err != nil {
-					t.Errorf("ExecuteStatement() error = %v", err)
-					return
-				}
-				if stmt.Result().Get() != "some string" {
-					t.Errorf("StatementResult.Get() returned = %v, expected = %v", stmt.Result().Get(), "some string")
+					t.Errorf("ExecuteStatement() returned error: %+v.", err)
 					return
 				}
 				err = sut.Commit(ctx)
 				if err != nil {
-					t.Errorf("Commit() error = %v", err)
+					t.Errorf("Commit() not returned error.")
+				}
+				err = <-errCh
+				if err != nil {
+					t.Errorf("Transaction has error: %+v.", err)
 					return
 				}
-			},
-			beforeFunc: func() {
-				sqlDB, mock, err := sqlmock.New()
-				if err != nil {
-					panic(err)
-				}
-				mock.ExpectBegin()
-				mock.ExpectCommit()
-				dialector := postgres.New(postgres.Config{
-					Conn: sqlDB,
-				})
-				InvalidateDialector()
-				InitializeDialector(&dialector)
 			},
 		},
 		"happy_path/rollback": {
 			sut: sut,
-			action: func(t *testing.T, sut *Transaction) {
+			client: func(ctrl *gomock.Controller) client.Client {
+				clt := mclient.NewMockClient(ctrl)
+				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(0)
+				return clt
+			},
+			action: func(sut *Transaction) {
 				ctx := context.Background()
-				stmt := NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
-						out.Set("some string")
-						return nil
-					}, infra.NewSingleStatementResult[string]())
-				err := sut.ExecuteStatement(ctx, stmt)
+				errCh := sut.SubscribeError()
+				err := sut.ExecuteStatement(ctx, NewStatement(make([]dynamotypes.ParameterizedStatement, 0)))
 				if err != nil {
-					t.Errorf("ExecuteStatement() error = %v", err)
-					return
+					t.Errorf("ExecuteStatement() returned error: %+v", err)
 				}
 				err = sut.Rollback(ctx)
 				if err != nil {
-					t.Errorf("Commit() error = %v", err)
-					return
+					t.Errorf("Rollback() returned error: %+v", err)
 				}
-			},
-			beforeFunc: func() {
-				sqlDB, mock, err := sqlmock.New()
+				err = <-errCh
 				if err != nil {
-					panic(err)
-				}
-
-				mock.ExpectBegin()
-				mock.ExpectRollback()
-				dialector := postgres.New(postgres.Config{
-					Conn: sqlDB,
-				})
-				InvalidateDialector()
-				InitializeDialector(&dialector)
-			},
-		},
-		"unhappy_path/gorm_is_not_initialized": {
-			sut: sut,
-			action: func(t *testing.T, sut *Transaction) {
-				errQueue := sut.SubscribeError()
-				err := <-errQueue
-				if !errors.Is(err, ErrDialectorNotInitialized) {
-					t.Errorf("Error() want = %v, error= %v", ErrDialectorNotInitialized, err)
+					t.Errorf("Transaction has error: %+v.", err)
 					return
 				}
 			},
+		},
+		"unhappy_path/client_is_not_initialized": {
+			sut: sut,
+			client: func(ctrl *gomock.Controller) client.Client {
+				clt := mclient.NewMockClient(ctrl)
+				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Times(0)
+				return clt
+			},
 			beforeFunc: func() {
-				InvalidateDialector()
+				Invalidate()
+			},
+			action: func(sut *Transaction) {
+				errCh := sut.SubscribeError()
+				err := <-errCh
+				if !errors.Is(err, ErrClientNotInitialized) {
+					t.Errorf("Transaction has unexpected error: %+v.", err)
+					return
+				}
 			},
 		},
-		"unhappy_path/statement_returns_error": {
+		"unhappy_path/dynamodb_transaction_returns_error": {
 			sut: sut,
-			action: func(t *testing.T, sut *Transaction) {
+			client: func(ctrl *gomock.Controller) client.Client {
+				clt := mclient.NewMockClient(ctrl)
+				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Return(nil, errTestManagerGetAndStart).Times(1)
+				return clt
+			},
+			action: func(sut *Transaction) {
 				ctx := context.Background()
-				stmt := NewStatement(
-					func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error {
-						out.Set("")
-						return errTestManagerGetAndStart
-					}, infra.NewSingleStatementResult[string]())
-				errQueue := sut.SubscribeError()
-				err := sut.ExecuteStatement(ctx, stmt)
-				if !errors.Is(err, errTestManagerGetAndStart) {
-					t.Errorf("ExecuteStatement() want = %v, error = %v", errTestManagerGetAndStart, err)
-					return
-				}
-				err = <-errQueue
-				if !errors.Is(err, errTestManagerGetAndStart) {
-					t.Errorf("SubscribeError() want = %v, error = %v", errTestManagerGetAndStart, err)
-					return
-				}
-			},
-			beforeFunc: func() {
-				sqlDB, mock, err := sqlmock.New()
+				errCh := sut.SubscribeError()
+				err := sut.ExecuteStatement(ctx, NewStatement(make([]dynamotypes.ParameterizedStatement, 0)))
 				if err != nil {
-					panic(err)
+					t.Errorf("ExecuteStatement() returned error: %+v.", err)
+					return
 				}
-				mock.ExpectBegin()
-				dialector := postgres.New(postgres.Config{
-					Conn: sqlDB,
-				})
-				InvalidateDialector()
-				InitializeDialector(&dialector)
+				err = sut.Commit(ctx)
+				if err != nil {
+					t.Errorf("Commit() not returned error.")
+				}
+				err = <-errCh
+				if !errors.Is(err, errTestManagerGetAndStart) {
+					t.Errorf("Transaction has unexpected error: %+v.", err)
+					return
+				}
 			},
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			mockCtrl := gomock.NewController(t)
+			clt := tt.client(mockCtrl)
+			Invalidate()
+			Initialize(clt)
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
 			tx := tt.sut()
-			tt.action(t, tx)
+			tt.action(tx)
 		})
 	}
 }

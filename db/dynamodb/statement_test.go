@@ -5,8 +5,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamotypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/infra"
-	"github.com/miyamo2/blogapi-core/infra/dynamodb/client"
+	"github.com/miyamo2/blogapi-core/db"
+	"github.com/miyamo2/blogapi-core/db/dynamodb/client"
 	mclient "github.com/miyamo2/blogapi-core/internal/mock/infra/dynamodb/client"
 	"go.uber.org/mock/gomock"
 	"testing"
@@ -16,7 +16,7 @@ func TestStatement_Execute(t *testing.T) {
 	errStatementTest := errors.New("error statement test")
 
 	type args struct {
-		opts []infra.ExecuteOption
+		opts []db.ExecuteOption
 	}
 
 	type want struct {
@@ -25,7 +25,7 @@ func TestStatement_Execute(t *testing.T) {
 
 	type testCase struct {
 		client     func(ctrl *gomock.Controller) client.Client
-		statement  func() infra.Statement
+		statement  func() db.Statement
 		args       args
 		want       want
 		wantErr    bool
@@ -33,54 +33,19 @@ func TestStatement_Execute(t *testing.T) {
 	}
 
 	tests := map[string]testCase{
-		"happy_path/with_context&transaction": {
-			client: func(ctrl *gomock.Controller) client.Client {
-				clt := mclient.NewMockClient(ctrl)
-				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(0)
-				return clt
-			},
-			statement: func() infra.Statement {
-				stmt := NewStatement(make([]dynamotypes.ParameterizedStatement, 0))
-				return stmt
-			},
-			args: args{
-				opts: []infra.ExecuteOption{
-					WithContext(context.Background()),
-					WithTransaction(&dynamodb.ExecuteTransactionInput{}),
-				},
-			},
-			want: want{err: nil},
-		},
 		"happy_path/with_transaction": {
 			client: func(ctrl *gomock.Controller) client.Client {
 				clt := mclient.NewMockClient(ctrl)
 				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(0)
 				return clt
 			},
-			statement: func() infra.Statement {
+			statement: func() db.Statement {
 				stmt := NewStatement(make([]dynamotypes.ParameterizedStatement, 0))
 				return stmt
 			},
 			args: args{
-				opts: []infra.ExecuteOption{
+				opts: []db.ExecuteOption{
 					WithTransaction(&dynamodb.ExecuteTransactionInput{}),
-				},
-			},
-			want: want{err: nil},
-		},
-		"happy_path/with_context": {
-			client: func(ctrl *gomock.Controller) client.Client {
-				clt := mclient.NewMockClient(ctrl)
-				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
-				return clt
-			},
-			statement: func() infra.Statement {
-				stmt := NewStatement(make([]dynamotypes.ParameterizedStatement, 0))
-				return stmt
-			},
-			args: args{
-				opts: []infra.ExecuteOption{
-					WithContext(context.Background()),
 				},
 			},
 			want: want{err: nil},
@@ -91,12 +56,12 @@ func TestStatement_Execute(t *testing.T) {
 				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(1)
 				return clt
 			},
-			statement: func() infra.Statement {
+			statement: func() db.Statement {
 				stmt := NewStatement(make([]dynamotypes.ParameterizedStatement, 0))
 				return stmt
 			},
 			args: args{
-				opts: []infra.ExecuteOption{},
+				opts: []db.ExecuteOption{},
 			},
 			want: want{err: nil},
 		},
@@ -104,12 +69,12 @@ func TestStatement_Execute(t *testing.T) {
 			client: func(ctrl *gomock.Controller) client.Client {
 				return nil
 			},
-			statement: func() infra.Statement {
+			statement: func() db.Statement {
 				stmt := NewStatement(make([]dynamotypes.ParameterizedStatement, 0))
 				return stmt
 			},
 			args: args{
-				opts: []infra.ExecuteOption{},
+				opts: []db.ExecuteOption{},
 			},
 			want:    want{err: ErrClientNotInitialized},
 			wantErr: true,
@@ -123,13 +88,13 @@ func TestStatement_Execute(t *testing.T) {
 				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Return(nil, nil).Times(0)
 				return clt
 			},
-			statement: func() infra.Statement {
+			statement: func() db.Statement {
 				stmt := NewStatement(make([]dynamotypes.ParameterizedStatement, 0))
 				stmt.(*Statement).executed = true
 				return stmt
 			},
 			args: args{
-				opts: []infra.ExecuteOption{},
+				opts: []db.ExecuteOption{},
 			},
 			want:    want{err: ErrAlreadyExecuted},
 			wantErr: true,
@@ -140,12 +105,12 @@ func TestStatement_Execute(t *testing.T) {
 				clt.EXPECT().ExecuteTransaction(gomock.Any(), gomock.Any()).Return(nil, errStatementTest).Times(1)
 				return clt
 			},
-			statement: func() infra.Statement {
+			statement: func() db.Statement {
 				stmt := NewStatement(make([]dynamotypes.ParameterizedStatement, 0))
 				return stmt
 			},
 			args: args{
-				opts: []infra.ExecuteOption{},
+				opts: []db.ExecuteOption{},
 			},
 			want:    want{err: errStatementTest},
 			wantErr: true,
@@ -161,7 +126,7 @@ func TestStatement_Execute(t *testing.T) {
 				beforeFunc()
 			}
 			stmt := tt.statement()
-			err := stmt.Execute(tt.args.opts...)
+			err := stmt.Execute(context.Background(), tt.args.opts...)
 			if tt.wantErr {
 				if !errors.Is(err, tt.want.err) {
 					t.Errorf("Execute() error = %+v, want %+v", err, tt.want.err)

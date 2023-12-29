@@ -1,4 +1,6 @@
-package infra
+package db
+
+import "context"
 
 // ExecuteOption is an option for statement execution.
 type ExecuteOption func(Statement)
@@ -8,7 +10,7 @@ type ExecuteOption func(Statement)
 // e.g. Select, Insert, Update, Delete
 type Statement interface {
 	// Execute executes statement.
-	Execute(opts ...ExecuteOption) error
+	Execute(ctx context.Context, opts ...ExecuteOption) error
 	Result() StatementResult
 }
 

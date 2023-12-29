@@ -2,28 +2,20 @@ package dynamodb
 
 import (
 	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamotypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/infra"
+	"github.com/miyamo2/blogapi-core/db"
 	"github.com/miyamo2/blogapi-core/log"
+	"log/slog"
 )
 
 var ErrAlreadyExecuted = errors.New("statement is already executed.")
 
-// WithContext is an option to set context to Statement.
-func WithContext(ctx context.Context) infra.ExecuteOption {
-	return func(s infra.Statement) {
-		switch v := s.(type) {
-		case *Statement:
-			v.ctx = ctx
-		}
-	}
-}
-
 // WithTransaction is an option to set transaction to Statement.
-func WithTransaction(tx *dynamodb.ExecuteTransactionInput) infra.ExecuteOption {
-	return func(s infra.Statement) {
+func WithTransaction(tx *dynamodb.ExecuteTransactionInput) db.ExecuteOption {
+	return func(s db.Statement) {
 		switch v := s.(type) {
 		case *Statement:
 			v.tx = tx
@@ -31,17 +23,16 @@ func WithTransaction(tx *dynamodb.ExecuteTransactionInput) infra.ExecuteOption {
 	}
 }
 
-// Statement is a implementation of infra.Statement for dynamodb.
+// Statement is a implementation of db.Statement for dynamodb.
 //
 // Supports only Insert, Update, and Delete.
 type Statement struct {
-	ctx         context.Context
 	tx          *dynamodb.ExecuteTransactionInput
 	partiQLStmt []dynamotypes.ParameterizedStatement
 	executed    bool
 }
 
-// zeroValueResult is a implementation of infra.StatementResult.
+// zeroValueResult is a implementation of db.StatementResult.
 type zeroValueResult struct{}
 
 func (r zeroValueResult) Get() interface{} {
@@ -52,9 +43,12 @@ func (r zeroValueResult) Set(v interface{}) {
 	return
 }
 
-func (s *Statement) Execute(opts ...infra.ExecuteOption) error {
-	log.DefaultLogger().Info("start")
-	defer log.DefaultLogger().Info("end")
+func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error {
+	log.DefaultLogger().Info("BEGIN",
+		slog.Group("parameters",
+			slog.String("ctx", fmt.Sprintf("%+v", ctx)),
+			slog.String("opts", fmt.Sprintf("%+v", opts))))
+	defer log.DefaultLogger().Info("END")
 	if s.executed {
 		return ErrAlreadyExecuted
 	}
@@ -62,11 +56,7 @@ func (s *Statement) Execute(opts ...infra.ExecuteOption) error {
 	for _, opt := range opts {
 		opt(s)
 	}
-	ctx := s.ctx
 	tx := s.tx
-	if ctx == nil {
-		ctx = context.Background()
-	}
 
 	if tx == nil {
 		clt, err := Get()
@@ -84,13 +74,13 @@ func (s *Statement) Execute(opts ...infra.ExecuteOption) error {
 }
 
 // Result always returns zero value.
-func (s *Statement) Result() infra.StatementResult {
+func (s *Statement) Result() db.StatementResult {
 	return zeroValueResult{}
 }
 
 func NewStatement(
 	partiQLStmt []dynamotypes.ParameterizedStatement,
-) infra.Statement {
+) db.Statement {
 	return &Statement{
 		partiQLStmt: partiQLStmt,
 	}

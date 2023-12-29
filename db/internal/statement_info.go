@@ -1,10 +1,10 @@
 package internal
 
 import (
-	"github.com/miyamo2/blogapi-core/infra"
+	"github.com/miyamo2/blogapi-core/db"
 )
 
 type StatementRequest struct {
-	Statement infra.Statement
+	Statement db.Statement
 	ErrCh     chan error
 }

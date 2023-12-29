@@ -3,7 +3,7 @@ package gorm
 import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/infra/gorm/internal"
+	"github.com/miyamo2/blogapi-core/db/gorm/internal"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"testing"

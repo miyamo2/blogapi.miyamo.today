@@ -1,4 +1,4 @@
-package stopwatch
+package duration
 
 import (
 	"github.com/Songmu/flextime"
@@ -12,20 +12,20 @@ var (
 	stop  = time.Date(2020, 1, 1, 0, 0, 1, 0, time.UTC).Round(0)
 )
 
-type StopWatchDurationTestCase struct {
-	target        StopWatch
+type WatchDurationTestCase struct {
+	target        Watch
 	want          time.Duration
 	beforeProcess func()
 }
 
-func Test_stopwatch_Duration(t *testing.T) {
-	tests := map[string]StopWatchDurationTestCase{
+func Test_Watch_Duration(t *testing.T) {
+	tests := map[string]WatchDurationTestCase{
 		"happy_path/already_stopped": {
-			target: StopWatch{start: start, stop: stop},
+			target: Watch{start: start, stop: stop},
 			want:   stop.Sub(start),
 		},
 		"happy_path/not_stopped_yet": {
-			target: func() StopWatch {
+			target: func() Watch {
 				flextime.Fix(start)
 				return Start()
 			}(),
@@ -50,16 +50,16 @@ func Test_stopwatch_Duration(t *testing.T) {
 	}
 }
 
-type StopWatchSDurationTestCase struct {
-	target        StopWatch
+type WatchSDurationTestCase struct {
+	target        Watch
 	want          string
 	beforeProcess func()
 }
 
-func Test_stopwatch_SDuration(t *testing.T) {
-	tests := map[string]StopWatchSDurationTestCase{
+func Test_Watch_SDuration(t *testing.T) {
+	tests := map[string]WatchSDurationTestCase{
 		"happy_path": {
-			target: func() StopWatch {
+			target: func() Watch {
 				flextime.Fix(start)
 				return Start()
 			}(),
@@ -84,27 +84,27 @@ func Test_stopwatch_SDuration(t *testing.T) {
 	}
 }
 
-type StopWatchStopTestCase struct {
-	target        StopWatch
-	expect        StopWatch
+type WatchStopTestCase struct {
+	target        Watch
+	expect        Watch
 	beforeProcess func()
 }
 
-func Test_stopwatch_Stop(t *testing.T) {
-	tests := map[string]StopWatchStopTestCase{
+func Test_Watch_Stop(t *testing.T) {
+	tests := map[string]WatchStopTestCase{
 		"happy_path": {
-			target: func() StopWatch {
+			target: func() Watch {
 				flextime.Fix(start)
 				return Start()
 			}(),
-			expect: StopWatch{start: start, stop: stop},
+			expect: Watch{start: start, stop: stop},
 			beforeProcess: func() {
 				flextime.Fix(stop)
 			},
 		},
 		"unhappy_path/already_stopped": {
-			target: StopWatch{start: start, stop: stop},
-			expect: StopWatch{start: start, stop: stop},
+			target: Watch{start: start, stop: stop},
+			expect: Watch{start: start, stop: stop},
 			beforeProcess: func() {
 				flextime.Fix(time.Date(2020, 12, 31, 23, 59, 59, 999999999, time.UTC))
 			},

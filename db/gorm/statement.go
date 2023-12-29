@@ -2,27 +2,19 @@ package gorm
 
 import (
 	"context"
+	"fmt"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/infra"
+	"github.com/miyamo2/blogapi-core/db"
 	"github.com/miyamo2/blogapi-core/log"
 	"gorm.io/gorm"
+	"log/slog"
 )
 
 var ErrAlreadyExecuted = errors.New("statement is already executed.")
 
-// WithContext is an option to set context to Statement.
-func WithContext(ctx context.Context) infra.ExecuteOption {
-	return func(s infra.Statement) {
-		switch v := s.(type) {
-		case *Statement:
-			v.ctx = ctx
-		}
-	}
-}
-
 // WithTransaction is an option to set transaction to Statement.
-func WithTransaction(tx *gorm.DB) infra.ExecuteOption {
-	return func(s infra.Statement) {
+func WithTransaction(tx *gorm.DB) db.ExecuteOption {
+	return func(s db.Statement) {
 		switch v := s.(type) {
 		case *Statement:
 			v.tx = tx
@@ -30,18 +22,20 @@ func WithTransaction(tx *gorm.DB) infra.ExecuteOption {
 	}
 }
 
-// Statement is a implementation of infra.Statement for gorm.
+// Statement is a implementation of db.Statement for gorm.
 type Statement struct {
-	ctx      context.Context
 	tx       *gorm.DB
-	out      infra.StatementResult
-	function func(ctx context.Context, db *gorm.DB, out infra.StatementResult) error
+	out      db.StatementResult
+	function func(ctx context.Context, db *gorm.DB, out db.StatementResult) error
 	executed bool
 }
 
-func (s *Statement) Execute(opts ...infra.ExecuteOption) error {
-	log.DefaultLogger().Info("start")
-	defer log.DefaultLogger().Info("end")
+func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error {
+	log.DefaultLogger().Info("BEGIN",
+		slog.Group("parameters",
+			slog.String("ctx", fmt.Sprintf("%+v", ctx)),
+			slog.String("opts", fmt.Sprintf("%+v", opts))))
+	defer log.DefaultLogger().Info("END")
 	if s.executed {
 		return ErrAlreadyExecuted
 	}
@@ -49,11 +43,7 @@ func (s *Statement) Execute(opts ...infra.ExecuteOption) error {
 	for _, opt := range opts {
 		opt(s)
 	}
-	ctx := s.ctx
 	tx := s.tx
-	if ctx == nil {
-		ctx = context.Background()
-	}
 
 	if tx == nil {
 		db, err := Get()
@@ -72,10 +62,10 @@ func (s *Statement) Execute(opts ...infra.ExecuteOption) error {
 	return s.function(ctx, tx, s.out)
 }
 
-func (s *Statement) Result() infra.StatementResult {
+func (s *Statement) Result() db.StatementResult {
 	return s.out
 }
 
-func NewStatement(fn func(ctx context.Context, tx *gorm.DB, out infra.StatementResult) error, out infra.StatementResult) infra.Statement {
+func NewStatement(fn func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error, out db.StatementResult) db.Statement {
 	return &Statement{function: fn, out: out}
 }

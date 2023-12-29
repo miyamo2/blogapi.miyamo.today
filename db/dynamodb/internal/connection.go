@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/miyamo2/blogapi-core/infra/dynamodb/client"
+	"github.com/miyamo2/blogapi-core/db/dynamodb/client"
 	"sync"
 )
 

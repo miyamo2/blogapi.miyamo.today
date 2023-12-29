@@ -2,7 +2,7 @@ package gorm
 
 import (
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/infra/gorm/internal"
+	"github.com/miyamo2/blogapi-core/db/gorm/internal"
 	"github.com/miyamo2/blogapi-core/log"
 	"gorm.io/gorm"
 )
