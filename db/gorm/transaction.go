@@ -87,9 +87,7 @@ func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Stateme
 
 func (t *Transaction) Commit(ctx context.Context) error {
 	dw := duration.Start()
-	log.DefaultLogger().InfoContext(ctx, "BEGIN",
-		slog.Group("parameters",
-			slog.String("ctx", fmt.Sprintf("%+v", ctx))))
+	log.DefaultLogger().InfoContext(ctx, "BEGIN")
 	// error will always be nil.
 	defer log.DefaultLogger().InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
