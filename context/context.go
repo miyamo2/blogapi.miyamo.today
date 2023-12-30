@@ -2,29 +2,17 @@ package blogapictx
 
 import (
 	"context"
+	"os"
 	"time"
 )
 
 type contextKey struct{}
 
-type TraceIDKey struct{}
-
-type RequestIDKey struct{}
-
 type BlogAPIContext struct {
-	Fingerprint Fingerprint
-	Tracing     Tracing
-	Incoming    Request
-	Local       interface{}
-	Outgoing    *Request
-}
-
-type Fingerprint struct {
-	ID string
-}
-
-type Tracing struct {
-	ID string
+	TraceID  string
+	SpanID   string
+	Incoming Request
+	Outgoing *Request
 }
 
 type RequestType string
@@ -37,41 +25,36 @@ const (
 
 type Request struct {
 	Type       RequestType
-	Service    string  // micro services service name
-	GRPCMethod *string // gRPC method, REST path, GraphQL path
-	Path       *string // REST path, GraphQL path
-	Headers    map[string]string
+	Service    string // micro services service name
+	Path       string // gRPC method, REST path, GraphQL path
+	Headers    map[string][]string
 	StartTime  time.Time
 	DurationMS *float32
-	Status     *string // HTTP status code
+	Status     *string
 	Body       interface{}
 }
 
 // New returns a new BlogAPIContext.
 func New(
-	ctx context.Context,
-	serviceName string,
+	traceID string,
+	spanID string,
+	path string,
 	requestType RequestType,
-	requestHeader map[string]string,
+	requestHeader map[string][]string,
 	requestBody interface{},
 ) BlogAPIContext {
-	requestID := ctx.Value(RequestIDKey{}).(string)
 	incoming := Request{
 		Type:      requestType,
-		Service:   serviceName,
+		Service:   os.Getenv("SERVICE_NAME"),
+		Path:      path,
 		StartTime: time.Now(),
 		Headers:   requestHeader,
 		Body:      requestBody,
 	}
 	bctx := BlogAPIContext{
+		TraceID:  traceID,
+		SpanID:   spanID,
 		Incoming: incoming,
-		Fingerprint: Fingerprint{
-			ID: requestID,
-		},
-	}
-	traceID := ctx.Value(TraceIDKey{}).(string)
-	bctx.Tracing = Tracing{
-		ID: traceID,
 	}
 	return bctx
 }

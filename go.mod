@@ -3,12 +3,12 @@ module github.com/miyamo2/blogapi-core
 go 1.21
 
 require (
+	github.com/99designs/gqlgen v0.17.42
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/Songmu/flextime v0.1.0
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.26.7
 	github.com/cockroachdb/errors v1.11.1
 	github.com/google/uuid v1.5.0
-	github.com/labstack/echo/v4 v4.11.4
 	github.com/oklog/ulid/v2 v2.1.0
 	go.uber.org/mock v0.4.0
 	google.golang.org/grpc v1.60.1
@@ -38,13 +38,11 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/labstack/gommon v0.4.2 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/sosodev/duration v1.1.0 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
+	github.com/vektah/gqlparser/v2 v2.5.10 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sync v0.4.0 // indirect
