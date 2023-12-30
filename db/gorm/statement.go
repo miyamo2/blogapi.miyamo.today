@@ -6,6 +6,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-core/db"
 	"github.com/miyamo2/blogapi-core/log"
+	"github.com/miyamo2/blogapi-core/util/duration"
 	"gorm.io/gorm"
 	"log/slog"
 )
@@ -31,11 +32,11 @@ type Statement struct {
 }
 
 func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error {
+	dw := duration.Start()
 	log.DefaultLogger().Info("BEGIN",
 		slog.Group("parameters",
-			slog.String("ctx", fmt.Sprintf("%+v", ctx)),
 			slog.String("opts", fmt.Sprintf("%+v", opts))))
-	defer log.DefaultLogger().Info("END")
+	defer log.DefaultLogger().Info("END", slog.String("duration", dw.SDuration()))
 	if s.executed {
 		return ErrAlreadyExecuted
 	}
@@ -46,11 +47,11 @@ func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error
 	tx := s.tx
 
 	if tx == nil {
-		db, err := Get()
+		conn, err := Get()
 		if err != nil {
 			return errors.Wrap(err, "failed to get gorm db connection")
 		}
-		err = db.Transaction(func(tx *gorm.DB) error {
+		err = conn.Transaction(func(tx *gorm.DB) error {
 			err := s.function(ctx, tx, s.out)
 			if err != nil {
 				return errors.Wrap(err, "failed to execute stmt")

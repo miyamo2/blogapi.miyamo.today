@@ -3,6 +3,7 @@ package gorm
 import (
 	"context"
 	"fmt"
+	"github.com/miyamo2/blogapi-core/util/duration"
 	"log/slog"
 
 	"github.com/cockroachdb/errors"
@@ -22,26 +23,24 @@ type Transaction struct {
 }
 
 func (t *Transaction) start(ctx context.Context) {
-	log.DefaultLogger().InfoContext(ctx, "BEGIN",
-		slog.Group("parameters",
-			slog.String("ctx", fmt.Sprintf("%+v", ctx))))
+	log.DefaultLogger().InfoContext(ctx, "BEGIN")
 	defer log.DefaultLogger().InfoContext(ctx, "END")
 
 	defer close(t.stmtQueue)
 	defer close(t.commit)
 	defer close(t.rollback)
 
-	db, err := Get()
+	conn, err := Get()
 	if err != nil {
 		err = errors.Wrap(err, "failed to get gorm connection")
 		t.errQueue <- err
 		return
 	}
-	err = db.Transaction(func(tx *gorm.DB) error {
+	err = conn.Transaction(func(tx *gorm.DB) error {
 		for {
 			select {
 			case nx := <-t.stmtQueue:
-				err = nx.Statement.Execute(ctx, WithTransaction(db))
+				err = nx.Statement.Execute(ctx, WithTransaction(conn))
 				if err != nil {
 					nx.ErrCh <- err
 					t.errQueue <- err
@@ -49,10 +48,10 @@ func (t *Transaction) start(ctx context.Context) {
 				}
 				nx.ErrCh <- nil
 			case <-t.commit:
-				db.Commit()
+				conn.Commit()
 				return nil
 			case <-t.rollback:
-				db.Rollback()
+				conn.Rollback()
 				return nil
 			}
 		}
@@ -69,13 +68,10 @@ func (t *Transaction) SubscribeError() <-chan error {
 }
 
 func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Statement) error {
-	log.DefaultLogger().InfoContext(ctx, "BEGIN",
-		slog.Group("parameters",
-			slog.String("ctx", fmt.Sprintf("%+v", ctx)),
-			slog.String("statement", fmt.Sprintf("%+v", statement))))
+	dw := duration.Start()
+	log.DefaultLogger().InfoContext(ctx, "BEGIN")
 	// error will always be nil.
-	defer log.DefaultLogger().InfoContext(ctx, "END",
-		slog.Group("returns", slog.Any("error", nil)))
+	defer log.DefaultLogger().InfoContext(ctx, "END", slog.String("duration", dw.SDuration()))
 	errCh := make(chan error, 1)
 	defer close(errCh)
 	t.stmtQueue <- &internal.StatementRequest{
@@ -90,11 +86,13 @@ func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Stateme
 }
 
 func (t *Transaction) Commit(ctx context.Context) error {
+	dw := duration.Start()
 	log.DefaultLogger().InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("ctx", fmt.Sprintf("%+v", ctx))))
 	// error will always be nil.
 	defer log.DefaultLogger().InfoContext(ctx, "END",
+		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("error", nil)))
 	t.commit <- struct{}{}
@@ -103,11 +101,11 @@ func (t *Transaction) Commit(ctx context.Context) error {
 }
 
 func (t *Transaction) Rollback(ctx context.Context) error {
-	log.DefaultLogger().InfoContext(ctx, "BEGIN",
-		slog.Group("parameters",
-			slog.String("ctx", fmt.Sprintf("%+v", ctx))))
+	dw := duration.Start()
+	log.DefaultLogger().InfoContext(ctx, "BEGIN")
 	// error will always be nil.
 	defer log.DefaultLogger().InfoContext(ctx, "END",
+		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("error", nil)))
 	t.rollback <- struct{}{}
@@ -121,9 +119,8 @@ type manager struct {
 }
 
 func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
-	log.DefaultLogger().InfoContext(ctx, "BEGIN",
-		slog.Group("parameters",
-			slog.String("ctx", fmt.Sprintf("%+v", ctx))))
+	dw := duration.Start()
+	log.DefaultLogger().InfoContext(ctx, "BEGIN")
 	stmtQueue := make(chan *internal.StatementRequest)
 	t := &Transaction{
 		stmtQueue: stmtQueue,
@@ -133,6 +130,7 @@ func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
 	}
 	// error will always be nil.
 	defer log.DefaultLogger().InfoContext(ctx, "END",
+		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.String("db.Transaction", fmt.Sprintf("%+v", *t)),
 			slog.Any("error", nil)))

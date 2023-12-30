@@ -27,9 +27,32 @@ var PreHandle = func(ctx context.Context, r *slog.Record) error {
 	}
 	r.Add(slog.String("trace_id", bctx.TraceID))
 	r.Add(slog.String("span_id", bctx.SpanID))
-	r.Add(slog.Any("in_request", bctx.Incoming))
-	if outgoing := bctx.Outgoing; outgoing == nil {
-		r.Add(slog.Any("out_request", outgoing))
+	r.Add(slog.Any("in_request", parseRequest(bctx.Incoming)))
+	if outgoing := bctx.Outgoing; outgoing != nil {
+		r.Add(slog.Any("out_request", parseRequest(*outgoing)))
 	}
 	return nil
+}
+
+func parseRequest(request blogapictx.Request) map[string]interface{} {
+	parsedReq := map[string]interface{}{}
+	if request.Service != "" {
+		parsedReq["service"] = request.Service
+	}
+	if request.Path != "" {
+		parsedReq["path"] = request.Path
+	}
+	if len(request.Headers) > 0 {
+		parsedReq["headers"] = request.Headers
+	}
+	if request.Duration != nil {
+		parsedReq["duration_ms"] = request.Duration
+	}
+	if request.Status != nil {
+		parsedReq["status"] = request.Status
+	}
+	if request.Body != nil {
+		parsedReq["body"] = request.Body
+	}
+	return parsedReq
 }

@@ -24,14 +24,14 @@ const (
 )
 
 type Request struct {
-	Type       RequestType
-	Service    string // micro services service name
-	Path       string // gRPC method, REST path, GraphQL path
-	Headers    map[string][]string
-	StartTime  time.Time
-	DurationMS *float32
-	Status     *string
-	Body       interface{}
+	Type      RequestType
+	Service   string // micro services service name
+	Path      string // gRPC method, REST path, GraphQL path
+	Headers   map[string][]string
+	StartTime time.Time
+	Duration  *string
+	Status    *string
+	Body      interface{}
 }
 
 // New returns a new BlogAPIContext.
