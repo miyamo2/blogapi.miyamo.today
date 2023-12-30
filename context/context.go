@@ -66,9 +66,10 @@ func StoreToContext(ctx context.Context, bctx BlogAPIContext) context.Context {
 
 // FromContext returns the BlogAPIContext stored in context.Context.
 func FromContext(ctx context.Context) *BlogAPIContext {
-	bctx := ctx.Value(contextKey{})
-	if bctx == nil {
+	bctx, ok := ctx.Value(contextKey{}).(BlogAPIContext)
+	if !ok {
 		return nil
 	}
-	return bctx.(*BlogAPIContext)
+
+	return &bctx
 }
