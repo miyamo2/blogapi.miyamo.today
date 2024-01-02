@@ -30,7 +30,9 @@ func (t *Transaction) start(ctx context.Context) {
 	defer close(t.commit)
 	defer close(t.rollback)
 
+	slog.Info("A")
 	conn, err := Get()
+	slog.Info("B")
 	if err != nil {
 		err = errors.Wrap(err, "failed to get gorm connection")
 		t.errQueue <- err

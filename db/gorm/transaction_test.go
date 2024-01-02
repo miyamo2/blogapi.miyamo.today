@@ -216,6 +216,7 @@ func TestManager_GetAndStart(t *testing.T) {
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
 				})
+				Invalidate()
 				InvalidateDialector()
 				InitializeDialector(&dialector)
 			},
@@ -251,6 +252,7 @@ func TestManager_GetAndStart(t *testing.T) {
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
 				})
+				Invalidate()
 				InvalidateDialector()
 				InitializeDialector(&dialector)
 			},
@@ -266,6 +268,7 @@ func TestManager_GetAndStart(t *testing.T) {
 				}
 			},
 			beforeFunc: func() {
+				Invalidate()
 				InvalidateDialector()
 			},
 		},
@@ -299,6 +302,7 @@ func TestManager_GetAndStart(t *testing.T) {
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
 				})
+				Invalidate()
 				InvalidateDialector()
 				InitializeDialector(&dialector)
 			},

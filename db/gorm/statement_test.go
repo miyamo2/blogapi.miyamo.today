@@ -19,25 +19,6 @@ func TestStatement_Execute(t *testing.T) {
 
 	errStatementTest := errors.New("error statement test")
 
-	initializeConn := func() {
-		sqlDB, mock, err := sqlmock.New()
-		if err != nil {
-			panic(err)
-		}
-
-		rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
-		mock.ExpectBegin()
-		mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT "id" FROM "dummies"`)).
-			WillReturnRows(rows)
-		mock.ExpectCommit()
-		dialector := postgres.New(postgres.Config{
-			Conn: sqlDB,
-		})
-		InvalidateDialector()
-		InitializeDialector(&dialector)
-	}
-
 	type args struct {
 		opts []db.ExecuteOption
 	}
@@ -91,8 +72,24 @@ func TestStatement_Execute(t *testing.T) {
 			args: args{
 				opts: []db.ExecuteOption{},
 			},
-			want:       want{out: "1", err: nil},
-			beforeFunc: initializeConn,
+			want: want{out: "1", err: nil},
+			beforeFunc: func() {
+				sqlDB, mock, err := sqlmock.New()
+				if err != nil {
+					panic(err)
+				}
+				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
+				mock.ExpectBegin()
+				mock.ExpectQuery(regexp.QuoteMeta(
+					`SELECT "id" FROM "dummies"`)).WillReturnRows(rows)
+				mock.ExpectCommit()
+				dialector := postgres.New(postgres.Config{
+					Conn: sqlDB,
+				})
+				Invalidate()
+				InvalidateDialector()
+				InitializeDialector(&dialector)
+			},
 		},
 		"unhappy_path/statement_returned_error": {
 			statementResult: func() *db.SingleStatementResult[string] {
@@ -120,12 +117,12 @@ func TestStatement_Execute(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 				mock.ExpectBegin()
 				mock.ExpectQuery(regexp.QuoteMeta(
-					`SELECT "id" FROM "dummies"`)).
-					WillReturnRows(rows)
+					`SELECT "id" FROM "dummies"`)).WillReturnRows(rows)
 				mock.ExpectRollback()
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
 				})
+				Invalidate()
 				InvalidateDialector()
 				InitializeDialector(&dialector)
 			},
@@ -147,6 +144,7 @@ func TestStatement_Execute(t *testing.T) {
 			want:    want{out: "", err: ErrDialectorNotInitialized},
 			wantErr: true,
 			beforeFunc: func() {
+				Invalidate()
 				InvalidateDialector()
 			},
 		},
@@ -178,6 +176,7 @@ func TestStatement_Execute(t *testing.T) {
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
 				})
+				Invalidate()
 				InvalidateDialector()
 				InitializeDialector(&dialector)
 			},
