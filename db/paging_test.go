@@ -1,4 +1,4 @@
-package gorm
+package db
 
 import (
 	"reflect"
@@ -62,7 +62,7 @@ func TestPagination_NextPaging(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path": {
 			sut: &Pagination{
-				nextPaging: true,
+				isNextPaging: true,
 			},
 			want: true,
 		},
@@ -70,8 +70,8 @@ func TestPagination_NextPaging(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			p := tt.sut
-			if got := p.NextPaging(); got != tt.want {
-				t.Errorf("NextPaging() = %v, want %v", got, tt.want)
+			if got := p.IsNextPaging(); got != tt.want {
+				t.Errorf("IsNextPaging() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -86,7 +86,7 @@ func TestPagination_PreviousPaging(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path": {
 			sut: &Pagination{
-				previousPaging: true,
+				isPreviousPaging: true,
 			},
 			want: true,
 		},
@@ -94,8 +94,8 @@ func TestPagination_PreviousPaging(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			p := tt.sut
-			if got := p.PreviousPaging(); got != tt.want {
-				t.Errorf("PreviousPaging() = %v, want %v", got, tt.want)
+			if got := p.IsPreviousPaging(); got != tt.want {
+				t.Errorf("IsPreviousPaging() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -119,10 +119,10 @@ func TestWithNextPaging(t *testing.T) {
 			},
 			sut: &Pagination{},
 			want: Pagination{
-				cursor:         "happy_path",
-				limit:          10,
-				previousPaging: false,
-				nextPaging:     true,
+				cursor:           "happy_path",
+				limit:            10,
+				isPreviousPaging: false,
+				isNextPaging:     true,
 			},
 		},
 	}
@@ -154,10 +154,10 @@ func TestWithPreviousPaging(t *testing.T) {
 			},
 			sut: &Pagination{},
 			want: Pagination{
-				cursor:         "happy_path",
-				limit:          10,
-				previousPaging: true,
-				nextPaging:     false,
+				cursor:           "happy_path",
+				limit:            10,
+				isPreviousPaging: true,
+				isNextPaging:     false,
 			},
 		},
 	}
