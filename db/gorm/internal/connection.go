@@ -6,8 +6,6 @@ import (
 )
 
 var (
-	DialectorLock sync.RWMutex
-	Dialector     *gorm.Dialector
-	DBLock        sync.RWMutex
-	DB            *gorm.DB
+	Lock      sync.RWMutex
+	Dialector *gorm.Dialector
 )

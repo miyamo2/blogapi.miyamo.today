@@ -3,6 +3,7 @@ package gorm
 import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/blogapi-core/db/gorm/internal"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"testing"
@@ -29,50 +30,18 @@ func TestGet(t *testing.T) {
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
 				})
-				singletonDialector.mu.Lock()
-				defer singletonDialector.mu.Unlock()
-				singletonDialector.dialector = &dialector
-
-				singletonDB.mu.Lock()
-				defer singletonDB.mu.Unlock()
-				db, err := gorm.Open(dialector)
-				if err != nil {
-					panic(err)
-				}
-				singletonDB.db = db
+				internal.Lock.Lock()
+				defer internal.Lock.Unlock()
+				internal.Dialector = &dialector
 			},
 		},
-		"happy_path/connection_is_not_initialized": {
-			beforeFunc: func() {
-				sqlDB, _, err := sqlmock.New()
-				if err != nil {
-					panic(err)
-				}
-				dialector := postgres.New(postgres.Config{
-					Conn: sqlDB,
-				})
-				singletonDialector.mu.Lock()
-				defer singletonDialector.mu.Unlock()
-				singletonDialector.dialector = &dialector
-
-				singletonDB.mu.Lock()
-				defer singletonDB.mu.Unlock()
-				if err != nil {
-					panic(err)
-				}
-				singletonDB.db = nil
-			},
-		},
-		"unhappy_path/gorm_dialector_is_not_initialized": {
+		"unhappy_path/gorm_connection_is_not_initialized": {
 			want:    want{err: ErrDialectorNotInitialized},
 			wantErr: true,
 			beforeFunc: func() {
-				singletonDialector.mu.Lock()
-				defer singletonDialector.mu.Unlock()
-				singletonDialector.dialector = nil
-				singletonDB.mu.Lock()
-				defer singletonDB.mu.Unlock()
-				singletonDB.db = nil
+				internal.Lock.Lock()
+				defer internal.Lock.Unlock()
+				internal.Dialector = nil
 			},
 		},
 	}
@@ -89,53 +58,6 @@ func TestGet(t *testing.T) {
 				}
 			} else if err != nil {
 				t.Errorf("Get() returns error. error = %v", err)
-				return
-			}
-		})
-	}
-}
-
-func TestInvalidate(t *testing.T) {
-	type testCase struct {
-		beforeFunc func()
-	}
-
-	tests := map[string]testCase{
-		"happy_path": {
-			beforeFunc: func() {
-				sqlDB, _, err := sqlmock.New()
-				if err != nil {
-					panic(err)
-				}
-				dialector := postgres.New(postgres.Config{
-					Conn: sqlDB,
-				})
-
-				singletonDB.mu.Lock()
-				defer singletonDB.mu.Unlock()
-				db, err := gorm.Open(dialector)
-				if err != nil {
-					panic(err)
-				}
-				singletonDB.db = db
-			},
-		},
-		"happy_path/gorm_connection_is_not_initialized": {
-			beforeFunc: func() {
-				singletonDB.mu.Lock()
-				defer singletonDB.mu.Unlock()
-				singletonDB.db = nil
-			},
-		},
-	}
-	for name, tt := range tests {
-		t.Run(name, func(t *testing.T) {
-			if tt.beforeFunc != nil {
-				tt.beforeFunc()
-			}
-			Invalidate()
-			if singletonDB.db != nil {
-				t.Errorf("Invalidate() is not invalidate the dialector.")
 				return
 			}
 		})
@@ -163,12 +85,12 @@ func TestInitializeDialector(t *testing.T) {
 			},
 			wantOverwrite: true,
 			beforeFunc: func() {
-				singletonDialector.mu.Lock()
-				defer singletonDialector.mu.Unlock()
-				singletonDialector.dialector = nil
+				internal.Lock.Lock()
+				defer internal.Lock.Unlock()
+				internal.Dialector = nil
 			},
 		},
-		"happy_path/gorm_dialector_is_already_initialized": {
+		"happy_path/gorm_connection_is_already_initialized": {
 			args: func() *gorm.Dialector {
 				sqlDB, _, err := sqlmock.New()
 				if err != nil {
@@ -187,9 +109,9 @@ func TestInitializeDialector(t *testing.T) {
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
 				})
-				singletonDialector.mu.Lock()
-				defer singletonDialector.mu.Unlock()
-				singletonDialector.dialector = &dialector
+				internal.Lock.Lock()
+				defer internal.Lock.Unlock()
+				internal.Dialector = &dialector
 			},
 		},
 	}
@@ -201,11 +123,11 @@ func TestInitializeDialector(t *testing.T) {
 			args := tt.args()
 			InitializeDialector(args)
 			if tt.wantOverwrite {
-				if singletonDialector.dialector != args {
+				if internal.Dialector != args {
 					t.Errorf("InitializeDialector() is not updating the dialector.")
 					return
 				}
-			} else if singletonDialector.dialector == args {
+			} else if internal.Dialector == args {
 				t.Errorf("InitializeDialector() is updating the dialector.")
 				return
 			}
@@ -228,16 +150,16 @@ func TestInvalidateDialector(t *testing.T) {
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
 				})
-				singletonDialector.mu.Lock()
-				defer singletonDialector.mu.Unlock()
-				singletonDialector.dialector = &dialector
+				internal.Lock.Lock()
+				defer internal.Lock.Unlock()
+				internal.Dialector = &dialector
 			},
 		},
-		"happy_path/gorm_dialector_is_not_initialized": {
+		"happy_path/gorm_connection_is_not_initialized": {
 			beforeFunc: func() {
-				singletonDialector.mu.Lock()
-				defer singletonDialector.mu.Unlock()
-				singletonDialector.dialector = nil
+				internal.Lock.Lock()
+				defer internal.Lock.Unlock()
+				internal.Dialector = nil
 			},
 		},
 	}
@@ -247,7 +169,7 @@ func TestInvalidateDialector(t *testing.T) {
 				tt.beforeFunc()
 			}
 			InvalidateDialector()
-			if singletonDialector.dialector != nil {
+			if internal.Dialector != nil {
 				t.Errorf("InvalidateDialector() is not invalidate the dialector.")
 				return
 			}
