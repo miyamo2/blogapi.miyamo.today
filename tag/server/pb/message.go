@@ -4,14 +4,18 @@ import "github.com/miyamo2/blogproto-gen/tag/server/pb/internal"
 
 type GetTagByIdRequest = internal.GetTagByIdRequest
 
-type GetNextPageTagsRequest = internal.GetNextPageTagsRequest
+type GetNextPageTagsRequest = internal.GetNextTagsRequest
 
-type GetPrevPageTagsRequest = internal.GetPrevPageTagsRequest
+type GetPrevPageTagsRequest = internal.GetPrevTagsRequest
 
 type Tag = internal.Tag
 
 type Article = internal.Article
 
-type SingleTagResponse = internal.SingleTagResponse
+type GetAllTagsResponse = internal.GetAllTagsResponse
 
-type MultipleTagResponse = internal.MultipleTagResponse
+type GetTagByIdResponse = internal.GetTagByIdResponse
+
+type GetNextTagResponse = internal.GetNextTagResponse
+
+type GetPrevTagResponse = internal.GetPrevTagResponse

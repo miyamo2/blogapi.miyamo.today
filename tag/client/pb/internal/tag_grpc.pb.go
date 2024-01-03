@@ -20,20 +20,20 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	TagService_GetTagById_FullMethodName      = "/tag.TagService/GetTagById"
-	TagService_GetAllTags_FullMethodName      = "/tag.TagService/GetAllTags"
-	TagService_GetNextPageTags_FullMethodName = "/tag.TagService/GetNextPageTags"
-	TagService_GetPrevPageTags_FullMethodName = "/tag.TagService/GetPrevPageTags"
+	TagService_GetTagById_FullMethodName  = "/tag.TagService/GetTagById"
+	TagService_GetAllTags_FullMethodName  = "/tag.TagService/GetAllTags"
+	TagService_GetNextTags_FullMethodName = "/tag.TagService/GetNextTags"
+	TagService_GetPrevTags_FullMethodName = "/tag.TagService/GetPrevTags"
 )
 
 // TagServiceClient is the client API for TagService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TagServiceClient interface {
-	GetTagById(ctx context.Context, in *GetTagByIdRequest, opts ...grpc.CallOption) (*SingleTagResponse, error)
-	GetAllTags(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MultipleTagResponse, error)
-	GetNextPageTags(ctx context.Context, in *GetNextPageTagsRequest, opts ...grpc.CallOption) (*MultipleTagResponse, error)
-	GetPrevPageTags(ctx context.Context, in *GetPrevPageTagsRequest, opts ...grpc.CallOption) (*MultipleTagResponse, error)
+	GetTagById(ctx context.Context, in *GetTagByIdRequest, opts ...grpc.CallOption) (*GetTagByIdResponse, error)
+	GetAllTags(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllTagsResponse, error)
+	GetNextTags(ctx context.Context, in *GetNextTagsRequest, opts ...grpc.CallOption) (*GetNextTagResponse, error)
+	GetPrevTags(ctx context.Context, in *GetPrevTagsRequest, opts ...grpc.CallOption) (*GetPrevTagResponse, error)
 }
 
 type tagServiceClient struct {
@@ -44,8 +44,8 @@ func NewTagServiceClient(cc grpc.ClientConnInterface) TagServiceClient {
 	return &tagServiceClient{cc}
 }
 
-func (c *tagServiceClient) GetTagById(ctx context.Context, in *GetTagByIdRequest, opts ...grpc.CallOption) (*SingleTagResponse, error) {
-	out := new(SingleTagResponse)
+func (c *tagServiceClient) GetTagById(ctx context.Context, in *GetTagByIdRequest, opts ...grpc.CallOption) (*GetTagByIdResponse, error) {
+	out := new(GetTagByIdResponse)
 	err := c.cc.Invoke(ctx, TagService_GetTagById_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -53,8 +53,8 @@ func (c *tagServiceClient) GetTagById(ctx context.Context, in *GetTagByIdRequest
 	return out, nil
 }
 
-func (c *tagServiceClient) GetAllTags(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MultipleTagResponse, error) {
-	out := new(MultipleTagResponse)
+func (c *tagServiceClient) GetAllTags(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllTagsResponse, error) {
+	out := new(GetAllTagsResponse)
 	err := c.cc.Invoke(ctx, TagService_GetAllTags_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -62,18 +62,18 @@ func (c *tagServiceClient) GetAllTags(ctx context.Context, in *emptypb.Empty, op
 	return out, nil
 }
 
-func (c *tagServiceClient) GetNextPageTags(ctx context.Context, in *GetNextPageTagsRequest, opts ...grpc.CallOption) (*MultipleTagResponse, error) {
-	out := new(MultipleTagResponse)
-	err := c.cc.Invoke(ctx, TagService_GetNextPageTags_FullMethodName, in, out, opts...)
+func (c *tagServiceClient) GetNextTags(ctx context.Context, in *GetNextTagsRequest, opts ...grpc.CallOption) (*GetNextTagResponse, error) {
+	out := new(GetNextTagResponse)
+	err := c.cc.Invoke(ctx, TagService_GetNextTags_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *tagServiceClient) GetPrevPageTags(ctx context.Context, in *GetPrevPageTagsRequest, opts ...grpc.CallOption) (*MultipleTagResponse, error) {
-	out := new(MultipleTagResponse)
-	err := c.cc.Invoke(ctx, TagService_GetPrevPageTags_FullMethodName, in, out, opts...)
+func (c *tagServiceClient) GetPrevTags(ctx context.Context, in *GetPrevTagsRequest, opts ...grpc.CallOption) (*GetPrevTagResponse, error) {
+	out := new(GetPrevTagResponse)
+	err := c.cc.Invoke(ctx, TagService_GetPrevTags_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,10 +84,10 @@ func (c *tagServiceClient) GetPrevPageTags(ctx context.Context, in *GetPrevPageT
 // All implementations must embed UnimplementedTagServiceServer
 // for forward compatibility
 type TagServiceServer interface {
-	GetTagById(context.Context, *GetTagByIdRequest) (*SingleTagResponse, error)
-	GetAllTags(context.Context, *emptypb.Empty) (*MultipleTagResponse, error)
-	GetNextPageTags(context.Context, *GetNextPageTagsRequest) (*MultipleTagResponse, error)
-	GetPrevPageTags(context.Context, *GetPrevPageTagsRequest) (*MultipleTagResponse, error)
+	GetTagById(context.Context, *GetTagByIdRequest) (*GetTagByIdResponse, error)
+	GetAllTags(context.Context, *emptypb.Empty) (*GetAllTagsResponse, error)
+	GetNextTags(context.Context, *GetNextTagsRequest) (*GetNextTagResponse, error)
+	GetPrevTags(context.Context, *GetPrevTagsRequest) (*GetPrevTagResponse, error)
 	mustEmbedUnimplementedTagServiceServer()
 }
 
@@ -95,17 +95,17 @@ type TagServiceServer interface {
 type UnimplementedTagServiceServer struct {
 }
 
-func (UnimplementedTagServiceServer) GetTagById(context.Context, *GetTagByIdRequest) (*SingleTagResponse, error) {
+func (UnimplementedTagServiceServer) GetTagById(context.Context, *GetTagByIdRequest) (*GetTagByIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTagById not implemented")
 }
-func (UnimplementedTagServiceServer) GetAllTags(context.Context, *emptypb.Empty) (*MultipleTagResponse, error) {
+func (UnimplementedTagServiceServer) GetAllTags(context.Context, *emptypb.Empty) (*GetAllTagsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllTags not implemented")
 }
-func (UnimplementedTagServiceServer) GetNextPageTags(context.Context, *GetNextPageTagsRequest) (*MultipleTagResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetNextPageTags not implemented")
+func (UnimplementedTagServiceServer) GetNextTags(context.Context, *GetNextTagsRequest) (*GetNextTagResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNextTags not implemented")
 }
-func (UnimplementedTagServiceServer) GetPrevPageTags(context.Context, *GetPrevPageTagsRequest) (*MultipleTagResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPrevPageTags not implemented")
+func (UnimplementedTagServiceServer) GetPrevTags(context.Context, *GetPrevTagsRequest) (*GetPrevTagResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPrevTags not implemented")
 }
 func (UnimplementedTagServiceServer) mustEmbedUnimplementedTagServiceServer() {}
 
@@ -156,38 +156,38 @@ func _TagService_GetAllTags_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TagService_GetNextPageTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetNextPageTagsRequest)
+func _TagService_GetNextTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNextTagsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TagServiceServer).GetNextPageTags(ctx, in)
+		return srv.(TagServiceServer).GetNextTags(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TagService_GetNextPageTags_FullMethodName,
+		FullMethod: TagService_GetNextTags_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TagServiceServer).GetNextPageTags(ctx, req.(*GetNextPageTagsRequest))
+		return srv.(TagServiceServer).GetNextTags(ctx, req.(*GetNextTagsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _TagService_GetPrevPageTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPrevPageTagsRequest)
+func _TagService_GetPrevTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPrevTagsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TagServiceServer).GetPrevPageTags(ctx, in)
+		return srv.(TagServiceServer).GetPrevTags(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TagService_GetPrevPageTags_FullMethodName,
+		FullMethod: TagService_GetPrevTags_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TagServiceServer).GetPrevPageTags(ctx, req.(*GetPrevPageTagsRequest))
+		return srv.(TagServiceServer).GetPrevTags(ctx, req.(*GetPrevTagsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -208,12 +208,12 @@ var TagService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TagService_GetAllTags_Handler,
 		},
 		{
-			MethodName: "GetNextPageTags",
-			Handler:    _TagService_GetNextPageTags_Handler,
+			MethodName: "GetNextTags",
+			Handler:    _TagService_GetNextTags_Handler,
 		},
 		{
-			MethodName: "GetPrevPageTags",
-			Handler:    _TagService_GetPrevPageTags_Handler,
+			MethodName: "GetPrevTags",
+			Handler:    _TagService_GetPrevTags_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

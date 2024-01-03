@@ -20,20 +20,20 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	ArticleService_GetArticleById_FullMethodName      = "/article.ArticleService/GetArticleById"
-	ArticleService_GetAllArticles_FullMethodName      = "/article.ArticleService/GetAllArticles"
-	ArticleService_GetNextPageArticles_FullMethodName = "/article.ArticleService/GetNextPageArticles"
-	ArticleService_GetPrevPageArticles_FullMethodName = "/article.ArticleService/GetPrevPageArticles"
+	ArticleService_GetArticleById_FullMethodName  = "/article.ArticleService/GetArticleById"
+	ArticleService_GetAllArticles_FullMethodName  = "/article.ArticleService/GetAllArticles"
+	ArticleService_GetNextArticles_FullMethodName = "/article.ArticleService/GetNextArticles"
+	ArticleService_GetPrevArticles_FullMethodName = "/article.ArticleService/GetPrevArticles"
 )
 
 // ArticleServiceClient is the client API for ArticleService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ArticleServiceClient interface {
-	GetArticleById(ctx context.Context, in *GetArticleByIdRequest, opts ...grpc.CallOption) (*SingleArticleResponse, error)
-	GetAllArticles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MultipleArticleResponse, error)
-	GetNextPageArticles(ctx context.Context, in *GetNextPageArticlesRequest, opts ...grpc.CallOption) (*MultipleArticleResponse, error)
-	GetPrevPageArticles(ctx context.Context, in *GetPrevPageArticlesRequest, opts ...grpc.CallOption) (*MultipleArticleResponse, error)
+	GetArticleById(ctx context.Context, in *GetArticleByIdRequest, opts ...grpc.CallOption) (*GetArticleByIdResponse, error)
+	GetAllArticles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllArticlesResponse, error)
+	GetNextArticles(ctx context.Context, in *GetNextArticlesRequest, opts ...grpc.CallOption) (*GetNextArticlesResponse, error)
+	GetPrevArticles(ctx context.Context, in *GetPrevArticlesRequest, opts ...grpc.CallOption) (*GetPrevArticlesResponse, error)
 }
 
 type articleServiceClient struct {
@@ -44,8 +44,8 @@ func NewArticleServiceClient(cc grpc.ClientConnInterface) ArticleServiceClient {
 	return &articleServiceClient{cc}
 }
 
-func (c *articleServiceClient) GetArticleById(ctx context.Context, in *GetArticleByIdRequest, opts ...grpc.CallOption) (*SingleArticleResponse, error) {
-	out := new(SingleArticleResponse)
+func (c *articleServiceClient) GetArticleById(ctx context.Context, in *GetArticleByIdRequest, opts ...grpc.CallOption) (*GetArticleByIdResponse, error) {
+	out := new(GetArticleByIdResponse)
 	err := c.cc.Invoke(ctx, ArticleService_GetArticleById_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -53,8 +53,8 @@ func (c *articleServiceClient) GetArticleById(ctx context.Context, in *GetArticl
 	return out, nil
 }
 
-func (c *articleServiceClient) GetAllArticles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*MultipleArticleResponse, error) {
-	out := new(MultipleArticleResponse)
+func (c *articleServiceClient) GetAllArticles(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllArticlesResponse, error) {
+	out := new(GetAllArticlesResponse)
 	err := c.cc.Invoke(ctx, ArticleService_GetAllArticles_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -62,18 +62,18 @@ func (c *articleServiceClient) GetAllArticles(ctx context.Context, in *emptypb.E
 	return out, nil
 }
 
-func (c *articleServiceClient) GetNextPageArticles(ctx context.Context, in *GetNextPageArticlesRequest, opts ...grpc.CallOption) (*MultipleArticleResponse, error) {
-	out := new(MultipleArticleResponse)
-	err := c.cc.Invoke(ctx, ArticleService_GetNextPageArticles_FullMethodName, in, out, opts...)
+func (c *articleServiceClient) GetNextArticles(ctx context.Context, in *GetNextArticlesRequest, opts ...grpc.CallOption) (*GetNextArticlesResponse, error) {
+	out := new(GetNextArticlesResponse)
+	err := c.cc.Invoke(ctx, ArticleService_GetNextArticles_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *articleServiceClient) GetPrevPageArticles(ctx context.Context, in *GetPrevPageArticlesRequest, opts ...grpc.CallOption) (*MultipleArticleResponse, error) {
-	out := new(MultipleArticleResponse)
-	err := c.cc.Invoke(ctx, ArticleService_GetPrevPageArticles_FullMethodName, in, out, opts...)
+func (c *articleServiceClient) GetPrevArticles(ctx context.Context, in *GetPrevArticlesRequest, opts ...grpc.CallOption) (*GetPrevArticlesResponse, error) {
+	out := new(GetPrevArticlesResponse)
+	err := c.cc.Invoke(ctx, ArticleService_GetPrevArticles_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -84,10 +84,10 @@ func (c *articleServiceClient) GetPrevPageArticles(ctx context.Context, in *GetP
 // All implementations must embed UnimplementedArticleServiceServer
 // for forward compatibility
 type ArticleServiceServer interface {
-	GetArticleById(context.Context, *GetArticleByIdRequest) (*SingleArticleResponse, error)
-	GetAllArticles(context.Context, *emptypb.Empty) (*MultipleArticleResponse, error)
-	GetNextPageArticles(context.Context, *GetNextPageArticlesRequest) (*MultipleArticleResponse, error)
-	GetPrevPageArticles(context.Context, *GetPrevPageArticlesRequest) (*MultipleArticleResponse, error)
+	GetArticleById(context.Context, *GetArticleByIdRequest) (*GetArticleByIdResponse, error)
+	GetAllArticles(context.Context, *emptypb.Empty) (*GetAllArticlesResponse, error)
+	GetNextArticles(context.Context, *GetNextArticlesRequest) (*GetNextArticlesResponse, error)
+	GetPrevArticles(context.Context, *GetPrevArticlesRequest) (*GetPrevArticlesResponse, error)
 	mustEmbedUnimplementedArticleServiceServer()
 }
 
@@ -95,17 +95,17 @@ type ArticleServiceServer interface {
 type UnimplementedArticleServiceServer struct {
 }
 
-func (UnimplementedArticleServiceServer) GetArticleById(context.Context, *GetArticleByIdRequest) (*SingleArticleResponse, error) {
+func (UnimplementedArticleServiceServer) GetArticleById(context.Context, *GetArticleByIdRequest) (*GetArticleByIdResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetArticleById not implemented")
 }
-func (UnimplementedArticleServiceServer) GetAllArticles(context.Context, *emptypb.Empty) (*MultipleArticleResponse, error) {
+func (UnimplementedArticleServiceServer) GetAllArticles(context.Context, *emptypb.Empty) (*GetAllArticlesResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllArticles not implemented")
 }
-func (UnimplementedArticleServiceServer) GetNextPageArticles(context.Context, *GetNextPageArticlesRequest) (*MultipleArticleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetNextPageArticles not implemented")
+func (UnimplementedArticleServiceServer) GetNextArticles(context.Context, *GetNextArticlesRequest) (*GetNextArticlesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetNextArticles not implemented")
 }
-func (UnimplementedArticleServiceServer) GetPrevPageArticles(context.Context, *GetPrevPageArticlesRequest) (*MultipleArticleResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetPrevPageArticles not implemented")
+func (UnimplementedArticleServiceServer) GetPrevArticles(context.Context, *GetPrevArticlesRequest) (*GetPrevArticlesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPrevArticles not implemented")
 }
 func (UnimplementedArticleServiceServer) mustEmbedUnimplementedArticleServiceServer() {}
 
@@ -156,38 +156,38 @@ func _ArticleService_GetAllArticles_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ArticleService_GetNextPageArticles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetNextPageArticlesRequest)
+func _ArticleService_GetNextArticles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNextArticlesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ArticleServiceServer).GetNextPageArticles(ctx, in)
+		return srv.(ArticleServiceServer).GetNextArticles(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ArticleService_GetNextPageArticles_FullMethodName,
+		FullMethod: ArticleService_GetNextArticles_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ArticleServiceServer).GetNextPageArticles(ctx, req.(*GetNextPageArticlesRequest))
+		return srv.(ArticleServiceServer).GetNextArticles(ctx, req.(*GetNextArticlesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ArticleService_GetPrevPageArticles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetPrevPageArticlesRequest)
+func _ArticleService_GetPrevArticles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPrevArticlesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ArticleServiceServer).GetPrevPageArticles(ctx, in)
+		return srv.(ArticleServiceServer).GetPrevArticles(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: ArticleService_GetPrevPageArticles_FullMethodName,
+		FullMethod: ArticleService_GetPrevArticles_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ArticleServiceServer).GetPrevPageArticles(ctx, req.(*GetPrevPageArticlesRequest))
+		return srv.(ArticleServiceServer).GetPrevArticles(ctx, req.(*GetPrevArticlesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -208,12 +208,12 @@ var ArticleService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ArticleService_GetAllArticles_Handler,
 		},
 		{
-			MethodName: "GetNextPageArticles",
-			Handler:    _ArticleService_GetNextPageArticles_Handler,
+			MethodName: "GetNextArticles",
+			Handler:    _ArticleService_GetNextArticles_Handler,
 		},
 		{
-			MethodName: "GetPrevPageArticles",
-			Handler:    _ArticleService_GetPrevPageArticles_Handler,
+			MethodName: "GetPrevArticles",
+			Handler:    _ArticleService_GetPrevArticles_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -4,14 +4,18 @@ import "github.com/miyamo2/blogproto-gen/article/server/pb/internal"
 
 type GetArticleByIdRequest = internal.GetArticleByIdRequest
 
-type GetNextPageArticlesRequest = internal.GetNextPageArticlesRequest
+type GetNextArticlesRequest = internal.GetNextArticlesRequest
 
-type GetPrevPageArticlesRequest = internal.GetPrevPageArticlesRequest
+type GetPrevArticlesRequest = internal.GetPrevArticlesRequest
 
 type Article = internal.Article
 
 type Tag = internal.Tag
 
-type SingleArticleResponse = internal.SingleArticleResponse
+type GetAllArticlesResponse = internal.GetAllArticlesResponse
 
-type MultipleArticleResponse = internal.MultipleArticleResponse
+type GetArticleByIdResponse = internal.GetArticleByIdResponse
+
+type GetNextArticlesResponse = internal.GetNextArticlesResponse
+
+type GetPrevArticlesResponse = internal.GetPrevArticlesResponse
