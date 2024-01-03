@@ -2,14 +2,15 @@ package gorm
 
 import (
 	"context"
+	"regexp"
+	"strconv"
+	"testing"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-core/db"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"regexp"
-	"strconv"
-	"testing"
 )
 
 func TestStatement_Execute(t *testing.T) {
@@ -27,14 +28,18 @@ func TestStatement_Execute(t *testing.T) {
 
 		rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 		mock.ExpectBegin()
-		mock.ExpectQuery(regexp.QuoteMeta(
-			`SELECT "id" FROM "dummies"`)).
+		mock.ExpectPrepare(regexp.QuoteMeta(
+			`SELECT "id" FROM "dummies"`))
+		q := mock.ExpectPrepare(regexp.QuoteMeta(
+			`SELECT "id" FROM "dummies"`))
+		q.ExpectQuery().
 			WillReturnRows(rows)
 		mock.ExpectCommit()
 		dialector := postgres.New(postgres.Config{
 			Conn: sqlDB,
 		})
 		InvalidateDialector()
+		Invalidate()
 		InitializeDialector(&dialector)
 	}
 
@@ -109,26 +114,9 @@ func TestStatement_Execute(t *testing.T) {
 			args: args{
 				opts: []db.ExecuteOption{},
 			},
-			want:    want{out: "", err: errStatementTest},
-			wantErr: true,
-			beforeFunc: func() {
-				sqlDB, mock, err := sqlmock.New()
-				if err != nil {
-					panic(err)
-				}
-
-				rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
-				mock.ExpectBegin()
-				mock.ExpectQuery(regexp.QuoteMeta(
-					`SELECT "id" FROM "dummies"`)).
-					WillReturnRows(rows)
-				mock.ExpectRollback()
-				dialector := postgres.New(postgres.Config{
-					Conn: sqlDB,
-				})
-				InvalidateDialector()
-				InitializeDialector(&dialector)
-			},
+			want:       want{out: "", err: errStatementTest},
+			wantErr:    true,
+			beforeFunc: initializeConn,
 		},
 		"unhappy_path/dialector_is_nil": {
 			statementResult: func() *db.SingleStatementResult[string] {
@@ -148,6 +136,7 @@ func TestStatement_Execute(t *testing.T) {
 			wantErr: true,
 			beforeFunc: func() {
 				InvalidateDialector()
+				Invalidate()
 			},
 		},
 		"unhappy_path/statement_is_already_executed": {
@@ -179,6 +168,7 @@ func TestStatement_Execute(t *testing.T) {
 					Conn: sqlDB,
 				})
 				InvalidateDialector()
+				Invalidate()
 				InitializeDialector(&dialector)
 			},
 		},

@@ -3,14 +3,14 @@ package gorm
 import (
 	"context"
 	"fmt"
-	"github.com/miyamo2/blogapi-core/util/duration"
 	"log/slog"
+
+	"github.com/miyamo2/blogapi-core/util/duration"
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-core/db"
 	"github.com/miyamo2/blogapi-core/db/internal"
 	"github.com/miyamo2/blogapi-core/log"
-	"gorm.io/gorm"
 )
 
 var _ db.Transaction = (*Transaction)(nil)
@@ -29,38 +29,32 @@ func (t *Transaction) start(ctx context.Context) {
 	defer close(t.stmtQueue)
 	defer close(t.commit)
 	defer close(t.rollback)
+	defer close(t.errQueue)
 
-	conn, err := Get()
+	conn, err := Get(ctx)
 	if err != nil {
 		err = errors.Wrap(err, "failed to get gorm connection")
 		t.errQueue <- err
 		return
 	}
-	err = conn.Transaction(func(tx *gorm.DB) error {
-		for {
-			select {
-			case nx := <-t.stmtQueue:
-				err = nx.Statement.Execute(ctx, WithTransaction(conn))
-				if err != nil {
-					nx.ErrCh <- err
-					t.errQueue <- err
-					return err
-				}
-				nx.ErrCh <- nil
-			case <-t.commit:
-				conn.Commit()
-				return nil
-			case <-t.rollback:
-				conn.Rollback()
-				return nil
+	tx := conn.Begin()
+TX:
+	for {
+		select {
+		case nx := <-t.stmtQueue:
+			err = nx.Statement.Execute(ctx, WithTransaction(tx))
+			nx.ErrCh <- err
+			if err != nil {
+				t.errQueue <- err
 			}
+		case <-t.commit:
+			tx.Commit()
+			break TX
+		case <-t.rollback:
+			tx.Rollback()
+			break TX
 		}
-	})
-	if err != nil {
-		err = errors.Wrap(err, "failed to run gorm transaction")
-		t.errQueue <- err
 	}
-	t.errQueue <- nil
 }
 
 func (t *Transaction) SubscribeError() <-chan error {
@@ -130,7 +124,7 @@ func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
 	defer log.DefaultLogger().InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
-			slog.String("db.Transaction", fmt.Sprintf("%+v", *t)),
+			slog.String("conn.Transaction", fmt.Sprintf("%+v", *t)),
 			slog.Any("error", nil)))
 	go t.start(ctx)
 	return t, nil

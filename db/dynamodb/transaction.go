@@ -3,9 +3,10 @@ package dynamodb
 import (
 	"context"
 	"fmt"
-	"github.com/miyamo2/blogapi-core/util/duration"
 	"log/slog"
 	"sync"
+
+	"github.com/miyamo2/blogapi-core/util/duration"
 
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/cockroachdb/errors"
@@ -30,6 +31,7 @@ func (t *Transaction) start(ctx context.Context) {
 	defer close(t.stmtQueue)
 	defer close(t.commit)
 	defer close(t.rollback)
+	defer close(t.errQueue)
 
 	clt, err := Get()
 	mu := &sync.Mutex{}

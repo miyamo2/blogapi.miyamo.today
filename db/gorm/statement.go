@@ -47,18 +47,18 @@ func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error
 	tx := s.tx
 
 	if tx == nil {
-		conn, err := Get()
+		conn, err := Get(ctx)
 		if err != nil {
-			return errors.Wrap(err, "failed to get gorm db connection")
+			return errors.Wrap(err, "failed to get gorm conn connection")
 		}
-		err = conn.Transaction(func(tx *gorm.DB) error {
-			err := s.function(ctx, tx, s.out)
-			if err != nil {
-				return errors.Wrap(err, "failed to execute stmt")
-			}
-			return nil
-		})
-		return err
+		tx = conn.Begin()
+		err = s.function(ctx, tx, s.out)
+		if err != nil {
+			tx.Rollback()
+			return errors.Wrap(err, "failed to execute stmt")
+		}
+		tx.Commit()
+		return nil
 	}
 	return s.function(ctx, tx, s.out)
 }
