@@ -19,14 +19,3 @@
 
 # Go workspace file
 go.work
-
-# Default
-/shelf/
-/workspace.xml
-# Editor base
-/httpRequests/
-# Datasource local storage ignored files
-/dataSources/
-/dataSources.local.xml
-.idea/
-*.env
