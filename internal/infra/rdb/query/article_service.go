@@ -1,0 +1,154 @@
+package query
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+
+	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/blogapi-article-service/internal/infra/rdb/query/internal/entity"
+	"github.com/miyamo2/blogapi-core/db"
+	gwrapper "github.com/miyamo2/blogapi-core/db/gorm"
+	"github.com/miyamo2/blogapi-core/util/duration"
+	"gorm.io/gorm"
+)
+
+var ErrNotFound = errors.New("not found")
+
+type ArticleService struct{}
+
+func (a *ArticleService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[*Article]) db.Statement {
+	dw := duration.Start()
+	slog.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters",
+			slog.String("id", id),
+			slog.String("out", fmt.Sprintf("%v", out)),
+		))
+	stmt := gwrapper.NewStatement(
+		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
+			tx = tx.WithContext(ctx)
+			var rows []entity.ArticleTag
+			q := tx.Select(`"articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name"`).
+				Table("articles").
+				Joins(`LEFT OUTER JOIN "tags" ON "articles"."id" = ? AND "articles"."id" = "tags"."article_id"`, id)
+			q.Scan(&rows)
+			if len(rows) == 0 {
+				return errors.WithDetail(ErrNotFound, fmt.Sprintf("id: %v", id))
+			}
+			var article Article
+			for i, r := range rows {
+				if i == 0 {
+					article = NewArticle(
+						r.ID,
+						r.Title,
+						r.Body,
+						r.Thumbnail,
+						r.CreatedAt,
+						r.UpdatedAt,
+						WithTagsSize(len(rows)),
+					)
+				}
+				if r.TagID == nil || r.TagName == nil {
+					continue
+				}
+				article.AddTag(NewTag(*r.TagID, *r.TagName))
+			}
+			out.Set(&article)
+			return nil
+		}, out)
+	defer slog.InfoContext(ctx, "END",
+		slog.String("duration", dw.SDuration()),
+		slog.Group("return",
+			slog.String("stmt", fmt.Sprintf("%v", stmt))))
+	return stmt
+}
+
+func (a *ArticleService) GetAll(ctx context.Context, out *db.MultipleStatementResult[*Article], paginationOption ...db.PaginationOption) db.Statement {
+	dw := duration.Start()
+	pg := db.Pagination{}
+	for _, opt := range paginationOption {
+		opt(&pg)
+	}
+	slog.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters",
+			slog.String("out", fmt.Sprintf("%v", out)),
+		))
+	stmt := gwrapper.NewStatement(
+		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
+			var rows []entity.ArticleTag
+			tx = tx.WithContext(ctx)
+			q := tx.Select(`"articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name"`).
+				Joins(`LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id"`)
+
+			func() {
+				nxtPg := pg.IsNextPaging()
+				prevPg := pg.IsPreviousPaging()
+				subQ := tx.Select(`*`).Table("articles")
+				q.Table(`(?) AS "articles"`, subQ)
+				if !nxtPg && !prevPg {
+					// default
+					q.Order(`"articles"."id" ASC, "tags"."id" ASC NULLS FIRST`)
+					return
+				}
+				l := pg.Limit()
+				if l <= 0 {
+					// default
+					q.Order(`"articles"."id" ASC, "tags"."id" ASC NULLS FIRST`)
+					return
+				}
+				// must fetch one more row to check if there is more page.
+				subQ.Limit(l + 1)
+				c := pg.Cursor()
+				if nxtPg {
+					if c != "" {
+						subQ.Where(`"id" > ?`, c)
+					}
+					subQ.Order(`"id" ASC`)
+					q.Order(`"articles"."id" ASC, "tags"."id" ASC NULLS FIRST`)
+					return
+				}
+				if prevPg {
+					if c != "" {
+						subQ.Where(`"id" < ?`, c)
+					}
+					subQ.Order(`"id" DESC`)
+					q.Order(`"articles"."id" DESC, "tags"."id" ASC NULLS FIRST`)
+					return
+				}
+			}()
+			q.Scan(&rows)
+			articleMap := make(map[string]*Article)
+			result := make([]*Article, 0)
+			for _, r := range rows {
+				v, ok := articleMap[r.ID]
+				if !ok {
+					m := NewArticle(
+						r.ID,
+						r.Title,
+						r.Body,
+						r.Thumbnail,
+						r.CreatedAt,
+						r.UpdatedAt,
+					)
+					v = &m
+					articleMap[r.ID] = v
+					result = append(result, v)
+				}
+				if r.TagID == nil || r.TagName == nil {
+					continue
+				}
+				v.AddTag(NewTag(*r.TagID, *r.TagName))
+			}
+			out.Set(result)
+			return nil
+		}, out)
+	defer slog.InfoContext(ctx, "END",
+		slog.String("duration", dw.SDuration()),
+		slog.Group("return",
+			slog.String("stmt", fmt.Sprintf("%v", stmt))))
+	return stmt
+}
+
+func NewArticleService() *ArticleService {
+	return &ArticleService{}
+}
