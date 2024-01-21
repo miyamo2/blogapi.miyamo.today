@@ -27,5 +27,9 @@ var Usecase = fx.Options(
 			impl.NewGetNext,
 			fx.As(new(usecase.GetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto])),
 		),
+		fx.Annotate(
+			impl.NewGetPrev,
+			fx.As(new(usecase.GetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto])),
+		),
 	),
 )
