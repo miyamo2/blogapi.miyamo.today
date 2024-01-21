@@ -2,12 +2,10 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/google/uuid"
 	blogapicontext "github.com/miyamo2/blogapi-core/context"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
-	"strings"
 )
 
 func SetBlogAPIContextToContext(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
@@ -18,10 +16,8 @@ func SetBlogAPIContextToContext(ctx context.Context, next graphql.OperationHandl
 		if len(v) > 0 {
 			return v
 		}
-		// UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-		// X-Ray Trace ID: 1-xxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx
-		suuid := strings.ReplaceAll(uuid.New().String(), "-", "")
-		return fmt.Sprintf("1-%v-%v", suuid[0:8], suuid[8:])
+		ntx := newrelic.FromContext(ctx)
+		return ntx.GetLinkingMetadata().TraceID
 	}()
 	rid := func() string {
 		v := headers.Get("request_id")
@@ -32,4 +28,21 @@ func SetBlogAPIContextToContext(ctx context.Context, next graphql.OperationHandl
 	}()
 	ctx = blogapicontext.StoreToContext(ctx, blogapicontext.New(tid, rid, octx.OperationName, blogapicontext.RequestTypeGraphQL, headers, octx.Variables))
 	return next(ctx)
+}
+
+func StartNewRelicTransaction(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
+	txn := newrelic.FromContext(ctx)
+	oc := graphql.GetOperationContext(ctx)
+	txn.SetName(oc.Operation.Name)
+	res := next(ctx)
+	return res
+}
+
+func StartNewRelicSegment(ctx context.Context, next graphql.RootResolver) graphql.Marshaler {
+	rslvrName := graphql.GetRootFieldContext(ctx).Object
+	txn := newrelic.FromContext(ctx)
+	sgm := txn.StartSegment(rslvrName)
+	defer sgm.End()
+	m := next(ctx)
+	return m
 }
