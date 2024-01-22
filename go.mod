@@ -8,7 +8,6 @@ require (
 	github.com/Songmu/flextime v0.1.0
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.26.8
 	github.com/cockroachdb/errors v1.11.1
-	github.com/google/uuid v1.5.0
 	github.com/newrelic/go-agent/v3 v3.29.0
 	github.com/oklog/ulid/v2 v2.1.0
 	go.uber.org/mock v0.4.0
@@ -30,6 +29,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.5.0 // indirect
