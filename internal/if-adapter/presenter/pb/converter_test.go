@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"context"
 	"github.com/google/go-cmp/cmp"
 	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogproto-gen/article/server/pb"
@@ -10,6 +11,7 @@ import (
 
 func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		from func() *dto.GetNextOutDto
 	}
 	type want struct {
@@ -23,6 +25,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/multiple": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetNextOutDto {
 					o := dto.NewGetNextOutDto(
 						[]dto.Article{
@@ -101,6 +104,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 		},
 		"happy_path/multiple/still_exists": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetNextOutDto {
 					o := dto.NewGetNextOutDto(
 						[]dto.Article{
@@ -179,6 +183,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 		},
 		"happy_path/single": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetNextOutDto {
 					o := dto.NewGetNextOutDto(
 						[]dto.Article{
@@ -227,6 +232,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 		},
 		"happy_path/single/still_exists": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetNextOutDto {
 					o := dto.NewGetNextOutDto(
 						[]dto.Article{
@@ -277,7 +283,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := NewConverter()
-			got, ok := c.ToGetNextArticlesResponse(tt.args.from())
+			got, ok := c.ToGetNextArticlesResponse(tt.args.ctx, tt.args.from())
 			if tt.want.ok != ok {
 				t.Errorf("ToGetNextArticlesResponse() ok = %v, want %v", ok, tt.want.ok)
 			}
@@ -290,6 +296,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 
 func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		from func() *dto.GetAllOutDto
 	}
 	type want struct {
@@ -303,6 +310,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/multiple": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetAllOutDto {
 					o := dto.NewGetAllOutDto(
 						[]dto.Article{
@@ -380,6 +388,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 		},
 		"happy_path/multiple/still_exists": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetAllOutDto {
 					o := dto.NewGetAllOutDto(
 						[]dto.Article{
@@ -457,6 +466,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 		},
 		"happy_path/single": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetAllOutDto {
 					o := dto.NewGetAllOutDto(
 						[]dto.Article{
@@ -504,6 +514,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 		},
 		"happy_path/single/still_exists": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetAllOutDto {
 					o := dto.NewGetAllOutDto(
 						[]dto.Article{
@@ -553,7 +564,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := NewConverter()
-			got, ok := c.ToGetAllArticlesResponse(tt.args.from())
+			got, ok := c.ToGetAllArticlesResponse(tt.args.ctx, tt.args.from())
 			if tt.want.ok != ok {
 				t.Errorf("ToGetAllArticlesResponse() ok = %v, want %v", ok, tt.want.ok)
 			}
@@ -566,6 +577,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 
 func TestConverter_ToGetByIdArticlesResponse(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		from func() *dto.GetByIdOutDto
 	}
 	type want struct {
@@ -579,6 +591,7 @@ func TestConverter_ToGetByIdArticlesResponse(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetByIdOutDto {
 					o := dto.NewGetByIdOutDto(
 						"1",
@@ -623,7 +636,7 @@ func TestConverter_ToGetByIdArticlesResponse(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := NewConverter()
-			got, ok := c.ToGetByIdArticlesResponse(tt.args.from())
+			got, ok := c.ToGetByIdArticlesResponse(tt.args.ctx, tt.args.from())
 			if tt.want.ok != ok {
 				t.Errorf("ToGetByIdArticlesResponse() ok = %v, want %v", ok, tt.want.ok)
 			}

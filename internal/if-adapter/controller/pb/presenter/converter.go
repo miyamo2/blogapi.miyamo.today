@@ -2,22 +2,23 @@
 package presenter
 
 import (
+	"context"
 	"github.com/miyamo2/blogapi-article-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/miyamo2/blogproto-gen/article/server/pb"
 )
 
 type ToGetNextConverter[T usecase.Tag, A usecase.Article[T], O usecase.GetNextOutDto[T, A]] interface {
-	ToGetNextArticlesResponse(from O) (response *pb.GetNextArticlesResponse, ok bool)
+	ToGetNextArticlesResponse(ctx context.Context, from O) (response *pb.GetNextArticlesResponse, ok bool)
 }
 
 type ToGetAllConverter[T usecase.Tag, A usecase.Article[T], O usecase.GetAllOutDto[T, A]] interface {
-	ToGetAllArticlesResponse(from O) (response *pb.GetAllArticlesResponse, ok bool)
+	ToGetAllArticlesResponse(ctx context.Context, from O) (response *pb.GetAllArticlesResponse, ok bool)
 }
 
 type ToGetByIdConverter[T usecase.Tag, A usecase.Article[T]] interface {
-	ToGetByIdArticlesResponse(from A) (response *pb.GetArticleByIdResponse, ok bool)
+	ToGetByIdArticlesResponse(ctx context.Context, from A) (response *pb.GetArticleByIdResponse, ok bool)
 }
 
 type ToGetPrevConverter[T usecase.Tag, A usecase.Article[T], O usecase.GetPrevOutDto[T, A]] interface {
-	ToGetPrevArticlesResponse(from O) (response *pb.GetPrevArticlesResponse, ok bool)
+	ToGetPrevArticlesResponse(ctx context.Context, from O) (response *pb.GetPrevArticlesResponse, ok bool)
 }

@@ -67,7 +67,7 @@ func TestArticleService_GetById(t *testing.T) {
 						"tag1",
 						"test")
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = $1 AND "articles"."id" = "tags"."article_id"`))
+					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE "id" = $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id"`))
 				mq.ExpectQuery().
 					WithArgs("1").WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -119,7 +119,7 @@ func TestArticleService_GetById(t *testing.T) {
 					nil,
 					nil)
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = $1 AND "articles"."id" = "tags"."article_id"`))
+					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE "id" = $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id"`))
 				mq.ExpectQuery().
 					WithArgs("1").WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -161,7 +161,7 @@ func TestArticleService_GetById(t *testing.T) {
 				}
 				rows := sqlmock.NewRows(articleTable)
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = $1 AND "articles"."id" = "tags"."article_id"`))
+					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE "id" = $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id"`))
 				mq.ExpectQuery().
 					WithArgs("1").WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -272,7 +272,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						"tag1",
 						"test")
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles") AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" ASC, "tags"."id" ASC NULLS FIRST`))
+					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles") AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
 				mq.ExpectQuery().
 					WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -350,7 +350,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						"tag")
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" DESC, "tags"."id" ASC NULLS FIRST`))
+						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" DESC, "tags"."id" NULLS FIRST`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -418,9 +418,9 @@ func TestArticleService_GetAll(t *testing.T) {
 						"tag")
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE "id" < $1 ORDER BY "id" DESC LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" DESC, "tags"."id" ASC NULLS FIRST`))
+						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND  "id" < $2 ORDER BY "id" DESC LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" DESC, "tags"."id" NULLS FIRST`))
 				mq.ExpectQuery().
-					WithArgs("1").
+					WithArgs("1", "1").
 					WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -488,7 +488,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						"tag")
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles") AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" ASC, "tags"."id" ASC NULLS FIRST`))
+						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles") AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -556,7 +556,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						"tag")
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" DESC, "tags"."id" ASC NULLS FIRST`))
+						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" DESC, "tags"."id" NULLS FIRST`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -624,7 +624,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						"tag")
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" ASC LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" ASC, "tags"."id" ASC NULLS FIRST`))
+						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -692,9 +692,9 @@ func TestArticleService_GetAll(t *testing.T) {
 						"tag")
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE "id" > $1 ORDER BY "id" ASC LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" ASC, "tags"."id" ASC NULLS FIRST`))
+						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND  "id" > $2 ORDER BY "id" LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
 				mq.ExpectQuery().
-					WithArgs("1").
+					WithArgs("1", "1").
 					WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -762,7 +762,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						"tag")
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles") AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" ASC, "tags"."id" ASC NULLS FIRST`))
+						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles") AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -830,7 +830,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						"tag")
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" ASC LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" ASC, "tags"."id" ASC NULLS FIRST`))
+						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT 2) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,

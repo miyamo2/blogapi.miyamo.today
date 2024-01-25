@@ -51,7 +51,7 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto]) {
 				conv.EXPECT().
-					ToGetByIdArticlesResponse(&from).
+					ToGetByIdArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -89,7 +89,7 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto]) {
 				conv.EXPECT().
-					ToGetByIdArticlesResponse(gomock.Any()).
+					ToGetByIdArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
@@ -112,7 +112,7 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto]) {
 				conv.EXPECT().
-					ToGetByIdArticlesResponse(&from).
+					ToGetByIdArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
 					Times(1)
 			},
@@ -213,7 +213,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllArticlesResponse(&from).
+					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -288,7 +288,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllArticlesResponse(&from).
+					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -330,7 +330,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllArticlesResponse(&from).
+					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -353,7 +353,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllArticlesResponse(gomock.Any()).
+					ToGetAllArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
@@ -375,7 +375,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllArticlesResponse(&from).
+					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
 					Times(1)
 			},
@@ -476,7 +476,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextArticlesResponse(&from).
+					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -556,7 +556,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextArticlesResponse(&from).
+					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -603,7 +603,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextArticlesResponse(&from).
+					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -631,7 +631,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextArticlesResponse(gomock.Any()).
+					ToGetNextArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
@@ -657,7 +657,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextArticlesResponse(&from).
+					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
 					Times(1)
 			},
@@ -762,7 +762,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevArticlesResponse(&from).
+					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -842,7 +842,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevArticlesResponse(&from).
+					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -889,7 +889,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevArticlesResponse(&from).
+					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -917,7 +917,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevArticlesResponse(gomock.Any()).
+					ToGetPrevArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
@@ -943,7 +943,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevArticlesResponse(&from).
+					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
 					Times(1)
 			},

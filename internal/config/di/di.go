@@ -6,6 +6,8 @@ import (
 )
 
 var Container = fx.Options(
+	provider.NewRelic,
+	provider.Logger,
 	provider.Gorm,
 	provider.TxManager,
 	provider.QueryService,

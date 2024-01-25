@@ -2,7 +2,8 @@ package usecase
 
 import (
 	"context"
-	"fmt"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"log/slog"
 
 	"github.com/cockroachdb/errors"
@@ -20,16 +21,19 @@ type GetAll struct {
 }
 
 func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("Execute").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN")
 	tx, err := u.txmn.GetAndStart(ctx)
 	if err != nil {
 		err := errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		slog.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.GetAllOutDto", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
+				slog.Any("error", err)))
 		return nil, err
 	}
 	errCh := tx.SubscribeError()
@@ -39,11 +43,12 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 	err = tx.ExecuteStatement(ctx, stmt)
 	if err != nil {
 		err := errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		slog.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.GetAllOutDto", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
+				slog.Any("error", err)))
 		return nil, err
 	}
 	qres := out.StrictGet()
@@ -82,13 +87,14 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 			break
 		}
 		if err != nil {
+			nrtx.NoticeError(nrpkgerrors.Wrap(err))
 			slog.WarnContext(ctx, "transaction has error. err: %+v", err)
 		}
 	}
 	slog.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*dto.GetAllOutDto", fmt.Sprintf("%v", result)),
+			slog.Any("*dto.GetAllOutDto", result),
 			slog.Any("error", nil)))
 	return &result, nil
 }

@@ -1,13 +1,25 @@
 package pb
 
 import (
+	"context"
 	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogproto-gen/article/server/pb"
+	"github.com/newrelic/go-agent/v3/newrelic"
+	"log/slog"
 )
 
 type Converter struct{}
 
-func (c Converter) ToGetNextArticlesResponse(from *dto.GetNextOutDto) (response *pb.GetNextArticlesResponse, ok bool) {
+func (c Converter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetNextOutDto) (response *pb.GetNextArticlesResponse, ok bool) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToGetNextArticlesResponse").End()
+	slog.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", from)))
+	defer func() {
+		slog.InfoContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("*pb.GetNextArticlesResponse", response),
+				slog.Bool("ok", ok)))
+	}()
 	fa := from.Articles()
 	pa := make([]*pb.Article, 0, len(fa))
 	for _, a := range fa {
@@ -37,7 +49,16 @@ func (c Converter) ToGetNextArticlesResponse(from *dto.GetNextOutDto) (response 
 	return
 }
 
-func (c Converter) ToGetAllArticlesResponse(from *dto.GetAllOutDto) (response *pb.GetAllArticlesResponse, ok bool) {
+func (c Converter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAllOutDto) (response *pb.GetAllArticlesResponse, ok bool) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToGetAllArticlesResponse").End()
+	slog.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", from)))
+	defer func() {
+		slog.InfoContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("*pb.GetAllArticlesResponse", response),
+				slog.Bool("ok", ok)))
+	}()
 	fa := from.Articles()
 	pa := make([]*pb.Article, 0, len(fa))
 	for _, a := range fa {
@@ -66,7 +87,16 @@ func (c Converter) ToGetAllArticlesResponse(from *dto.GetAllOutDto) (response *p
 	return
 }
 
-func (c Converter) ToGetByIdArticlesResponse(from *dto.GetByIdOutDto) (response *pb.GetArticleByIdResponse, ok bool) {
+func (c Converter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *pb.GetArticleByIdResponse, ok bool) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToGetByIdArticlesResponse").End()
+	slog.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", from)))
+	defer func() {
+		slog.InfoContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("*pb.GetArticleByIdResponsee", response),
+				slog.Bool("ok", ok)))
+	}()
 	ft := from.Tags()
 	pt := make([]*pb.Tag, 0, len(ft))
 	for _, t := range ft {
@@ -90,7 +120,16 @@ func (c Converter) ToGetByIdArticlesResponse(from *dto.GetByIdOutDto) (response 
 	return
 }
 
-func (c Converter) ToGetPrevArticlesResponse(from *dto.GetPrevOutDto) (response *pb.GetPrevArticlesResponse, ok bool) {
+func (c Converter) ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *pb.GetPrevArticlesResponse, ok bool) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToGetPrevArticlesResponse").End()
+	slog.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", from)))
+	defer func() {
+		slog.InfoContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("*pb.GetPrevArticlesResponse", response),
+				slog.Bool("ok", ok)))
+	}()
 	fa := from.Articles()
 	pa := make([]*pb.Article, 0, len(fa))
 	for _, a := range fa {

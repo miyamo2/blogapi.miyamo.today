@@ -2,13 +2,14 @@ package pb
 
 import (
 	"context"
-	"fmt"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi-article-service/internal/if-adapter/controller/pb/presenter"
 	"github.com/miyamo2/blogapi-article-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/miyamo2/blogapi-core/util/duration"
 	"github.com/miyamo2/blogproto-gen/article/server/pb"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"log/slog"
 )
@@ -35,6 +36,8 @@ var (
 
 // GetAllArticles is implementation of pb.ArticleServiceServer.GetAllArticles
 func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.Empty) (*pb.GetAllArticlesResponse, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetAllArticles").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
@@ -46,11 +49,12 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*pb.GetAllArticlesResponse", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
+				slog.Any("error", err)))
 		return nil, err
 	}
-	res, ok := s.getAllConv.ToGetAllArticlesResponse(oDto)
+	res, ok := s.getAllConv.ToGetAllArticlesResponse(ctx, oDto)
 	if !ok {
+		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetAllArticlesFailed))
 		return nil, ErrConversionToGetAllArticlesFailed
 	}
 	slog.InfoContext(ctx, "END",
@@ -63,6 +67,8 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 
 // GetNextArticles is implementation of pb.ArticleServiceServer.GetNextArticles
 func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *pb.GetNextArticlesRequest) (*pb.GetNextArticlesResponse, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetNextArticles").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
@@ -74,23 +80,26 @@ func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *pb.GetNe
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*pb.GetNextArticlesResponse", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
+				slog.Any("error", err)))
 		return nil, err
 	}
-	res, ok := s.getNextConv.ToGetNextArticlesResponse(oDto)
+	res, ok := s.getNextConv.ToGetNextArticlesResponse(ctx, oDto)
 	if !ok {
+		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetNextArticlesFailed))
 		return nil, ErrConversionToGetNextArticlesFailed
 	}
 	slog.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*pb.GetNextArticlesResponse", res.String()),
+			slog.Any("*pb.GetNextArticlesResponse", *res),
 			slog.Any("error", nil)))
 	return res, nil
 }
 
 // GetArticleById is implementation of pb.ArticleServiceServer.GetArticleById
 func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *pb.GetArticleByIdRequest) (*pb.GetArticleByIdResponse, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetArticleById").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
@@ -102,23 +111,26 @@ func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *pb.GetArt
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*pb.GetArticleByIdResponse", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
+				slog.Any("error", err)))
 		return nil, err
 	}
-	res, ok := s.getByIdConv.ToGetByIdArticlesResponse(oDto)
+	res, ok := s.getByIdConv.ToGetByIdArticlesResponse(ctx, oDto)
 	if !ok {
+		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetArticleByIdFailed))
 		return nil, ErrConversionToGetArticleByIdFailed
 	}
 	slog.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*pb.GetArticleByIdResponse", res.String()),
+			slog.Any("*pb.GetArticleByIdResponse", *res),
 			slog.Any("error", nil)))
 	return res, nil
 }
 
 // GetPrevArticles is implementation of pb.ArticleServiceServer.GetPrevArticles
 func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *pb.GetPrevArticlesRequest) (*pb.GetPrevArticlesResponse, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetPrevArticles").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
@@ -130,17 +142,18 @@ func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *pb.GetPr
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*pb.GetPrevArticlesResponse", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
+				slog.Any("error", err)))
 		return nil, err
 	}
-	res, ok := s.getPrevConv.ToGetPrevArticlesResponse(oDto)
+	res, ok := s.getPrevConv.ToGetPrevArticlesResponse(ctx, oDto)
 	if !ok {
+		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetPrevArticlesFailed))
 		return nil, ErrConversionToGetPrevArticlesFailed
 	}
 	slog.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*pb.GetPrevArticlesResponse", res.String()),
+			slog.Any("*pb.GetPrevArticlesResponse", *res),
 			slog.Any("error", nil)))
 	return res, nil
 }

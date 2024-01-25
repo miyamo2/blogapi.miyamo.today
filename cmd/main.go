@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/joho/godotenv"
 	"github.com/miyamo2/blogapi-article-service/internal/config/di"
-	"github.com/miyamo2/blogapi-core/log"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -15,7 +14,6 @@ import (
 func init() {
 	// only for local development
 	_ = godotenv.Load(".env")
-	slog.SetDefault(log.DefaultLogger())
 }
 
 func main() {
@@ -27,7 +25,11 @@ func main() {
 					OnStart: func(context.Context) error {
 						slog.Info("start gRPC server.", slog.String("address", listener.Addr().String()))
 						reflection.Register(srv)
-						go func() { srv.Serve(listener) }()
+						go func() {
+							if err := srv.Serve(listener); err != nil {
+								slog.Info(err.Error())
+							}
+						}()
 						return nil
 					},
 					OnStop: func(ctx context.Context) error {
