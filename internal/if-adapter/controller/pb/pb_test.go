@@ -2,8 +2,9 @@ package pb
 
 import (
 	"context"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"testing"
+
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
@@ -54,7 +55,7 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Article, *dto.GetByIdOutDto]) {
 				conv.EXPECT().
-					ToGetByIdTagResponse(&from).
+					ToGetByIdTagResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -91,7 +92,7 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Article, *dto.GetByIdOutDto]) {
 				conv.EXPECT().
-					ToGetByIdTagResponse(gomock.Any()).
+					ToGetByIdTagResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
@@ -114,7 +115,7 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Article, *dto.GetByIdOutDto]) {
 				conv.EXPECT().
-					ToGetByIdTagResponse(&from).
+					ToGetByIdTagResponse(gomock.Any(), &from).
 					Return(nil, false).
 					Times(1)
 			},
@@ -205,7 +206,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllTagsResponse(&from).
+					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -266,7 +267,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllTagsResponse(&from).
+					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -339,7 +340,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllTagsResponse(&from).
+					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -432,7 +433,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllTagsResponse(&from).
+					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -496,7 +497,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllTagsResponse(&from).
+					ToGetAllTagsResponse(gomock.Any(), &from).
 					Times(0)
 			},
 			args: args{
@@ -517,7 +518,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
 				conv.EXPECT().
-					ToGetAllTagsResponse(&from).
+					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(nil, false).
 					Times(1)
 			},
@@ -606,7 +607,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(&from).
+					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -662,7 +663,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(&from).
+					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -723,7 +724,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(&from).
+					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -791,7 +792,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(&from).
+					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -863,7 +864,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(&from).
+					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -942,7 +943,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(&from).
+					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1032,7 +1033,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(&from).
+					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1137,7 +1138,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(&from).
+					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1173,7 +1174,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(gomock.Any()).
+					ToGetNextTagsResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
@@ -1197,7 +1198,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
 				conv.EXPECT().
-					ToGetNextTagsResponse(&from).
+					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(nil, false).
 					Times(1)
 			},
@@ -1287,7 +1288,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(&from).
+					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1343,7 +1344,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(&from).
+					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1404,7 +1405,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(&from).
+					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1472,7 +1473,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(&from).
+					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1544,7 +1545,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(&from).
+					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1623,7 +1624,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(&from).
+					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1713,7 +1714,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(&from).
+					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1818,7 +1819,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(&from).
+					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
 					Times(1)
 			},
@@ -1854,7 +1855,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(gomock.Any()).
+					ToGetPrevTagsResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
@@ -1878,7 +1879,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
 				conv.EXPECT().
-					ToGetPrevTagsResponse(&from).
+					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(nil, false).
 					Times(1)
 			},

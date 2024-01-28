@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -11,6 +12,7 @@ import (
 
 func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		from func() *dto.GetByIdOutDto
 	}
 	type want struct {
@@ -24,6 +26,7 @@ func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetByIdOutDto {
 					o := dto.NewGetByIdOutDto(
 						"tag1", "1",
@@ -63,7 +66,7 @@ func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := NewConverter()
-			got, ok := c.ToGetByIdTagResponse(tt.args.from())
+			got, ok := c.ToGetByIdTagResponse(tt.args.ctx, tt.args.from())
 			if tt.want.ok != ok {
 				t.Errorf("ToGetByIdTagResponse() ok = %v, want %v", ok, tt.want.ok)
 			}
@@ -76,6 +79,7 @@ func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 
 func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		from func() *dto.GetAllOutDto
 	}
 	type want struct {
@@ -89,6 +93,7 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetAllOutDto {
 					o := dto.NewGetAllOutDto()
 					o = o.WithTagDto(
@@ -158,7 +163,7 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := NewConverter()
-			got, ok := c.ToGetAllTagsResponse(tt.args.from())
+			got, ok := c.ToGetAllTagsResponse(tt.args.ctx, tt.args.from())
 			if tt.want.ok != ok {
 				t.Errorf("ToGetByIdTagResponse() ok = %v, want %v", ok, tt.want.ok)
 			}
@@ -171,6 +176,7 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 
 func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		from func() *dto.GetNextOutDto
 	}
 	type want struct {
@@ -185,6 +191,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/still_exists": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetNextOutDto {
 					o := dto.NewGetNextOutDto(true)
 					o = o.WithTagDto(
@@ -322,7 +329,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := NewConverter()
-			got, ok := c.ToGetNextTagsResponse(tt.args.from())
+			got, ok := c.ToGetNextTagsResponse(tt.args.ctx, tt.args.from())
 			if tt.want.ok != ok {
 				t.Errorf("ToGetNextTagsResponse() ok = %v, want %v", ok, tt.want.ok)
 			}
@@ -335,6 +342,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 
 func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 	type args struct {
+		ctx  context.Context
 		from func() *dto.GetPrevOutDto
 	}
 	type want struct {
@@ -486,7 +494,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := NewConverter()
-			got, ok := c.ToGetPrevTagsResponse(tt.args.from())
+			got, ok := c.ToGetPrevTagsResponse(tt.args.ctx, tt.args.from())
 			if tt.want.ok != ok {
 				t.Errorf("ToGetPrevTagsResponse() ok = %v, want %v", ok, tt.want.ok)
 			}

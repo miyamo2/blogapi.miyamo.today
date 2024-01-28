@@ -1,11 +1,13 @@
 package provider
 
 import (
+	"net"
+	"os"
+
 	"github.com/miyamo2/blogapi-tag-service/internal/infra/tcp"
 	"go.uber.org/fx"
-	"net"
 )
 
 var Tcp = fx.Options(
-	fx.Provide(func() net.Listener { return tcp.MustListen(tcp.WithPort("8080")) }),
+	fx.Provide(func() net.Listener { return tcp.MustListen(tcp.WithPort(os.Getenv("PORT"))) }),
 )

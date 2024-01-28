@@ -3,8 +3,11 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"github.com/miyamo2/blogapi-tag-service/internal/infra/rdb/query/model"
 	"log/slog"
+
+	"github.com/miyamo2/blogapi-tag-service/internal/infra/rdb/query/model"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-core/db"
@@ -20,6 +23,8 @@ type GetById struct {
 }
 
 func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByIdOutDto, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("Execute").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
@@ -32,6 +37,7 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 			slog.Group("return",
 				slog.Any("*dto.GetByIdOutDto", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
 	errCh := tx.SubscribeError()
@@ -46,6 +52,7 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 			slog.Group("return",
 				slog.Any("*dto.GetByIdOutDto", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
 	qres := out.StrictGet()
@@ -73,6 +80,7 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 			break
 		}
 		if err != nil {
+			nrtx.NoticeError(nrpkgerrors.Wrap(err))
 			slog.WarnContext(ctx, "transaction has error. err: %+v", err)
 		}
 	}

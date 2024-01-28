@@ -1,15 +1,19 @@
 package pb
 
 import (
+	"context"
 	"github.com/miyamo2/blogapi-tag-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogproto-gen/tag/server/pb"
+	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 // Converter is am implementation of presenter.ToGetByIdConverter
 type Converter struct{}
 
 // ToGetByIdTagResponse is an implementation of presenter.ToGetByIdConverter#ToGetByIdTagResponse
-func (c Converter) ToGetByIdTagResponse(from *dto.GetByIdOutDto) (response *pb.GetTagByIdResponse, ok bool) {
+func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *pb.GetTagByIdResponse, ok bool) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToGetByIdTagResponse").End()
 	fa := from.Articles()
 	pa := make([]*pb.Article, 0, len(fa))
 	for _, a := range fa {
@@ -34,7 +38,9 @@ func (c Converter) ToGetByIdTagResponse(from *dto.GetByIdOutDto) (response *pb.G
 }
 
 // ToGetAllTagsResponse is an implementation of presenter.ToGetAllConverter#ToGetAllTagsResponse
-func (c Converter) ToGetAllTagsResponse(from *dto.GetAllOutDto) (response *pb.GetAllTagsResponse, ok bool) {
+func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOutDto) (response *pb.GetAllTagsResponse, ok bool) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToGetAllTagsResponse").End()
 	ft := from.Tags()
 	pt := make([]*pb.Tag, 0, len(ft))
 	for _, t := range ft {
@@ -63,7 +69,9 @@ func (c Converter) ToGetAllTagsResponse(from *dto.GetAllOutDto) (response *pb.Ge
 }
 
 // ToGetNextTagsResponse is an implementation of presenter.ToGetNextConverter#ToGetNextTagsResponse
-func (c Converter) ToGetNextTagsResponse(from *dto.GetNextOutDto) (response *pb.GetNextTagResponse, ok bool) {
+func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextOutDto) (response *pb.GetNextTagResponse, ok bool) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToGetNextTagsResponse").End()
 	ft := from.Tags()
 	pt := make([]*pb.Tag, 0, len(ft))
 	for _, t := range ft {
@@ -93,7 +101,9 @@ func (c Converter) ToGetNextTagsResponse(from *dto.GetNextOutDto) (response *pb.
 }
 
 // ToGetPrevTagsResponse is an implementation of presenter.ToGetPrevConverter#ToGetPrevTagsResponse
-func (c Converter) ToGetPrevTagsResponse(from *dto.GetPrevOutDto) (response *pb.GetPrevTagResponse, ok bool) {
+func (c Converter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *pb.GetPrevTagResponse, ok bool) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToGetPrevTagsResponse").End()
 	ft := from.Tags()
 	pt := make([]*pb.Tag, 0, len(ft))
 	for _, t := range ft {

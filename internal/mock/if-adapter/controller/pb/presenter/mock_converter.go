@@ -9,6 +9,7 @@
 package presenter
 
 import (
+	context "context"
 	reflect "reflect"
 
 	usecase "github.com/miyamo2/blogapi-tag-service/internal/if-adapter/controller/pb/usecase"
@@ -40,18 +41,18 @@ func (m *MockToGetByIdConverter[A, T]) EXPECT() *MockToGetByIdConverterMockRecor
 }
 
 // ToGetByIdTagResponse mocks base method.
-func (m *MockToGetByIdConverter[A, T]) ToGetByIdTagResponse(from T) (*pb.GetTagByIdResponse, bool) {
+func (m *MockToGetByIdConverter[A, T]) ToGetByIdTagResponse(ctx context.Context, from T) (*pb.GetTagByIdResponse, bool) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ToGetByIdTagResponse", from)
+	ret := m.ctrl.Call(m, "ToGetByIdTagResponse", ctx, from)
 	ret0, _ := ret[0].(*pb.GetTagByIdResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // ToGetByIdTagResponse indicates an expected call of ToGetByIdTagResponse.
-func (mr *MockToGetByIdConverterMockRecorder[A, T]) ToGetByIdTagResponse(from any) *gomock.Call {
+func (mr *MockToGetByIdConverterMockRecorder[A, T]) ToGetByIdTagResponse(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetByIdTagResponse", reflect.TypeOf((*MockToGetByIdConverter[A, T])(nil).ToGetByIdTagResponse), from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetByIdTagResponse", reflect.TypeOf((*MockToGetByIdConverter[A, T])(nil).ToGetByIdTagResponse), ctx, from)
 }
 
 // MockToGetAllConverter is a mock of ToGetAllConverter interface.
@@ -78,18 +79,18 @@ func (m *MockToGetAllConverter[A, T, O]) EXPECT() *MockToGetAllConverterMockReco
 }
 
 // ToGetAllTagsResponse mocks base method.
-func (m *MockToGetAllConverter[A, T, O]) ToGetAllTagsResponse(from O) (*pb.GetAllTagsResponse, bool) {
+func (m *MockToGetAllConverter[A, T, O]) ToGetAllTagsResponse(ctx context.Context, from O) (*pb.GetAllTagsResponse, bool) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ToGetAllTagsResponse", from)
+	ret := m.ctrl.Call(m, "ToGetAllTagsResponse", ctx, from)
 	ret0, _ := ret[0].(*pb.GetAllTagsResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // ToGetAllTagsResponse indicates an expected call of ToGetAllTagsResponse.
-func (mr *MockToGetAllConverterMockRecorder[A, T, O]) ToGetAllTagsResponse(from any) *gomock.Call {
+func (mr *MockToGetAllConverterMockRecorder[A, T, O]) ToGetAllTagsResponse(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetAllTagsResponse", reflect.TypeOf((*MockToGetAllConverter[A, T, O])(nil).ToGetAllTagsResponse), from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetAllTagsResponse", reflect.TypeOf((*MockToGetAllConverter[A, T, O])(nil).ToGetAllTagsResponse), ctx, from)
 }
 
 // MockToGetNextConverter is a mock of ToGetNextConverter interface.
@@ -116,18 +117,18 @@ func (m *MockToGetNextConverter[A, T, O]) EXPECT() *MockToGetNextConverterMockRe
 }
 
 // ToGetNextTagsResponse mocks base method.
-func (m *MockToGetNextConverter[A, T, O]) ToGetNextTagsResponse(from O) (*pb.GetNextTagResponse, bool) {
+func (m *MockToGetNextConverter[A, T, O]) ToGetNextTagsResponse(ctx context.Context, from O) (*pb.GetNextTagResponse, bool) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ToGetNextTagsResponse", from)
+	ret := m.ctrl.Call(m, "ToGetNextTagsResponse", ctx, from)
 	ret0, _ := ret[0].(*pb.GetNextTagResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // ToGetNextTagsResponse indicates an expected call of ToGetNextTagsResponse.
-func (mr *MockToGetNextConverterMockRecorder[A, T, O]) ToGetNextTagsResponse(from any) *gomock.Call {
+func (mr *MockToGetNextConverterMockRecorder[A, T, O]) ToGetNextTagsResponse(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetNextTagsResponse", reflect.TypeOf((*MockToGetNextConverter[A, T, O])(nil).ToGetNextTagsResponse), from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetNextTagsResponse", reflect.TypeOf((*MockToGetNextConverter[A, T, O])(nil).ToGetNextTagsResponse), ctx, from)
 }
 
 // MockToGetPrevConverter is a mock of ToGetPrevConverter interface.
@@ -154,16 +155,16 @@ func (m *MockToGetPrevConverter[A, T, O]) EXPECT() *MockToGetPrevConverterMockRe
 }
 
 // ToGetPrevTagsResponse mocks base method.
-func (m *MockToGetPrevConverter[A, T, O]) ToGetPrevTagsResponse(from O) (*pb.GetPrevTagResponse, bool) {
+func (m *MockToGetPrevConverter[A, T, O]) ToGetPrevTagsResponse(ctx context.Context, from O) (*pb.GetPrevTagResponse, bool) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ToGetPrevTagsResponse", from)
+	ret := m.ctrl.Call(m, "ToGetPrevTagsResponse", ctx, from)
 	ret0, _ := ret[0].(*pb.GetPrevTagResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // ToGetPrevTagsResponse indicates an expected call of ToGetPrevTagsResponse.
-func (mr *MockToGetPrevConverterMockRecorder[A, T, O]) ToGetPrevTagsResponse(from any) *gomock.Call {
+func (mr *MockToGetPrevConverterMockRecorder[A, T, O]) ToGetPrevTagsResponse(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetPrevTagsResponse", reflect.TypeOf((*MockToGetPrevConverter[A, T, O])(nil).ToGetPrevTagsResponse), from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetPrevTagsResponse", reflect.TypeOf((*MockToGetPrevConverter[A, T, O])(nil).ToGetPrevTagsResponse), ctx, from)
 }

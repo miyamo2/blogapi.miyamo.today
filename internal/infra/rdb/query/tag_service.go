@@ -3,8 +3,11 @@ package query
 import (
 	"context"
 	"fmt"
-	"github.com/miyamo2/blogapi-tag-service/internal/infra/rdb/query/model"
 	"log/slog"
+
+	"github.com/miyamo2/blogapi-tag-service/internal/infra/rdb/query/model"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-core/db"
@@ -20,6 +23,8 @@ var ErrNotFound = errors.New("not found")
 type TagService struct{}
 
 func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetById").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
@@ -40,7 +45,9 @@ func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleState
 				Joins(`LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id"`)
 			q.Scan(&rows)
 			if len(rows) == 0 {
-				return errors.WithDetail(ErrNotFound, fmt.Sprintf("id: %v", id))
+				err := errors.WithDetail(ErrNotFound, fmt.Sprintf("id: %v", id))
+				nrtx.NoticeError(nrpkgerrors.Wrap(err))
+				return err
 			}
 			var tag model.Tag
 			for i, r := range rows {
@@ -72,6 +79,8 @@ func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleState
 }
 
 func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetAll").End()
 	dw := duration.Start()
 	pg := db.Pagination{}
 	for _, opt := range paginationOption {
@@ -89,7 +98,6 @@ func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult
 				Joins(`LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id"`)
 			buildQuery(pg, tx, q)
 			q.Scan(&rows)
-			slog.Info("rows", slog.Int("len", len(rows)))
 			tagMap := make(map[string]*model.Tag)
 			result := make([]*model.Tag, 0)
 			for _, r := range rows {
@@ -128,13 +136,13 @@ func buildQuery(pg db.Pagination, tx *gorm.DB, q *gorm.DB) {
 	q.Table(`(?) AS "tags"`, subQ)
 	if !nxtPg && !prevPg {
 		// default
-		q.Order(`"tags"."id" ASC, "articles"."id" ASC NULLS FIRST`)
+		q.Order(`"tags"."id", "articles"."id" NULLS FIRST`)
 		return
 	}
 	l := pg.Limit()
 	if l <= 0 {
 		// default
-		q.Order(`"tags"."id" ASC, "articles"."id" ASC NULLS FIRST`)
+		q.Order(`"tags"."id", "articles"."id" NULLS FIRST`)
 		return
 	}
 	// must fetch one more row to check if there is more page.
@@ -142,18 +150,28 @@ func buildQuery(pg db.Pagination, tx *gorm.DB, q *gorm.DB) {
 	c := pg.Cursor()
 	if nxtPg {
 		if c != "" {
-			subQ.Where(`"id" > ?`, c)
+			subQ.
+				Where(
+					`EXISTS(?)`,
+					tx.Select(`id`).Table("tags").Where(`"id" = ?`, c),
+				).
+				Where(`"id" > ?`, c)
 		}
-		subQ.Order(`"id" ASC`)
-		q.Order(`"tags"."id" ASC, "articles"."id" ASC NULLS FIRST`)
+		subQ.Order(`"id"`)
+		q.Order(`"tags"."id", "articles"."id" NULLS FIRST`)
 		return
 	}
 	if prevPg {
 		if c != "" {
-			subQ.Where(`"id" < ?`, c)
+			subQ.
+				Where(
+					`EXISTS(?)`,
+					tx.Select(`id`).Table("tags").Where(`"id" = ?`, c),
+				).
+				Where(`"id" < ?`, c)
 		}
 		subQ.Order(`"id" DESC`)
-		q.Order(`"tags"."id" DESC, "articles"."id" ASC NULLS FIRST`)
+		q.Order(`"tags"."id" DESC, "articles"."id" NULLS FIRST`)
 		return
 	}
 }

@@ -3,8 +3,10 @@ package pb
 import (
 	"context"
 	"fmt"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"log/slog"
+
+	"github.com/newrelic/go-agent/v3/newrelic"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-core/util/duration"
@@ -12,6 +14,7 @@ import (
 	"github.com/miyamo2/blogapi-tag-service/internal/if-adapter/controller/pb/presenter"
 	"github.com/miyamo2/blogapi-tag-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/miyamo2/blogproto-gen/tag/server/pb"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 )
 
 // TagServiceServer is implementation of pb.TagServiceServer
@@ -36,10 +39,12 @@ var (
 
 // GetTagById is implementation of pb.TagServiceServer#GetTagById
 func (s *TagServiceServer) GetTagById(ctx context.Context, in *pb.GetTagByIdRequest) (*pb.GetTagByIdResponse, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetTagById").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
-			slog.String("in", in.String())))
+			slog.Any("in", in)))
 	oDto, err := s.getByIdUsecase.Execute(ctx, dto.NewGetByIdInDto(in.GetId()))
 	if err != nil {
 		err = errors.WithStack(err)
@@ -48,22 +53,27 @@ func (s *TagServiceServer) GetTagById(ctx context.Context, in *pb.GetTagByIdRequ
 			slog.Group("return",
 				slog.Any("*pb.GetTagByIdResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	res, ok := s.getByIdConv.ToGetByIdTagResponse(oDto)
+	res, ok := s.getByIdConv.ToGetByIdTagResponse(ctx, oDto)
 	if !ok {
-		return nil, ErrConversionToGetTagByIdFailed
+		err = ErrConversionToGetTagByIdFailed
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		return nil, err
 	}
 	slog.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*pb.GetTagByIdResponse", res.String()),
+			slog.Any("*pb.GetTagByIdResponse", res),
 			slog.Any("error", nil)))
 	return res, nil
 }
 
 // GetAllTags is implementation of pb.TagServiceServer#GetTagById
 func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *emptypb.Empty) (*pb.GetAllTagsResponse, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetAllTags").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN")
 	oDto, err := s.getAllUsecase.Execute(ctx)
@@ -74,28 +84,31 @@ func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *emptypb.Empty) (*p
 			slog.Group("return",
 				slog.Any("*pb.GetAllTagsResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	res, ok := s.getAllConv.ToGetAllTagsResponse(oDto)
+	res, ok := s.getAllConv.ToGetAllTagsResponse(ctx, oDto)
 	if !ok {
-		return nil, ErrConversionToGetAllTagsFailed
+		err = ErrConversionToGetAllTagsFailed
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		return nil, err
 	}
 	slog.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*pb.GetAllTagsResponse", res.String()),
+			slog.Any("*pb.GetAllTagsResponse", res),
 			slog.Any("error", nil)))
 	return res, nil
 }
 
 // GetNextTags is implementation of pb.TagServiceServer#GetNextTags
 func (s *TagServiceServer) GetNextTags(ctx context.Context, in *pb.GetNextTagsRequest) (*pb.GetNextTagResponse, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetTagById").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
-			slog.Group("in",
-				slog.Int("first", int(in.GetFirst())),
-				slog.Any("after", in.After))))
+			slog.Any("in", in)))
 	oDto, err := s.getNextUsecase.Execute(ctx, dto.NewGetNextInDto(int(in.GetFirst()), in.After))
 	if err != nil {
 		err = errors.WithStack(err)
@@ -104,28 +117,31 @@ func (s *TagServiceServer) GetNextTags(ctx context.Context, in *pb.GetNextTagsRe
 			slog.Group("return",
 				slog.Any("*pb.GetNextTagResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	res, ok := s.getNextConv.ToGetNextTagsResponse(oDto)
+	res, ok := s.getNextConv.ToGetNextTagsResponse(ctx, oDto)
 	if !ok {
-		return nil, ErrConversionToGetNextTagsFailed
+		err = ErrConversionToGetNextTagsFailed
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		return nil, err
 	}
 	slog.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*pb.GetNextTagResponse", res.String()),
+			slog.Any("*pb.GetNextTagResponse", res),
 			slog.Any("error", nil)))
 	return res, nil
 }
 
 // GetPrevTags is implementation of pb.TagServiceServer#GetPrevTags
 func (s *TagServiceServer) GetPrevTags(ctx context.Context, in *pb.GetPrevTagsRequest) (*pb.GetPrevTagResponse, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetPrevTags").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
-			slog.Group("in",
-				slog.Int("last", int(in.GetLast())),
-				slog.Any("before", in.Before))))
+			slog.Any("in", in)))
 	oDto, err := s.getPrevUsecase.Execute(ctx, dto.NewGetPrevInDto(int(in.GetLast()), in.Before))
 	if err != nil {
 		err = errors.WithStack(err)
@@ -134,16 +150,19 @@ func (s *TagServiceServer) GetPrevTags(ctx context.Context, in *pb.GetPrevTagsRe
 			slog.Group("return",
 				slog.Any("*pb.GetPrevTagResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	res, ok := s.getPrevConv.ToGetPrevTagsResponse(oDto)
+	res, ok := s.getPrevConv.ToGetPrevTagsResponse(ctx, oDto)
 	if !ok {
-		return nil, ErrConversionToGetPrevTagsFailed
+		err = ErrConversionToGetPrevTagsFailed
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		return nil, err
 	}
 	slog.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*pb.GetPrevTagResponse", res.String()),
+			slog.Any("*pb.GetPrevTagResponse", res),
 			slog.Any("error", nil)))
 	return res, nil
 }
