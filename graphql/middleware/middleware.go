@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"github.com/99designs/gqlgen/graphql"
 	blogapicontext "github.com/miyamo2/blogapi-core/context"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -30,12 +31,20 @@ func SetBlogAPIContextToContext(ctx context.Context, next graphql.OperationHandl
 	return next(ctx)
 }
 
-func StartNewRelicTransaction(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
-	txn := newrelic.FromContext(ctx)
-	oc := graphql.GetOperationContext(ctx)
-	txn.SetName(oc.Operation.Name)
-	res := next(ctx)
-	return res
+func StartNewRelicTransaction(app *newrelic.Application) func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
+	if app == nil {
+		return func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
+			return next(ctx)
+		}
+	}
+	return func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
+		oc := graphql.GetOperationContext(ctx)
+		nrtx := app.StartTransaction(fmt.Sprintf("GraphQL/%v", oc.Operation.Name))
+		defer nrtx.End()
+		ctx = newrelic.NewContext(ctx, nrtx)
+		res := next(ctx)
+		return res
+	}
 }
 
 func StartNewRelicSegment(ctx context.Context, next graphql.RootResolver) graphql.Marshaler {
