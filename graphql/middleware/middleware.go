@@ -7,6 +7,7 @@ import (
 	blogapicontext "github.com/miyamo2/blogapi-core/context"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
+	"net/url"
 )
 
 func SetBlogAPIContextToContext(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
@@ -39,8 +40,17 @@ func StartNewRelicTransaction(app *newrelic.Application) func(ctx context.Contex
 	}
 	return func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 		oc := graphql.GetOperationContext(ctx)
-		nrtx := app.StartTransaction(fmt.Sprintf("GraphQL/%v", oc.Operation.Name))
-		defer nrtx.End()
+		nrtx := newrelic.FromContext(ctx)
+		if nrtx == nil {
+			nrtx.SetWebRequest(newrelic.WebRequest{
+				Header:    oc.Headers,
+				URL:       &url.URL{Path: oc.Operation.Name},
+				Method:    "POST",
+				Transport: newrelic.TransportHTTP})
+			nrtx = app.StartTransaction(fmt.Sprintf("POST/ query@GraphQL:%v", oc.Operation.Name))
+			defer nrtx.End()
+		}
+		nrtx.SetName(fmt.Sprintf("%v@GraphQL:%v", nrtx.Name(), oc.Operation.Name))
 		ctx = newrelic.NewContext(ctx, nrtx)
 		res := next(ctx)
 		return res
