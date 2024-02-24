@@ -1,9 +1,10 @@
 package internal
 
 import (
-	blogapictx "github.com/miyamo2/blogapi-core/context"
 	"log/slog"
 	"path/filepath"
+
+	blogapictx "github.com/miyamo2/blogapi-core/context"
 )
 
 var JSONHandlerOption = &slog.HandlerOptions{

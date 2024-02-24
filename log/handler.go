@@ -2,10 +2,11 @@ package log
 
 import (
 	"context"
+	"io"
+	"log/slog"
+
 	blogapictx "github.com/miyamo2/blogapi-core/context"
 	"github.com/miyamo2/blogapi-core/log/internal"
-	"log/slog"
-	"os"
 )
 
 type Logger struct {
@@ -16,7 +17,19 @@ type PreHandle func(ctx context.Context, r *slog.Record) error
 
 // BlogAPILogHandler is an implementation of slog.Handler for blogapi.
 type BlogAPILogHandler struct {
-	*slog.JSONHandler
+	handler slog.Handler
+}
+
+func (h *BlogAPILogHandler) Enabled(ctx context.Context, level slog.Level) bool {
+	return h.handler.Enabled(ctx, level)
+}
+
+func (h *BlogAPILogHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	return h.handler.WithAttrs(attrs)
+}
+
+func (h *BlogAPILogHandler) WithGroup(name string) slog.Handler {
+	return h.handler.WithGroup(name)
 }
 
 // Handle add trace id to slog.Attrs from context before output.
@@ -31,13 +44,13 @@ func (h *BlogAPILogHandler) Handle(ctx context.Context, r slog.Record) error {
 	if outgoing := bctx.Outgoing; outgoing != nil {
 		r.Add(slog.Any("out_request", internal.ParseRequest(*outgoing)))
 	}
-	return h.JSONHandler.Handle(ctx, r)
+	return h.handler.Handle(ctx, r)
 }
 
 // NewBlogAPILogHandler is constructor of BlogAPILogHandler.
-func NewBlogAPILogHandler(handlerOption *slog.HandlerOptions) *BlogAPILogHandler {
+func NewBlogAPILogHandler(w io.Writer, handlerOption *slog.HandlerOptions) *BlogAPILogHandler {
 	h := &BlogAPILogHandler{
-		JSONHandler: slog.NewJSONHandler(os.Stdout, handlerOption),
+		handler: slog.NewJSONHandler(w, handlerOption),
 	}
 	return h
 }
