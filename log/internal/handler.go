@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"context"
 	blogapictx "github.com/miyamo2/blogapi-core/context"
 	"log/slog"
 	"path/filepath"
@@ -20,20 +19,7 @@ var JSONHandlerOption = &slog.HandlerOptions{
 	},
 }
 
-var PreHandle = func(ctx context.Context, r *slog.Record) error {
-	bctx := blogapictx.FromContext(ctx)
-	if bctx == nil {
-		return nil
-	}
-	r.Add(slog.String("request_id", bctx.RequestID))
-	r.Add(slog.Any("in_request", parseRequest(bctx.Incoming)))
-	if outgoing := bctx.Outgoing; outgoing != nil {
-		r.Add(slog.Any("out_request", parseRequest(*outgoing)))
-	}
-	return nil
-}
-
-func parseRequest(request blogapictx.Request) map[string]interface{} {
+func ParseRequest(request blogapictx.Request) map[string]interface{} {
 	parsedReq := map[string]interface{}{}
 	if request.Service != "" {
 		parsedReq["service"] = request.Service

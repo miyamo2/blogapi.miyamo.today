@@ -28,7 +28,8 @@ type HandlerWrapOption func(slog.Handler) slog.Handler
 // WrapNRHandler returns a slog.Handler wrapped in nrslog.
 func WrapNRHandler(app *newrelic.Application) HandlerWrapOption {
 	return func(h slog.Handler) slog.Handler {
-		return nrslog.WrapHandler(app, h)
+		nrh := nrslog.WrapHandler(app, h)
+		return &nrh
 	}
 }
 
@@ -47,7 +48,7 @@ func WithWriter(w io.Writer) HandlerWrapOption {
 
 // New is wrapped constructor of log.slog
 func New(options ...HandlerWrapOption) *slog.Logger {
-	var h slog.Handler = NewBlogAPILogHandler(internal.JSONHandlerOption, internal.PreHandle)
+	var h slog.Handler = NewBlogAPILogHandler(internal.JSONHandlerOption)
 	for _, o := range options {
 		h = o(h)
 	}
