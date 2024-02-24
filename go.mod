@@ -9,7 +9,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.26.8
 	github.com/cockroachdb/errors v1.11.1
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/newrelic/go-agent/v3 v3.29.0
+	github.com/newrelic/go-agent/v3 v3.30.0
+	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog v1.0.0
 	github.com/oklog/ulid/v2 v2.1.0
 	go.uber.org/mock v0.4.0
 	google.golang.org/grpc v1.60.1

@@ -13,22 +13,14 @@ import (
 func SetBlogAPIContextToContext(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 	octx := graphql.GetOperationContext(ctx)
 	headers := octx.Headers
-	tid := func() string {
-		v := headers.Get("trace_id")
-		if len(v) > 0 {
-			return v
-		}
-		ntx := newrelic.FromContext(ctx)
-		return ntx.GetLinkingMetadata().TraceID
-	}()
 	rid := func() string {
-		v := headers.Get("request_id")
+		v := headers.Get("x-request-id")
 		if len(v) > 0 {
 			return v
 		}
 		return ulid.Make().String()
 	}()
-	ctx = blogapicontext.StoreToContext(ctx, blogapicontext.New(tid, rid, octx.OperationName, blogapicontext.RequestTypeGraphQL, headers, octx.Variables))
+	ctx = blogapicontext.StoreToContext(ctx, blogapicontext.New(rid, octx.OperationName, blogapicontext.RequestTypeGraphQL, headers, octx.Variables))
 	return next(ctx)
 }
 

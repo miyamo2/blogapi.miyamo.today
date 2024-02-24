@@ -9,17 +9,16 @@ import (
 type contextKey struct{}
 
 type BlogAPIContext struct {
-	TraceID  string
-	SpanID   string
-	Incoming Request
-	Outgoing *Request
+	RequestID string
+	Incoming  Request
+	Outgoing  *Request
 }
 
 type RequestType string
 
 const (
 	RequestTypeGRPC    RequestType = "grpc"
-	RequestTypeHTTP    RequestType = "http"
+	RequestTypeRest    RequestType = "http"
 	RequestTypeGraphQL RequestType = "graphql"
 )
 
@@ -36,8 +35,7 @@ type Request struct {
 
 // New returns a new BlogAPIContext.
 func New(
-	traceID string,
-	spanID string,
+	requestID string,
 	path string,
 	requestType RequestType,
 	requestHeader map[string][]string,
@@ -52,9 +50,8 @@ func New(
 		Body:      requestBody,
 	}
 	bctx := BlogAPIContext{
-		TraceID:  traceID,
-		SpanID:   spanID,
-		Incoming: incoming,
+		RequestID: requestID,
+		Incoming:  incoming,
 	}
 	return bctx
 }
