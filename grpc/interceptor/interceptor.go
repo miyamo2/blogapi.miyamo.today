@@ -36,7 +36,7 @@ func SetLoggerToContext(app *newrelic.Application) func(ctx context.Context, req
 	}
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		nrtx := newrelic.FromContext(ctx)
-		lgr := log.New(log.WrapNRHandler(app, nrtx))
+		lgr := log.New(log.WithAltNRSlogTransactionalHandler(app, nrtx))
 		ctx = log.StoreToContext(ctx, lgr)
 		return handler(ctx, req)
 	}

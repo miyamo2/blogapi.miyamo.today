@@ -28,9 +28,6 @@ func ParseRequest(request blogapictx.Request) map[string]interface{} {
 	if request.Path != "" {
 		parsedReq["path"] = request.Path
 	}
-	if len(request.Headers) > 0 {
-		parsedReq["headers"] = request.Headers
-	}
 	if request.Duration != nil {
 		parsedReq["duration_ms"] = request.Duration
 	}

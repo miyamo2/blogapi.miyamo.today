@@ -2,12 +2,12 @@ package log
 
 import (
 	"context"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/internal"
 	"io"
 	"log/slog"
 	"os"
 
-	"github.com/miyamo2/blogapi-core/log/internal"
-	"github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
@@ -27,13 +27,19 @@ func DefaultLogger() *slog.Logger {
 // HandlerWrapOption is an option for slog.Handler.
 type HandlerWrapOption func(slog.Handler) slog.Handler
 
-// WrapNRHandler returns a slog.Handler wrapped in nrslog.
-func WrapNRHandler(app *newrelic.Application, nrtx *newrelic.Transaction) HandlerWrapOption {
+// WithAltNRSlogTransactionalHandler returns a slog.Handler wrapped altnrslog,TransactionalHandler.
+func WithAltNRSlogTransactionalHandler(app *newrelic.Application, nrtx *newrelic.Transaction) HandlerWrapOption {
+	return func(h slog.Handler) slog.Handler {
+		return WithInnerHandler(altnrslog.NewTransactionalHandler(app,
+			nrtx, altnrslog.WithSlogHandlerSpecify(true, internal.JSONHandlerOption)))(h)
+	}
+}
+
+func WithInnerHandler(innerHandler slog.Handler) HandlerWrapOption {
 	return func(h slog.Handler) slog.Handler {
 		switch handler := h.(type) {
 		case *BlogAPILogHandler:
-			innerHandler := nrslog.JSONHandler(app, os.Stdout, internal.JSONHandlerOption)
-			handler.handler = innerHandler.WithTransaction(nrtx)
+			handler.handler = innerHandler
 			return handler
 		default:
 			return handler

@@ -3,13 +3,12 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"net/url"
-
 	"github.com/99designs/gqlgen/graphql"
 	blogapicontext "github.com/miyamo2/blogapi-core/context"
 	"github.com/miyamo2/blogapi-core/log"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
+	"net/url"
 )
 
 func SetBlogAPIContextToContext(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
@@ -59,7 +58,7 @@ func SetLoggerToContext(app *newrelic.Application) func(ctx context.Context, nex
 	}
 	return func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 		nrtx := newrelic.FromContext(ctx)
-		lgr := log.New(log.WrapNRHandler(app, nrtx))
+		lgr := log.New(log.WithAltNRSlogTransactionalHandler(app, nrtx))
 		ctx = log.StoreToContext(ctx, lgr)
 		res := next(ctx)
 		return res
