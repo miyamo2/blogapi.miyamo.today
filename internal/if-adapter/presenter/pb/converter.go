@@ -2,8 +2,12 @@ package pb
 
 import (
 	"context"
+	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi-core/log"
 	"github.com/miyamo2/blogproto-gen/article/server/pb"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"log/slog"
 )
@@ -13,11 +17,16 @@ type Converter struct{}
 func (c Converter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetNextOutDto) (response *pb.GetNextArticlesResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetNextArticlesResponse").End()
-	slog.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", from)))
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", *from)))
 	defer func() {
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*pb.GetNextArticlesResponse", response),
 				slog.Bool("ok", ok)))
 	}()
 	fa := from.Articles()
@@ -52,11 +61,16 @@ func (c Converter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetN
 func (c Converter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAllOutDto) (response *pb.GetAllArticlesResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetAllArticlesResponse").End()
-	slog.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", from)))
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", *from)))
 	defer func() {
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*pb.GetAllArticlesResponse", response),
 				slog.Bool("ok", ok)))
 	}()
 	fa := from.Articles()
@@ -90,11 +104,16 @@ func (c Converter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAl
 func (c Converter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *pb.GetArticleByIdResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetByIdArticlesResponse").End()
-	slog.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", from)))
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", *from)))
 	defer func() {
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*pb.GetArticleByIdResponsee", response),
 				slog.Bool("ok", ok)))
 	}()
 	ft := from.Tags()
@@ -123,11 +142,16 @@ func (c Converter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetB
 func (c Converter) ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *pb.GetPrevArticlesResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetPrevArticlesResponse").End()
-	slog.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", from)))
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", *from)))
 	defer func() {
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*pb.GetPrevArticlesResponse", response),
 				slog.Bool("ok", ok)))
 	}()
 	fa := from.Articles()

@@ -3,6 +3,8 @@ package query
 import (
 	"context"
 	"fmt"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"log/slog"
@@ -23,7 +25,13 @@ func (a *ArticleService) GetById(ctx context.Context, id string, out *db.SingleS
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetById").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("id", id),
 			slog.Any("out", out),
@@ -31,7 +39,7 @@ func (a *ArticleService) GetById(ctx context.Context, id string, out *db.SingleS
 	stmt := gwrapper.NewStatement(
 		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
 			dw := duration.Start()
-			slog.InfoContext(ctx, "BEGIN",
+			lgr.InfoContext(ctx, "BEGIN",
 				slog.Group("parameters",
 					slog.Any("out", out),
 				))
@@ -45,7 +53,7 @@ func (a *ArticleService) GetById(ctx context.Context, id string, out *db.SingleS
 			if len(rows) == 0 {
 				err := errors.WithDetail(ErrNotFound, fmt.Sprintf("id: %v", id))
 				nrtx.NoticeError(nrpkgerrors.Wrap(err))
-				slog.WarnContext(ctx, "END",
+				lgr.WarnContext(ctx, "END",
 					slog.String("duration", dw.SDuration()),
 					slog.Group("return",
 						slog.Any("error", err)))
@@ -70,13 +78,13 @@ func (a *ArticleService) GetById(ctx context.Context, id string, out *db.SingleS
 				article.AddTag(NewTag(*r.TagID, *r.TagName))
 			}
 			out.Set(&article)
-			slog.InfoContext(ctx, "END",
+			lgr.InfoContext(ctx, "END",
 				slog.String("duration", dw.SDuration()),
 				slog.Group("return",
 					slog.Any("error", nil)))
 			return nil
 		}, out)
-	defer slog.InfoContext(ctx, "END",
+	defer lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("stmt", stmt)))
@@ -84,19 +92,27 @@ func (a *ArticleService) GetById(ctx context.Context, id string, out *db.SingleS
 }
 
 func (a *ArticleService) GetAll(ctx context.Context, out *db.MultipleStatementResult[*Article], paginationOption ...db.PaginationOption) db.Statement {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("GetAll").End()
 	dw := duration.Start()
 	pg := db.Pagination{}
 	for _, opt := range paginationOption {
 		opt(&pg)
 	}
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.Any("out", out),
 		))
 	stmt := gwrapper.NewStatement(
 		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
 			dw := duration.Start()
-			slog.InfoContext(ctx, "BEGIN",
+			lgr.InfoContext(ctx, "BEGIN",
 				slog.Group("parameters",
 					slog.Any("out", out),
 				))
@@ -175,13 +191,13 @@ func (a *ArticleService) GetAll(ctx context.Context, out *db.MultipleStatementRe
 				v.AddTag(NewTag(*r.TagID, *r.TagName))
 			}
 			out.Set(result)
-			slog.InfoContext(ctx, "END",
+			lgr.InfoContext(ctx, "END",
 				slog.String("duration", dw.SDuration()),
 				slog.Group("return",
 					slog.Any("error", nil)))
 			return nil
 		}, out)
-	defer slog.InfoContext(ctx, "END",
+	defer lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("stmt", stmt)))

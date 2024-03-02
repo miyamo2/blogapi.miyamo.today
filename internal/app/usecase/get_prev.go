@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"log/slog"
@@ -24,15 +26,21 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN")
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN")
 	tx, err := u.txmn.GetAndStart(ctx)
 	if err != nil {
 		err := errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*dto.GetPrevOutDto", nil),
+				slog.Any("dto.GetPrevOutDto", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
@@ -45,10 +53,10 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 	if err != nil {
 		err := errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*dto.GetPrevOutDto", nil),
+				slog.Any("dto.GetPrevOutDto", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
@@ -92,13 +100,13 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 		}
 		if err != nil {
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			slog.WarnContext(ctx, "transaction has error. err: %+v", err)
+			lgr.WarnContext(ctx, "transaction has error. err: %+v", err)
 		}
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.Any("*dto.GetPrevOutDto", result),
+			slog.Any("dto.GetPrevOutDto", result),
 			slog.Any("error", nil)))
 	return &result, nil
 }

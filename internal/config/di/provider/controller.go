@@ -24,7 +24,8 @@ var Controller = fx.Options(
 		return grpc.NewServer(
 			grpc.ChainUnaryInterceptor(
 				nrgrpc.UnaryServerInterceptor(nr),
-				interceptor.SetBlogAPIContextToContext))
+				interceptor.SetBlogAPIContextToContext,
+				interceptor.SetLoggerToContext(nr)))
 	}),
 	fx.Invoke(func(aSvcSrv pb.ArticleServiceServer, srv *grpc.Server) {
 		pb.RegisterArticleServiceServer(srv, aSvcSrv)

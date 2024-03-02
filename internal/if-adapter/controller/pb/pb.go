@@ -3,9 +3,11 @@ package pb
 import (
 	"context"
 	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi-article-service/internal/if-adapter/controller/pb/presenter"
 	"github.com/miyamo2/blogapi-article-service/internal/if-adapter/controller/pb/usecase"
+	"github.com/miyamo2/blogapi-core/log"
 	"github.com/miyamo2/blogapi-core/util/duration"
 	"github.com/miyamo2/blogproto-gen/article/server/pb"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
@@ -39,16 +41,22 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAllArticles").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", in.String())))
 	oDto, err := s.getAllUsecase.Execute(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*pb.GetAllArticlesResponse", nil),
+				slog.Any("pb.GetAllArticlesResponse", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
@@ -57,10 +65,9 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetAllArticlesFailed))
 		return nil, ErrConversionToGetAllArticlesFailed
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*pb.GetAllArticlesResponse", res.String()),
 			slog.Any("error", nil)))
 	return res, nil
 }
@@ -70,16 +77,22 @@ func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *pb.GetNe
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetNextArticles").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", in.String())))
 	oDto, err := s.getNextUsecase.Execute(ctx, dto.NewGetNextInDto(int(in.First), in.After))
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*pb.GetNextArticlesResponse", nil),
+				slog.Any("pb.GetNextArticlesResponse", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
@@ -88,10 +101,9 @@ func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *pb.GetNe
 		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetNextArticlesFailed))
 		return nil, ErrConversionToGetNextArticlesFailed
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.Any("*pb.GetNextArticlesResponse", *res),
 			slog.Any("error", nil)))
 	return res, nil
 }
@@ -101,16 +113,22 @@ func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *pb.GetArt
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetArticleById").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", in.String())))
 	oDto, err := s.getByIdUsecase.Execute(ctx, dto.NewGetByIdInDto(in.GetId()))
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*pb.GetArticleByIdResponse", nil),
+				slog.Any("pb.GetArticleByIdResponse", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
@@ -119,10 +137,9 @@ func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *pb.GetArt
 		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetArticleByIdFailed))
 		return nil, ErrConversionToGetArticleByIdFailed
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.Any("*pb.GetArticleByIdResponse", *res),
 			slog.Any("error", nil)))
 	return res, nil
 }
@@ -132,16 +149,22 @@ func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *pb.GetPr
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetPrevArticles").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", in.String())))
 	oDto, err := s.getPrevUsecase.Execute(ctx, dto.NewGetPrevInDto(int(in.Last), in.Before))
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*pb.GetPrevArticlesResponse", nil),
+				slog.Any("pb.GetPrevArticlesResponse", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
@@ -150,10 +173,9 @@ func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *pb.GetPr
 		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetPrevArticlesFailed))
 		return nil, ErrConversionToGetPrevArticlesFailed
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.Any("*pb.GetPrevArticlesResponse", *res),
 			slog.Any("error", nil)))
 	return res, nil
 }
