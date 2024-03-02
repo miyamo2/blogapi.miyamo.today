@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.26.8
 	github.com/cockroachdb/errors v1.11.1
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/miyamo2/altnrslog v0.1.0-alpha
+	github.com/miyamo2/altnrslog v0.4.0
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/oklog/ulid/v2 v2.1.0
 	go.uber.org/mock v0.4.0
@@ -56,6 +56,6 @@ require (
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240221002015-b0ce06bbee7c // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240228224816-df926f6c8641 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 )

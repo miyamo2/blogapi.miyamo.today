@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql"
+	"github.com/miyamo2/altnrslog"
 	blogapicontext "github.com/miyamo2/blogapi-core/context"
 	"github.com/miyamo2/blogapi-core/log"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -59,7 +60,11 @@ func SetLoggerToContext(app *newrelic.Application) func(ctx context.Context, nex
 	return func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 		nrtx := newrelic.FromContext(ctx)
 		lgr := log.New(log.WithAltNRSlogTransactionalHandler(app, nrtx))
-		ctx = log.StoreToContext(ctx, lgr)
+		ctx, err := altnrslog.StoreToContext(ctx, lgr)
+		if err != nil {
+			er := graphql.ErrorResponse(ctx, err.Error())
+			return func(ctx context.Context) *graphql.Response { return er }
+		}
 		res := next(ctx)
 		return res
 	}

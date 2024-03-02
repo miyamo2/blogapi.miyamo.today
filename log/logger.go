@@ -1,12 +1,12 @@
 package log
 
 import (
-	"context"
-	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/blogapi-core/internal"
 	"io"
 	"log/slog"
 	"os"
+
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/internal"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
@@ -30,8 +30,16 @@ type HandlerWrapOption func(slog.Handler) slog.Handler
 // WithAltNRSlogTransactionalHandler returns a slog.Handler wrapped altnrslog,TransactionalHandler.
 func WithAltNRSlogTransactionalHandler(app *newrelic.Application, nrtx *newrelic.Transaction) HandlerWrapOption {
 	return func(h slog.Handler) slog.Handler {
-		return WithInnerHandler(altnrslog.NewTransactionalHandler(app,
-			nrtx, altnrslog.WithSlogHandlerSpecify(true, internal.JSONHandlerOption)))(h)
+		switch handler := h.(type) {
+		case *BlogAPILogHandler:
+			return altnrslog.NewTransactionalHandler(app, nrtx, altnrslog.WithInnerHandlerProvider(
+				func(w io.Writer) slog.Handler {
+					handler.handler = slog.NewJSONHandler(w, internal.JSONHandlerOption)
+					return handler
+				}))
+		default:
+			return handler
+		}
 	}
 }
 
@@ -67,20 +75,4 @@ func New(options ...HandlerWrapOption) *slog.Logger {
 		h = o(h)
 	}
 	return slog.New(h)
-}
-
-type loggerKey struct{}
-
-// FromContext returns the *slog.Logger stored in context.Context.
-func FromContext(ctx context.Context) *slog.Logger {
-	lgr, ok := ctx.Value(loggerKey{}).(*slog.Logger)
-	if !ok {
-		return nil
-	}
-	return lgr
-}
-
-// StoreToContext stores the *slog.Logger in context.Context.
-func StoreToContext(ctx context.Context, logger *slog.Logger) context.Context {
-	return context.WithValue(ctx, loggerKey{}, logger)
 }

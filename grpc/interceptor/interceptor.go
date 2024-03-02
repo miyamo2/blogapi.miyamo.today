@@ -2,6 +2,7 @@ package interceptor
 
 import (
 	"context"
+	"github.com/miyamo2/altnrslog"
 
 	"github.com/miyamo2/blogapi-core/log"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -37,7 +38,10 @@ func SetLoggerToContext(app *newrelic.Application) func(ctx context.Context, req
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		nrtx := newrelic.FromContext(ctx)
 		lgr := log.New(log.WithAltNRSlogTransactionalHandler(app, nrtx))
-		ctx = log.StoreToContext(ctx, lgr)
+		ctx, err := altnrslog.StoreToContext(ctx, lgr)
+		if err != nil {
+			return nil, err
+		}
 		return handler(ctx, req)
 	}
 }
