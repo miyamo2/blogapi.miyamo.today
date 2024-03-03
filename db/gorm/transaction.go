@@ -49,7 +49,7 @@ TX:
 	for {
 		select {
 		case nx := <-t.stmtQueue:
-			err = nx.Statement.Execute(ctx, WithTransaction(tx))
+			err = nx.Statement.Execute(nx.Ctx, WithTransaction(tx))
 			nx.ErrCh <- err
 			if err != nil {
 				t.errQueue <- err
@@ -82,6 +82,7 @@ func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Stateme
 	defer close(errCh)
 	t.stmtQueue <- &internal.StatementRequest{
 		Statement: statement,
+		Ctx:       ctx,
 		ErrCh:     errCh,
 	}
 	if err := <-errCh; err != nil {
