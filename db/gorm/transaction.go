@@ -24,8 +24,10 @@ type Transaction struct {
 	errQueue  chan error
 }
 
-func (t *Transaction) start(ctx context.Context) {
-	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Transaction Start").End()
+func (t *Transaction) process(ctx context.Context) {
+	nrtx := newrelic.FromContext(ctx).NewGoroutine()
+	defer nrtx.StartSegment("BlogAPICore: Gorm Transaction Process").End()
+	ctx = newrelic.NewContext(ctx, nrtx)
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		logger = log.DefaultLogger()
@@ -49,7 +51,7 @@ TX:
 	for {
 		select {
 		case nx := <-t.stmtQueue:
-			err = nx.Statement.Execute(nx.Ctx, WithTransaction(tx))
+			err = nx.Statement.Execute(ctx, WithTransaction(tx))
 			nx.ErrCh <- err
 			if err != nil {
 				t.errQueue <- err
@@ -82,7 +84,6 @@ func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Stateme
 	defer close(errCh)
 	t.stmtQueue <- &internal.StatementRequest{
 		Statement: statement,
-		Ctx:       ctx,
 		ErrCh:     errCh,
 	}
 	if err := <-errCh; err != nil {
@@ -154,7 +155,7 @@ func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
 		slog.Group("returns",
 			slog.String("conn.Transaction", fmt.Sprintf("%+v", *t)),
 			slog.Any("error", nil)))
-	go t.start(ctx)
+	go t.process(ctx)
 	return t, nil
 }
 

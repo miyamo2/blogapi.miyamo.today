@@ -26,9 +26,9 @@ type Transaction struct {
 	errQueue  chan error
 }
 
-func (t *Transaction) start(ctx context.Context) {
+func (t *Transaction) process(ctx context.Context) {
 	nrtx := newrelic.FromContext(ctx).NewGoroutine()
-	defer nrtx.StartSegment("BlogAPICore: DynamoDB Transaction Start").End()
+	defer nrtx.StartSegment("BlogAPICore: DynamoDB Transaction Process").End()
 	ctx = newrelic.NewContext(ctx, nrtx)
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
@@ -164,7 +164,7 @@ func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
 			slog.String("db.Transaction", fmt.Sprintf("%+v", *t)),
 			slog.Any("error", nil)))
 
-	go t.start(ctx)
+	go t.process(ctx)
 	return t, nil
 }
 
