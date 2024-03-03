@@ -3,12 +3,15 @@ package gorm
 import (
 	"context"
 	"fmt"
+	"github.com/miyamo2/altnrslog"
+	"log/slog"
+
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-core/db"
 	"github.com/miyamo2/blogapi-core/log"
 	"github.com/miyamo2/blogapi-core/util/duration"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/gorm"
-	"log/slog"
 )
 
 var ErrAlreadyExecuted = errors.New("statement is already executed.")
@@ -32,11 +35,16 @@ type Statement struct {
 }
 
 func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error {
+	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Statement Execute").End()
 	dw := duration.Start()
-	log.DefaultLogger().Info("BEGIN",
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = log.DefaultLogger()
+	}
+	logger.Info("BEGIN",
 		slog.Group("parameters",
 			slog.String("opts", fmt.Sprintf("%+v", opts))))
-	defer log.DefaultLogger().Info("END", slog.String("duration", dw.SDuration()))
+	defer logger.Info("END", slog.String("duration", dw.SDuration()))
 	if s.executed {
 		return ErrAlreadyExecuted
 	}

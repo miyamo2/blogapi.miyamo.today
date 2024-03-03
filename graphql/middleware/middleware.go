@@ -3,16 +3,18 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"net/url"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/miyamo2/altnrslog"
 	blogapicontext "github.com/miyamo2/blogapi-core/context"
 	"github.com/miyamo2/blogapi-core/log"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
-	"net/url"
 )
 
 func SetBlogAPIContextToContext(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
+	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Set BlogAPIContext to Context").End()
 	octx := graphql.GetOperationContext(ctx)
 	headers := octx.Headers
 	rid := func() string {
@@ -59,6 +61,7 @@ func SetLoggerToContext(app *newrelic.Application) func(ctx context.Context, nex
 	}
 	return func(ctx context.Context, next graphql.OperationHandler) graphql.ResponseHandler {
 		nrtx := newrelic.FromContext(ctx)
+		defer nrtx.StartSegment("BlogAPICore: Set Transactional Logger to Context").End()
 		lgr := log.New(log.WithAltNRSlogTransactionalHandler(app, nrtx))
 		ctx, err := altnrslog.StoreToContext(ctx, lgr)
 		if err != nil {

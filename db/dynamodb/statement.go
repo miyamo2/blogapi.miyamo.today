@@ -3,13 +3,16 @@ package dynamodb
 import (
 	"context"
 	"fmt"
+	"github.com/miyamo2/altnrslog"
+	"log/slog"
+
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamotypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-core/db"
 	"github.com/miyamo2/blogapi-core/log"
 	"github.com/miyamo2/blogapi-core/util/duration"
-	"log/slog"
+	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 var ErrAlreadyExecuted = errors.New("statement is already executed.")
@@ -45,11 +48,16 @@ func (r zeroValueResult) Set(v interface{}) {
 }
 
 func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error {
+	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: DynamoDB Statement Execute").End()
 	dw := duration.Start()
-	log.DefaultLogger().Info("BEGIN",
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = log.DefaultLogger()
+	}
+	logger.Info("BEGIN",
 		slog.Group("parameters",
 			slog.String("opts", fmt.Sprintf("%+v", opts))))
-	defer log.DefaultLogger().Info("END", slog.String("duration", dw.SDuration()))
+	defer logger.Info("END", slog.String("duration", dw.SDuration()))
 	if s.executed {
 		return ErrAlreadyExecuted
 	}

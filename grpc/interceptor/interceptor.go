@@ -14,6 +14,7 @@ import (
 )
 
 func SetBlogAPIContextToContext(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Set BlogAPIContext to Context").End()
 	md, ok := metadata.FromIncomingContext(ctx)
 	rid := func() string {
 		if ok {
@@ -37,6 +38,7 @@ func SetLoggerToContext(app *newrelic.Application) func(ctx context.Context, req
 	}
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		nrtx := newrelic.FromContext(ctx)
+		defer nrtx.StartSegment("BlogAPICore: Set Transactional Logger to Context").End()
 		lgr := log.New(log.WithAltNRSlogTransactionalHandler(app, nrtx))
 		ctx, err := altnrslog.StoreToContext(ctx, lgr)
 		if err != nil {

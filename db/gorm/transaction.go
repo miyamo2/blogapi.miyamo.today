@@ -3,9 +3,11 @@ package gorm
 import (
 	"context"
 	"fmt"
+	"github.com/miyamo2/altnrslog"
 	"log/slog"
 
 	"github.com/miyamo2/blogapi-core/util/duration"
+	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi-core/db"
@@ -23,8 +25,13 @@ type Transaction struct {
 }
 
 func (t *Transaction) start(ctx context.Context) {
-	log.DefaultLogger().InfoContext(ctx, "BEGIN")
-	defer log.DefaultLogger().InfoContext(ctx, "END")
+	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Transaction Start").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN")
+	defer logger.InfoContext(ctx, "END")
 
 	defer close(t.stmtQueue)
 	defer close(t.commit)
@@ -62,10 +69,15 @@ func (t *Transaction) SubscribeError() <-chan error {
 }
 
 func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Statement) error {
+	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Transaction Execute Statement").End()
 	dw := duration.Start()
-	log.DefaultLogger().InfoContext(ctx, "BEGIN")
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN")
 	// error will always be nil.
-	defer log.DefaultLogger().InfoContext(ctx, "END", slog.String("duration", dw.SDuration()))
+	defer logger.InfoContext(ctx, "END", slog.String("duration", dw.SDuration()))
 	errCh := make(chan error, 1)
 	defer close(errCh)
 	t.stmtQueue <- &internal.StatementRequest{
@@ -80,10 +92,15 @@ func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Stateme
 }
 
 func (t *Transaction) Commit(ctx context.Context) error {
+	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Transaction Commit").End()
 	dw := duration.Start()
-	log.DefaultLogger().InfoContext(ctx, "BEGIN")
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN")
 	// error will always be nil.
-	defer log.DefaultLogger().InfoContext(ctx, "END",
+	defer logger.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("error", nil)))
@@ -93,10 +110,15 @@ func (t *Transaction) Commit(ctx context.Context) error {
 }
 
 func (t *Transaction) Rollback(ctx context.Context) error {
+	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Transaction Rollback").End()
 	dw := duration.Start()
-	log.DefaultLogger().InfoContext(ctx, "BEGIN")
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN")
 	// error will always be nil.
-	defer log.DefaultLogger().InfoContext(ctx, "END",
+	defer logger.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("error", nil)))
@@ -111,8 +133,13 @@ type manager struct {
 }
 
 func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
+	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Get And Start Transaction").End()
 	dw := duration.Start()
-	log.DefaultLogger().InfoContext(ctx, "BEGIN")
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN")
 	stmtQueue := make(chan *internal.StatementRequest)
 	t := &Transaction{
 		stmtQueue: stmtQueue,
@@ -121,7 +148,7 @@ func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
 		errQueue:  make(chan error),
 	}
 	// error will always be nil.
-	defer log.DefaultLogger().InfoContext(ctx, "END",
+	defer logger.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.String("conn.Transaction", fmt.Sprintf("%+v", *t)),
