@@ -3,6 +3,7 @@ package gorm
 import (
 	"context"
 	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi-core/db/gorm/internal/conn"
 	"github.com/miyamo2/blogapi-core/db/gorm/internal/dial"
 	"github.com/miyamo2/blogapi-core/log"
@@ -12,16 +13,25 @@ import (
 var ErrDialectorNotInitialized = errors.New("gorm dialector is not initialized")
 
 func Get(ctx context.Context) (*gorm.DB, error) {
-	log.DefaultLogger().Info("get gorm connection")
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = log.DefaultLogger()
+	}
+	logger.Info("get gorm connection")
 	conn.Mu.Lock()
 	defer conn.Mu.Unlock()
 	db := conn.Instance
-	if db != nil {
-		return db.Session(&gorm.Session{
-			Context: ctx,
-		}), nil
+
+	sc := gorm.Session{
+		Context:                ctx,
+		PrepareStmt:            true,
+		SkipDefaultTransaction: true,
 	}
-	log.DefaultLogger().Info("gorm connection is not initialized")
+
+	if db != nil {
+		return db.Session(&sc), nil
+	}
+	logger.Info("gorm connection is not initialized")
 	dial.Mu.RLock()
 	defer dial.Mu.RUnlock()
 	if dial.Instance == nil {
@@ -29,19 +39,17 @@ func Get(ctx context.Context) (*gorm.DB, error) {
 	}
 	dialector := *dial.Instance
 
-	db, err := gorm.Open(dialector, &gorm.Config{
+	db, err = gorm.Open(dialector, &gorm.Config{
 		SkipDefaultTransaction: true,
 		PrepareStmt:            true,
 	})
 	if err != nil {
-		log.DefaultLogger().Warn("failed to initialize gorm connection")
+		logger.Warn("failed to initialize gorm connection")
 		return nil, err
 	}
 	conn.Instance = db
-	log.DefaultLogger().Info("completed gorm connection initialization")
-	return db.Session(&gorm.Session{
-		Context: ctx,
-	}), nil
+	logger.Info("completed gorm connection initialization")
+	return db.Session(&sc), nil
 }
 
 // InitializeDialector initializes gorm database dialector.
