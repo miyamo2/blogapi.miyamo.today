@@ -38,6 +38,8 @@ func (a *ArticleService) GetById(ctx context.Context, id string, out *db.SingleS
 		))
 	stmt := gwrapper.NewStatement(
 		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
+			nrtx := newrelic.FromContext(ctx)
+			defer nrtx.StartSegment("GetById Statement").End()
 			dw := duration.Start()
 			lgr.InfoContext(ctx, "BEGIN",
 				slog.Group("parameters",
@@ -111,6 +113,8 @@ func (a *ArticleService) GetAll(ctx context.Context, out *db.MultipleStatementRe
 		))
 	stmt := gwrapper.NewStatement(
 		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
+			nrtx := newrelic.FromContext(ctx)
+			defer nrtx.StartSegment("GetAll Statement").End()
 			dw := duration.Start()
 			lgr.InfoContext(ctx, "BEGIN",
 				slog.Group("parameters",
