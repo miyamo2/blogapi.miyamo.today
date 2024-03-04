@@ -49,7 +49,7 @@ func (a *ArticleService) GetById(ctx context.Context, id string, out *db.SingleS
 			q := tx.Select(`"articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name"`).
 				Table(`(?) AS "articles"`, subQ).
 				Joins(`LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id"`, id)
-			q.Scan(&rows)
+			gwrapper.TraceableScan(nrtx, q, &rows)
 			if len(rows) == 0 {
 				err := errors.WithDetail(ErrNotFound, fmt.Sprintf("id: %v", id))
 				nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -167,7 +167,7 @@ func (a *ArticleService) GetAll(ctx context.Context, out *db.MultipleStatementRe
 					return
 				}
 			}()
-			q.Scan(&rows)
+			gwrapper.TraceableScan(nrtx, q, &rows)
 			articleMap := make(map[string]*Article)
 			result := make([]*Article, 0)
 			for _, r := range rows {
