@@ -27,7 +27,6 @@ type Transaction struct {
 }
 
 func (t *Transaction) process(ctx context.Context) {
-	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: DynamoDB Transaction Process").End()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		logger = log.DefaultLogger()
@@ -141,7 +140,8 @@ type manager struct {
 }
 
 func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
-	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: DynamoDB Get And Start Transaction").End()
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("BlogAPICore: DynamoDB Get And Start Transaction").End()
 	dw := duration.Start()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
@@ -162,7 +162,14 @@ func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
 			slog.String("db.Transaction", fmt.Sprintf("%+v", *t)),
 			slog.Any("error", nil)))
 
-	go t.process(newrelic.NewContext(ctx, newrelic.FromContext(ctx).NewGoroutine()))
+	pnrtx := nrtx.NewGoroutine()
+	pctx, err := altnrslog.StoreToContext(
+		newrelic.NewContext(ctx, pnrtx),
+		log.New(log.WithAltNRSlogTransactionalHandler(nrtx.Application(), pnrtx)))
+	if err != nil {
+		pctx = ctx
+	}
+	go t.process(pctx)
 	return t, nil
 }
 

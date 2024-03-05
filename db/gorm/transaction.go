@@ -25,7 +25,6 @@ type Transaction struct {
 }
 
 func (t *Transaction) process(ctx context.Context) {
-	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Transaction Process").End()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		logger = log.DefaultLogger()
@@ -49,7 +48,7 @@ TX:
 	for {
 		select {
 		case nx := <-t.stmtQueue:
-			err = nx.Statement.Execute(ctx, WithTransaction(tx))
+			err = nx.Statement.Execute(nx.Ctx, WithTransaction(tx))
 			nx.ErrCh <- err
 			if err != nil {
 				t.errQueue <- err
@@ -83,6 +82,7 @@ func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Stateme
 	t.stmtQueue <- &internal.StatementRequest{
 		Statement: statement,
 		ErrCh:     errCh,
+		Ctx:       ctx,
 	}
 	if err := <-errCh; err != nil {
 		return err
@@ -133,7 +133,8 @@ type manager struct {
 }
 
 func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
-	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Get And Start Transaction").End()
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("BlogAPICore: Gorm Get And Start Transaction").End()
 	dw := duration.Start()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
@@ -154,7 +155,14 @@ func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
 			slog.String("conn.Transaction", fmt.Sprintf("%+v", *t)),
 			slog.Any("error", nil)))
 
-	go t.process(newrelic.NewContext(ctx, newrelic.FromContext(ctx).NewGoroutine()))
+	pnrtx := nrtx.NewGoroutine()
+	pctx, err := altnrslog.StoreToContext(
+		newrelic.NewContext(ctx, pnrtx),
+		log.New(log.WithAltNRSlogTransactionalHandler(nrtx.Application(), pnrtx)))
+	if err != nil {
+		pctx = ctx
+	}
+	go t.process(pctx)
 	return t, nil
 }
 
