@@ -7,16 +7,17 @@ require (
 	github.com/cockroachdb/errors v1.11.1
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
-	github.com/miyamo2/blogapi-core v0.10.0
+	github.com/miyamo2/blogapi-core v0.17.0
+	github.com/miyamo2/blogapi-core/grpc v0.2.1
 	github.com/miyamo2/blogproto-gen/tag/server v0.3.2
-	github.com/newrelic/go-agent/v3 v3.29.1
+	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.2
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.0
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	go.uber.org/fx v1.20.1
 	go.uber.org/mock v0.4.0
-	google.golang.org/grpc v1.60.1
+	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.32.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
@@ -45,6 +46,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/miyamo2/altnrslog v0.4.0 // indirect
 	github.com/newrelic/csec-go-agent v0.7.0 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 // indirect
 	github.com/oklog/ulid/v2 v2.1.0 // indirect
@@ -55,10 +57,10 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
-	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/net v0.19.0 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240102182953-50ed04b92917 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240228224816-df926f6c8641 // indirect
 )
