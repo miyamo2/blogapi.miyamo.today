@@ -3,6 +3,8 @@ package query
 import (
 	"context"
 	"fmt"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"log/slog"
 
 	"github.com/miyamo2/blogapi-tag-service/internal/infra/rdb/query/model"
@@ -26,13 +28,29 @@ func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleState
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetById").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("id", id),
 			slog.String("out", fmt.Sprintf("%v", out)),
 		))
 	stmt := gwrapper.NewStatement(
 		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
+			lgr, err := altnrslog.FromContext(ctx)
+			if err != nil {
+				err = errors.WithStack(err)
+				nrtx.NoticeError(nrpkgerrors.Wrap(err))
+				lgr = log.DefaultLogger()
+			}
+			lgr.InfoContext(ctx, "BEGIN",
+				slog.Group("bind",
+					slog.String("id", id)))
+			defer func() { lgr.InfoContext(ctx, "END") }()
 			tx = tx.WithContext(ctx)
 			var rows []entity.TagArticle
 			subQ := tx.
@@ -71,7 +89,7 @@ func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleState
 			out.Set(&tag)
 			return nil
 		}, out)
-	defer slog.InfoContext(ctx, "END",
+	defer lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.String("stmt", fmt.Sprintf("%v", stmt))))
@@ -86,12 +104,29 @@ func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult
 	for _, opt := range paginationOption {
 		opt(&pg)
 	}
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("out", fmt.Sprintf("%v", out)),
 		))
 	stmt := gwrapper.NewStatement(
 		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
+			lgr, err := altnrslog.FromContext(ctx)
+			if err != nil {
+				err = errors.WithStack(err)
+				nrtx.NoticeError(nrpkgerrors.Wrap(err))
+				lgr = log.DefaultLogger()
+			}
+			lgr.InfoContext(ctx, "BEGIN",
+				slog.Group("bind",
+					slog.String("pagination", fmt.Sprintf("%v", pg)),
+				))
+			defer func() { lgr.InfoContext(ctx, "END") }()
 			var rows []entity.TagArticle
 			tx = tx.WithContext(ctx)
 			q := tx.Select(`"tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at"`).
@@ -121,7 +156,7 @@ func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult
 			out.Set(result)
 			return nil
 		}, out)
-	defer slog.InfoContext(ctx, "END",
+	defer lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.String("stmt", fmt.Sprintf("%v", stmt))))

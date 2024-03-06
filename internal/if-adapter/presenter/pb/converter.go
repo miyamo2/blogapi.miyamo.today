@@ -2,9 +2,14 @@ package pb
 
 import (
 	"context"
+	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"github.com/miyamo2/blogapi-tag-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogproto-gen/tag/server/pb"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"log/slog"
 )
 
 // Converter is am implementation of presenter.ToGetByIdConverter
@@ -14,6 +19,14 @@ type Converter struct{}
 func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *pb.GetTagByIdResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetByIdTagResponse").End()
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN")
+	defer func() { lgr.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
 	fa := from.Articles()
 	pa := make([]*pb.Article, 0, len(fa))
 	for _, a := range fa {
@@ -41,6 +54,14 @@ func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOu
 func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOutDto) (response *pb.GetAllTagsResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetAllTagsResponse").End()
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN")
+	defer func() { lgr.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
 	ft := from.Tags()
 	pt := make([]*pb.Tag, 0, len(ft))
 	for _, t := range ft {
@@ -72,6 +93,14 @@ func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOut
 func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextOutDto) (response *pb.GetNextTagResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetNextTagsResponse").End()
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN")
+	defer func() { lgr.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
 	ft := from.Tags()
 	pt := make([]*pb.Tag, 0, len(ft))
 	for _, t := range ft {
@@ -104,6 +133,14 @@ func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextO
 func (c Converter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *pb.GetPrevTagResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetPrevTagsResponse").End()
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN")
+	defer func() { lgr.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
 	ft := from.Tags()
 	pt := make([]*pb.Tag, 0, len(ft))
 	for _, t := range ft {

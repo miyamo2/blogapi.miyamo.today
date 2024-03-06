@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"log/slog"
 
 	"github.com/miyamo2/blogapi-tag-service/internal/infra/rdb/query/model"
@@ -26,13 +28,19 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", fmt.Sprintf("%v", in))))
 	tx, err := u.txmn.GetAndStart(ctx)
 	if err != nil {
 		err := errors.WithStack(err)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.GetByIdOutDto", nil),
@@ -47,7 +55,7 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 	err = tx.ExecuteStatement(ctx, stmt)
 	if err != nil {
 		err := errors.WithStack(err)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.GetByIdOutDto", nil),
@@ -81,13 +89,13 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 		}
 		if err != nil {
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			slog.WarnContext(ctx, "transaction has error. err: %+v", err)
+			lgr.WarnContext(ctx, "transaction has error. err: %+v", err)
 		}
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			slog.String("*dto.GetByIdOutDto", fmt.Sprintf("%v", result)),
+			// slog.String("*dto.GetByIdOutDto", fmt.Sprintf("%v", result)),
 			slog.Any("error", nil)))
 	return &result, nil
 }

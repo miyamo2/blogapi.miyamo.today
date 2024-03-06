@@ -260,6 +260,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 		},
 		"happy_path/not_anymore": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetNextOutDto {
 					o := dto.NewGetNextOutDto(false)
 					o = o.WithTagDto(
@@ -357,6 +358,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/still_exists": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetPrevOutDto {
 					o := dto.NewGetPrevOutDto(true)
 					o = o.WithTagDto(
@@ -425,6 +427,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 		},
 		"happy_path/not_anymore": {
 			args: args{
+				ctx: context.Background(),
 				from: func() *dto.GetPrevOutDto {
 					o := dto.NewGetPrevOutDto(false)
 					o = o.WithTagDto(
