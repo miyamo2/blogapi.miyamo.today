@@ -11,14 +11,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type Dns string
+type Dsn string
 
 var Gorm = fx.Options(
-	fx.Provide(func() Dns {
-		return Dns(os.Getenv("COCKROACHDB_DNS"))
+	fx.Provide(func() Dsn {
+		return Dsn(os.Getenv("COCKROACHDB_DSN"))
 	}),
-	fx.Provide(func(dns Dns) *gorm.Dialector {
-		db, err := sql.Open("nrpgx", string(dns))
+	fx.Provide(func(dsn Dsn) *gorm.Dialector {
+		db, err := sql.Open("nrpgx", string(dsn))
 		if err != nil {
 			panic(err)
 		}
