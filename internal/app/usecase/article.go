@@ -5,12 +5,10 @@ import (
 	"log/slog"
 
 	"github.com/cockroachdb/errors"
-	blogapictx "github.com/miyamo2/blogapi-core/context"
 	"github.com/miyamo2/blogapi-core/util/duration"
 	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
 	"github.com/miyamo2/blogproto-gen/article/client/pb"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"google.golang.org/grpc/metadata"
 )
 
 // Article is a use-case of getting an article by id.
@@ -26,9 +24,6 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
-	bctx := blogapictx.FromContext(ctx)
-	md := metadata.New(map[string]string{"trace_id": bctx.TraceID})
-	ctx = metadata.NewOutgoingContext(ctx, md)
 	response, err := u.aSvcClt.GetArticleById(
 		newrelic.NewContext(ctx, nrtx),
 		&pb.GetArticleByIdRequest{

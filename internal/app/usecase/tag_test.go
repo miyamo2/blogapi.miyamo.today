@@ -34,7 +34,6 @@ func TestTag_Execute(t *testing.T) {
 			blogapictx.New(
 				"1234567890",
 				"0987654321",
-				"Path",
 				blogapictx.RequestTypeGRPC,
 				nil,
 				nil))

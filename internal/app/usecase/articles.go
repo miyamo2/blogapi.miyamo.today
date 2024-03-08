@@ -7,12 +7,10 @@ import (
 	"log/slog"
 
 	"github.com/cockroachdb/errors"
-	blogapictx "github.com/miyamo2/blogapi-core/context"
 	"github.com/miyamo2/blogapi-core/util/duration"
 	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
 	"github.com/miyamo2/blogproto-gen/article/client/pb"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"google.golang.org/grpc/metadata"
 )
 
 // Articles is a use-case of getting an articles.
@@ -59,9 +57,6 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
-	bctx := blogapictx.FromContext(ctx)
-	md := metadata.New(map[string]string{"trace_id": bctx.TraceID})
-	ctx = metadata.NewOutgoingContext(ctx, md)
 	response, err := u.aSvcClt.GetNextArticles(ctx, &pb.GetNextArticlesRequest{
 		First: int32(in.First()),
 		After: utils.PtrFromString(in.After()),
@@ -110,9 +105,6 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
-	bctx := blogapictx.FromContext(ctx)
-	md := metadata.New(map[string]string{"trace_id": bctx.TraceID})
-	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	response, err := u.aSvcClt.GetPrevArticles(ctx, &pb.GetPrevArticlesRequest{
 		Last:   int32(in.Last()),
@@ -161,9 +153,6 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 	defer nrtx.StartSegment("execute").End()
 	dw := duration.Start()
 	slog.InfoContext(ctx, "BEGIN")
-	bctx := blogapictx.FromContext(ctx)
-	md := metadata.New(map[string]string{"trace_id": bctx.TraceID})
-	ctx = metadata.NewOutgoingContext(ctx, md)
 	response, err := u.aSvcClt.GetAllArticles(ctx, &emptypb.Empty{})
 	if err != nil {
 		err = errors.WithStack(err)

@@ -34,7 +34,6 @@ func TestArticles_Execute(t *testing.T) {
 			blogapictx.New(
 				"1234567890",
 				"0987654321",
-				"Path",
 				blogapictx.RequestTypeGRPC,
 				nil,
 				nil))
@@ -304,7 +303,6 @@ func TestArticles_executeNextPaging(t *testing.T) {
 			blogapictx.New(
 				"1234567890",
 				"0987654321",
-				"Path",
 				blogapictx.RequestTypeGRPC,
 				nil,
 				nil))
@@ -434,7 +432,6 @@ func TestArticles_executePrevPaging(t *testing.T) {
 			blogapictx.New(
 				"1234567890",
 				"0987654321",
-				"Path",
 				blogapictx.RequestTypeGRPC,
 				nil,
 				nil))
@@ -563,7 +560,6 @@ func TestArticles_execute(t *testing.T) {
 			blogapictx.New(
 				"1234567890",
 				"0987654321",
-				"Path",
 				blogapictx.RequestTypeGRPC,
 				nil,
 				nil))
