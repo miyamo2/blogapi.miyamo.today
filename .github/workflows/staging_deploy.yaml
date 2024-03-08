@@ -1,4 +1,4 @@
-name: release_develop_env
+name: staging_deploy
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 permissions: write-all
 
 jobs:
-  release_develop_env:
+  staging_deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
