@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/miyamo2/blogapi-core/graphql/middleware"
 	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
@@ -8,6 +9,7 @@ import (
 	"github.com/miyamo2/blogapi/internal/if-adapter/controller/graphql/resolver/presenter/converter"
 	"github.com/miyamo2/blogapi/internal/if-adapter/controller/graphql/resolver/usecase"
 	"github.com/miyamo2/blogapi/internal/infra/fw/gqlgen"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"go.uber.org/fx"
 )
 
@@ -43,9 +45,11 @@ var Gqlgen = fx.Options(
 		}
 	}),
 	fx.Provide(gqlgen.NewExecutableSchema),
-	fx.Provide(handler.NewDefaultServer),
-	fx.Invoke(func(srv *handler.Server) {
+	fx.Provide(func(schema graphql.ExecutableSchema, app *newrelic.Application) *handler.Server {
+		srv := handler.NewDefaultServer(schema)
+		srv.AroundOperations(middleware.StartNewRelicTransaction(app))
 		srv.AroundOperations(middleware.SetBlogAPIContextToContext)
 		srv.AroundRootFields(middleware.StartNewRelicSegment)
+		return srv
 	}),
 )

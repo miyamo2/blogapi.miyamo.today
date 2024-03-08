@@ -8,7 +8,6 @@ import (
 	"github.com/miyamo2/blogapi/internal/if-adapter/presenters/graphql/model"
 	mconverter "github.com/miyamo2/blogapi/internal/mock/if-adapter/controller/graphql/resolver/presenter/converter"
 	musecase "github.com/miyamo2/blogapi/internal/mock/if-adapter/controller/graphql/resolver/usecase"
-	"github.com/miyamo2/blogapi/internal/utils"
 	"go.uber.org/mock/gomock"
 	"testing"
 	"time"
@@ -277,7 +276,7 @@ func Test_queryResolver_Tags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -317,7 +316,7 @@ func Test_queryResolver_Tags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},

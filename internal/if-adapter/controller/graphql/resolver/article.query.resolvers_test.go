@@ -74,15 +74,12 @@ func Test_queryResolver_Article(t *testing.T) {
 			},
 			converterResult: converterResult{
 				out: &model.ArticleNode{
-					ID:      "Article1",
-					Title:   "Article1",
-					Content: "## Article1",
-					ThumbnailURL: func() *string {
-						v := "example.test"
-						return &v
-					}(),
-					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ID:           "Article1",
+					Title:        "Article1",
+					Content:      "## Article1",
+					ThumbnailURL: "example.test",
+					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				},
 				ok: true,
 			},
@@ -92,15 +89,12 @@ func Test_queryResolver_Article(t *testing.T) {
 			},
 			want: want{
 				out: &model.ArticleNode{
-					ID:      "Article1",
-					Title:   "Article1",
-					Content: "## Article1",
-					ThumbnailURL: func() *string {
-						v := "example.test"
-						return &v
-					}(),
-					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ID:           "Article1",
+					Title:        "Article1",
+					Content:      "## Article1",
+					ThumbnailURL: "example.test",
+					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 				},
 				err: nil,
 			},
@@ -274,15 +268,12 @@ func Test_queryResolver_Articles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "Article1",
-								Content: "## Article1",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "Article1",
+								Content:      "## Article1",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -323,15 +314,12 @@ func Test_queryResolver_Articles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "Article1",
-								Content: "## Article1",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "Article1",
+								Content:      "## Article1",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{

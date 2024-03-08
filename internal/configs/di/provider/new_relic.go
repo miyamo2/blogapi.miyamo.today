@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"log"
 	"os"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -15,7 +16,7 @@ var NewRelic = fx.Options(
 			newrelic.ConfigAppLogForwardingEnabled(true),
 		)
 		if err != nil {
-			panic(err)
+			log.Fatal(err.Error())
 		}
 		return app
 	}),

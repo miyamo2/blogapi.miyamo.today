@@ -5,8 +5,8 @@ package gqlgen
 import (
 	"bytes"
 	"context"
-	"github.com/cockroachdb/errors"
 	"fmt"
+	"github.com/cockroachdb/errors"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -657,11 +657,11 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../../../../.api/article/article.model.graphqls", Input: `type ArticleNode implements Node {
+	{Name: "../../../../.api/article/article.model.graphqls", Input: `type ArticleNode implements Node @derivedTypes {
   id: ID!
   title: String!
-  content: String!
-  thumbnailUrl: String
+  content: Markdown!
+  thumbnailUrl: String!
   createdAt: DateTime!
   updatedAt: DateTime!
   tags(
@@ -708,35 +708,34 @@ type ArticleConnection {
 	{Name: "../../../../.api/article/article.schema.graphqls", Input: `extend schema {
   query: Query
 }`, BuiltIn: false},
-	{Name: "../../../../.api/base/model.graphqls", Input: `scalar DateTime
-scalar Upload
-directive @isAuthenticated on FIELD_DEFINITION
-
-interface Node {
-  id: ID!
+	{Name: "../../../../.api/base/directive.graphqls", Input: `directive @isAuthenticated on FIELD_DEFINITION
+directive @derivedTypes on OBJECT`, BuiltIn: false},
+	{Name: "../../../../.api/base/mutation.graphqls", Input: `type Mutation {
+  noop(input: NoopInput): NoopPayload
 }
-
-type PageInfo {
-  hasNextPage: Boolean
-  hasPreviousPage: Boolean
-  startCursor: String!
-  endCursor: String!
-}
-
-input NoopInput {
+`, BuiltIn: false},
+	{Name: "../../../../.api/base/mutation.model.graphqls", Input: `input NoopInput {
   clientMutationId: String
 }
 
 type NoopPayload {
   clientMutationId: String
 }`, BuiltIn: false},
-	{Name: "../../../../.api/base/mutation.graphqls", Input: `type Mutation {
-  noop(input: NoopInput): NoopPayload
-}
-`, BuiltIn: false},
+	{Name: "../../../../.api/base/node.model.graphqls", Input: `interface Node {
+  id: ID!
+}`, BuiltIn: false},
 	{Name: "../../../../.api/base/query.graphqls", Input: `type Query {
   node(id: ID!): Node
 }`, BuiltIn: false},
+	{Name: "../../../../.api/base/query.model.graphqls", Input: `type PageInfo {
+  hasNextPage: Boolean
+  hasPreviousPage: Boolean
+  startCursor: String!
+  endCursor: String!
+}`, BuiltIn: false},
+	{Name: "../../../../.api/base/scalar.backend.graphqls", Input: `scalar Markdown`, BuiltIn: false},
+	{Name: "../../../../.api/base/scalar.graphqls", Input: `scalar DateTime
+scalar Upload`, BuiltIn: false},
 	{Name: "../../../../.api/base/schema.graphqls", Input: `schema {
   query: Query
   mutation: Mutation
@@ -752,10 +751,10 @@ type NoopPayload {
   ): TagArticleConnection!
 }
 
-type TagArticleNode implements Node {
+type TagArticleNode implements Node @derivedTypes {
   id: ID!
   title: String!
-  thumbnailUrl: String
+  thumbnailUrl: String!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -1447,7 +1446,7 @@ func (ec *executionContext) _ArticleNode_content(ctx context.Context, field grap
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNMarkdown2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ArticleNode_content(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1457,7 +1456,7 @@ func (ec *executionContext) fieldContext_ArticleNode_content(ctx context.Context
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Markdown does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1484,11 +1483,14 @@ func (ec *executionContext) _ArticleNode_thumbnailUrl(ctx context.Context, field
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ArticleNode_thumbnailUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3044,11 +3046,14 @@ func (ec *executionContext) _TagArticleNode_thumbnailUrl(ctx context.Context, fi
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TagArticleNode_thumbnailUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5499,6 +5504,9 @@ func (ec *executionContext) _ArticleNode(ctx context.Context, sel ast.SelectionS
 			}
 		case "thumbnailUrl":
 			out.Values[i] = ec._ArticleNode_thumbnailUrl(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createdAt":
 			out.Values[i] = ec._ArticleNode_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -6071,6 +6079,9 @@ func (ec *executionContext) _TagArticleNode(ctx context.Context, sel ast.Selecti
 			}
 		case "thumbnailUrl":
 			out.Values[i] = ec._TagArticleNode_thumbnailUrl(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "createdAt":
 			out.Values[i] = ec._TagArticleNode_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -6776,6 +6787,21 @@ func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}
 
 func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
 	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNMarkdown2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMarkdown2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

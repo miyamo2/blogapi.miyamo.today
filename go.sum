@@ -32,6 +32,8 @@ github.com/getsentry/sentry-go v0.25.0 h1:q6Eo+hS+yoJlTO3uu/azhQadsD8V+jQn2D8VvX
 github.com/getsentry/sentry-go v0.25.0/go.mod h1:lc76E2QywIyW8WuBnwl8Lc4bkmQH4+w1gwTf25trprY=
 github.com/go-errors/errors v1.4.2 h1:J6MZopCL4uSllY1OfXM374weqZFFItUbrImctkmUxIA=
 github.com/go-errors/errors v1.4.2/go.mod h1:sIVyrIiJhuEF+Pj9Ebtd6P/rEYROXFi3BopGUQ5a5Og=
+github.com/goccy/go-json v0.10.2 h1:CrxCmQqYDkv1z7lO7Wbh2HN93uovUHgrECaO5ZrCXAU=
+github.com/goccy/go-json v0.10.2/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MGFi0w8I=
 github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
 github.com/gogo/protobuf v1.3.2/go.mod h1:P1XiOD3dCwIKUDQYPy72D8LYyHL2YPYrpS2s69NZV8Q=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
@@ -67,8 +69,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyuac5Z2hdY=
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
-github.com/miyamo2/blogapi-core v0.10.0 h1:tf0ow3+woAYJVBN1OBAhexELCNSkKauXJgWEadfT1jo=
-github.com/miyamo2/blogapi-core v0.10.0/go.mod h1:V5vFbHU1MBkTy4n76I/m2lLKB2RML7r3iiVHhgZ8noo=
+github.com/miyamo2/blogapi-core v0.11.1 h1:8TMLMlq0kQOaLz0uhzagPy72h7MnDmt9hzoiVzL8dNc=
+github.com/miyamo2/blogapi-core v0.11.1/go.mod h1:93lV/G9HNfxxcLagYD6sy6lz5YVcvKUDTctvmIy+XMs=
 github.com/miyamo2/blogproto-gen/article/client v0.3.0 h1:e3K9CosrjCfKNpj7Cs0BvgC9ll0ILNua1k8OdYOgkso=
 github.com/miyamo2/blogproto-gen/article/client v0.3.0/go.mod h1:YtV+5gYrenRnfp/AoP/J8jVO+ZWssMT48zmI1fXHmWA=
 github.com/miyamo2/blogproto-gen/tag/client v0.3.2 h1:nCeRf9X6YBorhsUbOat7DzNG93ASyn6h9vzslScUeXY=

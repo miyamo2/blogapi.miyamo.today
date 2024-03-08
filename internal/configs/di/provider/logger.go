@@ -10,8 +10,9 @@ import (
 )
 
 var Logger = fx.Options(
-	fx.Invoke(func(app *newrelic.Application) {
+	fx.Provide(func(app *newrelic.Application) *slog.Logger {
 		wrtr := logWriter.New(os.Stdout, app)
-		log.New(log.WithWriter(wrtr))
-		slog.SetDefault(log.New(log.WithWriter(wrtr)))
+		slgr := log.New(log.WithWriter(wrtr))
+		slog.SetDefault(slgr)
+		return slgr
 	}))

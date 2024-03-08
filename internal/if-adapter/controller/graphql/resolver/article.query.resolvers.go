@@ -6,9 +6,8 @@ package resolver
 
 import (
 	"context"
-	"log/slog"
-
 	"github.com/cockroachdb/errors"
+	"log/slog"
 
 	"github.com/miyamo2/blogapi-core/util/duration"
 	"github.com/miyamo2/blogapi/internal/app/usecase/dto"

@@ -88,3 +88,10 @@ models:
   DateTime:
     model:
       - github.com/99designs/gqlgen/graphql.Time
+  Markdown:
+    model:
+      - github.com/99designs/gqlgen/graphql.String
+
+directives:
+  derivedTypes:
+    skip_runtime: true

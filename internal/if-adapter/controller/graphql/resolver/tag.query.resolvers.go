@@ -7,13 +7,13 @@ package resolver
 import (
 	"context"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/util/duration"
-	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
-	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"log/slog"
 
+	"github.com/miyamo2/blogapi-core/util/duration"
+	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi/internal/if-adapter/presenters/graphql/model"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
+	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 // Tags is the resolver for the tags field.

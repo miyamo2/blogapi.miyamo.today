@@ -6,7 +6,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi/internal/if-adapter/presenters/graphql/model"
-	"github.com/miyamo2/blogapi/internal/utils"
 	"testing"
 	"time"
 )
@@ -45,15 +44,12 @@ func TestConverter_ToArticle(t *testing.T) {
 			},
 			want: want{
 				&model.ArticleNode{
-					ID:      "Article1",
-					Title:   "happy_path/single_tag",
-					Content: "## happy_path/single_tag",
-					ThumbnailURL: func() *string {
-						v := "example.test"
-						return &v
-					}(),
-					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ID:           "Article1",
+					Title:        "happy_path/single_tag",
+					Content:      "## happy_path/single_tag",
+					ThumbnailURL: "example.test",
+					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					Tags: &model.ArticleTagConnection{
 						Edges: []*model.ArticleTagEdge{
 							{
@@ -93,15 +89,12 @@ func TestConverter_ToArticle(t *testing.T) {
 			},
 			want: want{
 				&model.ArticleNode{
-					ID:      "Article1",
-					Title:   "happy_path/multi_tag",
-					Content: "## happy_path/multi_tag",
-					ThumbnailURL: func() *string {
-						v := "example.test"
-						return &v
-					}(),
-					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ID:           "Article1",
+					Title:        "happy_path/multi_tag",
+					Content:      "## happy_path/multi_tag",
+					ThumbnailURL: "example.test",
+					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					Tags: &model.ArticleTagConnection{
 						Edges: []*model.ArticleTagEdge{
 							{
@@ -146,15 +139,12 @@ func TestConverter_ToArticle(t *testing.T) {
 			},
 			want: want{
 				&model.ArticleNode{
-					ID:      "Article1",
-					Title:   "happy_path/no_tag",
-					Content: "## happy_path/no_tag",
-					ThumbnailURL: func() *string {
-						v := "example.test"
-						return &v
-					}(),
-					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ID:           "Article1",
+					Title:        "happy_path/no_tag",
+					Content:      "## happy_path/no_tag",
+					ThumbnailURL: "example.test",
+					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					Tags: &model.ArticleTagConnection{
 						Edges:    []*model.ArticleTagEdge{},
 						PageInfo: &model.PageInfo{},
@@ -232,15 +222,12 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 			},
 			want: want{
 				out: &model.ArticleNode{
-					ID:      "Article1",
-					Title:   "happy_path/single_tag",
-					Content: "## happy_path/single_tag",
-					ThumbnailURL: func() *string {
-						v := "example.test"
-						return &v
-					}(),
-					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ID:           "Article1",
+					Title:        "happy_path/single_tag",
+					Content:      "## happy_path/single_tag",
+					ThumbnailURL: "example.test",
+					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					Tags: &model.ArticleTagConnection{
 						Edges: []*model.ArticleTagEdge{
 							{
@@ -278,15 +265,12 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 			},
 			want: want{
 				out: &model.ArticleNode{
-					ID:      "Article1",
-					Title:   "happy_path/multi_tag",
-					Content: "## happy_path/multi_tag",
-					ThumbnailURL: func() *string {
-						v := "example.test"
-						return &v
-					}(),
-					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ID:           "Article1",
+					Title:        "happy_path/multi_tag",
+					Content:      "## happy_path/multi_tag",
+					ThumbnailURL: "example.test",
+					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					Tags: &model.ArticleTagConnection{
 						Edges: []*model.ArticleTagEdge{
 							{
@@ -328,15 +312,12 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 			},
 			want: want{
 				out: &model.ArticleNode{
-					ID:      "Article1",
-					Title:   "happy_path/no_tag",
-					Content: "## happy_path/no_tag",
-					ThumbnailURL: func() *string {
-						v := "example.test"
-						return &v
-					}(),
-					CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					ID:           "Article1",
+					Title:        "happy_path/no_tag",
+					Content:      "## happy_path/no_tag",
+					ThumbnailURL: "example.test",
+					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 					Tags: &model.ArticleTagConnection{
 						Edges:    []*model.ArticleTagEdge{},
 						PageInfo: &model.PageInfo{},
@@ -455,15 +436,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/single_article/single_tag",
-								Content: "## happy_path/single_article/single_tag",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/single_article/single_tag",
+								Content:      "## happy_path/single_article/single_tag",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -517,15 +495,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/single_article/multi_tag",
-								Content: "## happy_path/single_article/multi_tag",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/single_article/multi_tag",
+								Content:      "## happy_path/single_article/multi_tag",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -595,15 +570,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/multi_article/single_tag",
-								Content: "## happy_path/multi_article/single_tag",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/multi_article/single_tag",
+								Content:      "## happy_path/multi_article/single_tag",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -625,15 +597,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article2",
 							Node: &model.ArticleNode{
-								ID:      "Article2",
-								Title:   "happy_path/multi_article/single_tag",
-								Content: "## happy_path/multi_article/single_tag",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article2",
+								Title:        "happy_path/multi_article/single_tag",
+								Content:      "## happy_path/multi_article/single_tag",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -698,15 +667,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/multi_article/multi_tag",
-								Content: "## happy_path/multi_article/multi_tag",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/multi_article/multi_tag",
+								Content:      "## happy_path/multi_article/multi_tag",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -735,15 +701,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article2",
 							Node: &model.ArticleNode{
-								ID:      "Article2",
-								Title:   "happy_path/multi_article/multi_tag",
-								Content: "## happy_path/multi_article/multi_tag",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article2",
+								Title:        "happy_path/multi_article/multi_tag",
+								Content:      "## happy_path/multi_article/multi_tag",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -806,15 +769,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/single_article/single_tag/with_next_paging",
-								Content: "## happy_path/single_article/single_tag/with_next_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/single_article/single_tag/with_next_paging",
+								Content:      "## happy_path/single_article/single_tag/with_next_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -870,15 +830,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/single_article/multi_tag/with_next_paging",
-								Content: "## happy_path/single_article/multi_tag/with_next_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/single_article/multi_tag/with_next_paging",
+								Content:      "## happy_path/single_article/multi_tag/with_next_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -950,15 +907,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/multi_article/single_tag/with_next_paging",
-								Content: "## happy_path/multi_article/single_tag/with_next_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/multi_article/single_tag/with_next_paging",
+								Content:      "## happy_path/multi_article/single_tag/with_next_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -980,15 +934,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article2",
 							Node: &model.ArticleNode{
-								ID:      "Article2",
-								Title:   "happy_path/multi_article/single_tag/with_next_paging",
-								Content: "## happy_path/multi_article/single_tag/with_next_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article2",
+								Title:        "happy_path/multi_article/single_tag/with_next_paging",
+								Content:      "## happy_path/multi_article/single_tag/with_next_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1055,15 +1006,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/multi_article/multi_tag/with_next_paging",
-								Content: "## happy_path/multi_article/multi_tag/with_next_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/multi_article/multi_tag/with_next_paging",
+								Content:      "## happy_path/multi_article/multi_tag/with_next_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1092,15 +1040,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article2",
 							Node: &model.ArticleNode{
-								ID:      "Article2",
-								Title:   "happy_path/multi_article/multi_tag/with_next_paging",
-								Content: "## happy_path/multi_article/multi_tag/with_next_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article2",
+								Title:        "happy_path/multi_article/multi_tag/with_next_paging",
+								Content:      "## happy_path/multi_article/multi_tag/with_next_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1164,15 +1109,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/single_article/single_tag/with_prev_paging",
-								Content: "## happy_path/single_article/single_tag/with_prev_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/single_article/single_tag/with_prev_paging",
+								Content:      "## happy_path/single_article/single_tag/with_prev_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1228,15 +1170,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/single_article/multi_tag/with_prev_paging",
-								Content: "## happy_path/single_article/multi_tag/with_prev_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/single_article/multi_tag/with_prev_paging",
+								Content:      "## happy_path/single_article/multi_tag/with_prev_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1308,15 +1247,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/multi_article/single_tag/with_prev_paging",
-								Content: "## happy_path/multi_article/single_tag/with_prev_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/multi_article/single_tag/with_prev_paging",
+								Content:      "## happy_path/multi_article/single_tag/with_prev_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1338,15 +1274,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article2",
 							Node: &model.ArticleNode{
-								ID:      "Article2",
-								Title:   "happy_path/multi_article/single_tag/with_prev_paging",
-								Content: "## happy_path/multi_article/single_tag/with_prev_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article2",
+								Title:        "happy_path/multi_article/single_tag/with_prev_paging",
+								Content:      "## happy_path/multi_article/single_tag/with_prev_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1413,15 +1346,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article1",
 							Node: &model.ArticleNode{
-								ID:      "Article1",
-								Title:   "happy_path/multi_article/multi_tag/with_prev_paging",
-								Content: "## happy_path/multi_article/multi_tag/with_prev_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article1",
+								Title:        "happy_path/multi_article/multi_tag/with_prev_paging",
+								Content:      "## happy_path/multi_article/multi_tag/with_prev_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1450,15 +1380,12 @@ func TestConverter_ToArticles(t *testing.T) {
 						{
 							Cursor: "Article2",
 							Node: &model.ArticleNode{
-								ID:      "Article2",
-								Title:   "happy_path/multi_article/multi_tag/with_prev_paging",
-								Content: "## happy_path/multi_article/multi_tag/with_prev_paging",
-								ThumbnailURL: func() *string {
-									v := "example.test"
-									return &v
-								}(),
-								CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								ID:           "Article2",
+								Title:        "happy_path/multi_article/multi_tag/with_prev_paging",
+								Content:      "## happy_path/multi_article/multi_tag/with_prev_paging",
+								ThumbnailURL: "example.test",
+								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1589,14 +1516,11 @@ func TestConverter_ToTag(t *testing.T) {
 							{
 								Cursor: "Article1",
 								Node: &model.TagArticleNode{
-									ID:    "Article1",
-									Title: "Article1",
-									ThumbnailURL: func() *string {
-										v := "example.test"
-										return &v
-									}(),
-									CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-									UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									ID:           "Article1",
+									Title:        "Article1",
+									ThumbnailURL: "example.test",
+									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								},
 							},
 						},
@@ -1642,27 +1566,21 @@ func TestConverter_ToTag(t *testing.T) {
 							{
 								Cursor: "Article1",
 								Node: &model.TagArticleNode{
-									ID:    "Article1",
-									Title: "Article1",
-									ThumbnailURL: func() *string {
-										v := "example.test"
-										return &v
-									}(),
-									CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-									UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									ID:           "Article1",
+									Title:        "Article1",
+									ThumbnailURL: "example.test",
+									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								},
 							},
 							{
 								Cursor: "Article2",
 								Node: &model.TagArticleNode{
-									ID:    "Article2",
-									Title: "Article2",
-									ThumbnailURL: func() *string {
-										v := "example.test"
-										return &v
-									}(),
-									CreatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-									UpdatedAt: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									ID:           "Article2",
+									Title:        "Article2",
+									ThumbnailURL: "example.test",
+									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								},
 							},
 						},
@@ -1792,7 +1710,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 								Node: &model.TagArticleNode{
 									ID:           "Article1",
 									Title:        "Article1",
-									ThumbnailURL: utils.PtrFromString("example.test"),
+									ThumbnailURL: "example.test",
 									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								},
@@ -1844,7 +1762,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 								Node: &model.TagArticleNode{
 									ID:           "Article1",
 									Title:        "Article1",
-									ThumbnailURL: utils.PtrFromString("example.test"),
+									ThumbnailURL: "example.test",
 									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								},
@@ -1854,7 +1772,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 								Node: &model.TagArticleNode{
 									ID:           "Article2",
 									Title:        "Article2",
-									ThumbnailURL: utils.PtrFromString("example.test"),
+									ThumbnailURL: "example.test",
 									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 								},
@@ -2015,7 +1933,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2080,7 +1998,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2090,7 +2008,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2158,7 +2076,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2184,7 +2102,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2266,7 +2184,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2276,7 +2194,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2302,7 +2220,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2312,7 +2230,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2370,7 +2288,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2454,7 +2372,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2464,7 +2382,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2490,7 +2408,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2500,7 +2418,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2584,7 +2502,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2594,7 +2512,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2620,7 +2538,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},
@@ -2630,7 +2548,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: utils.PtrFromString("example.test"),
+												ThumbnailURL: "example.test",
 												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
 											},

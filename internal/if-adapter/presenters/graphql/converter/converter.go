@@ -10,7 +10,6 @@ import (
 
 	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi/internal/if-adapter/presenters/graphql/model"
-	"github.com/miyamo2/blogapi/internal/utils"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
@@ -104,7 +103,7 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 		ID:           from.Id(),
 		Title:        from.Title(),
 		Content:      from.Body(),
-		ThumbnailURL: utils.PtrFromString(from.ThumbnailUrl()),
+		ThumbnailURL: from.ThumbnailUrl(),
 		CreatedAt:    crtd,
 		UpdatedAt:    updtd,
 		Tags:         &tcnn,
@@ -240,7 +239,7 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 			Node: &model.TagArticleNode{
 				ID:           article.Id(),
 				Title:        article.Title(),
-				ThumbnailURL: utils.PtrFromString(article.ThumbnailUrl()),
+				ThumbnailURL: article.ThumbnailUrl(),
 				CreatedAt:    crtd,
 				UpdatedAt:    updtd,
 			},

@@ -5,10 +5,11 @@ go 1.21.3
 require (
 	github.com/99designs/gqlgen v0.17.43
 	github.com/cockroachdb/errors v1.11.1
+	github.com/goccy/go-json v0.10.2
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/miyamo2/blogapi-core v0.10.0
+	github.com/miyamo2/blogapi-core v0.11.1
 	github.com/miyamo2/blogproto-gen/article/client v0.3.0
 	github.com/miyamo2/blogproto-gen/tag/client v0.3.2
 	github.com/newrelic/go-agent/v3 v3.29.0

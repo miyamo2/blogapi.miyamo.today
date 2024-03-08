@@ -26,7 +26,7 @@ type ArticleNode struct {
 	ID           string                `json:"id"`
 	Title        string                `json:"title"`
 	Content      string                `json:"content"`
-	ThumbnailURL *string               `json:"thumbnailUrl,omitempty"`
+	ThumbnailURL string                `json:"thumbnailUrl"`
 	CreatedAt    time.Time             `json:"createdAt"`
 	UpdatedAt    time.Time             `json:"updatedAt"`
 	Tags         *ArticleTagConnection `json:"tags"`
@@ -86,7 +86,7 @@ type TagArticleEdge struct {
 type TagArticleNode struct {
 	ID           string    `json:"id"`
 	Title        string    `json:"title"`
-	ThumbnailURL *string   `json:"thumbnailUrl,omitempty"`
+	ThumbnailURL string    `json:"thumbnailUrl"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
