@@ -1,4 +1,4 @@
-name: release_develop_env
+name: staging_deploy
 
 on:
   push:
