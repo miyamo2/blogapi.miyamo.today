@@ -41,6 +41,8 @@ func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleState
 		))
 	stmt := gwrapper.NewStatement(
 		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
+			nrtx := newrelic.FromContext(ctx)
+			defer nrtx.StartSegment("GetById Execute").End()
 			lgr, err := altnrslog.FromContext(ctx)
 			if err != nil {
 				err = errors.WithStack(err)
@@ -61,7 +63,7 @@ func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleState
 				Select(`"tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at"`).
 				Table(`(?) AS "tags"`, subQ).
 				Joins(`LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id"`)
-			q.Scan(&rows)
+			gwrapper.TraceableScan(nrtx, q, &rows)
 			if len(rows) == 0 {
 				err := errors.WithDetail(ErrNotFound, fmt.Sprintf("id: %v", id))
 				nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -116,6 +118,8 @@ func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult
 		))
 	stmt := gwrapper.NewStatement(
 		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
+			nrtx := newrelic.FromContext(ctx)
+			defer nrtx.StartSegment("GetAll Execute").End()
 			lgr, err := altnrslog.FromContext(ctx)
 			if err != nil {
 				err = errors.WithStack(err)
@@ -132,6 +136,7 @@ func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult
 			q := tx.Select(`"tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at"`).
 				Joins(`LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id"`)
 			buildQuery(pg, tx, q)
+			gwrapper.TraceableScan(nrtx, q, &rows)
 			q.Scan(&rows)
 			tagMap := make(map[string]*model.Tag)
 			result := make([]*model.Tag, 0)
