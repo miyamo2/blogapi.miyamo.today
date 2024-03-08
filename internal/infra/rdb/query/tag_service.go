@@ -137,7 +137,6 @@ func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult
 				Joins(`LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id"`)
 			buildQuery(pg, tx, q)
 			gwrapper.TraceableScan(nrtx, q, &rows)
-			q.Scan(&rows)
 			tagMap := make(map[string]*model.Tag)
 			result := make([]*model.Tag, 0)
 			for _, r := range rows {
