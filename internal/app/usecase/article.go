@@ -2,6 +2,9 @@ package usecase
 
 import (
 	"context"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"log/slog"
 
 	"github.com/cockroachdb/errors"
@@ -22,7 +25,13 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 	response, err := u.aSvcClt.GetArticleById(
 		newrelic.NewContext(ctx, nrtx),
@@ -31,7 +40,7 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 		})
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.ArticleOutDto", nil),
@@ -55,7 +64,7 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 		pa.UpdatedAt,
 		ts)
 	out := dto.NewArticleOutDto(a)
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("*dto.ArticleOutDto", out),

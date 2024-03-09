@@ -7,6 +7,8 @@ package resolver
 import (
 	"context"
 	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"log/slog"
 
 	"github.com/miyamo2/blogapi-core/util/duration"
@@ -21,7 +23,13 @@ func (r *queryResolver) Tags(ctx context.Context, first *int, last *int, after *
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Tags").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.Any("first", first),
 			slog.Any("last", last),
@@ -44,7 +52,7 @@ func (r *queryResolver) Tags(ctx context.Context, first *int, last *int, after *
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.TagConnection", nil),
@@ -55,7 +63,7 @@ func (r *queryResolver) Tags(ctx context.Context, first *int, last *int, after *
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.TagConnection", nil),
@@ -64,7 +72,7 @@ func (r *queryResolver) Tags(ctx context.Context, first *int, last *int, after *
 	}
 	cnctn, err := r.converters.tags.ToTags(ctx, oDto)
 	if err != nil {
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.TagConnection", nil),
@@ -72,7 +80,7 @@ func (r *queryResolver) Tags(ctx context.Context, first *int, last *int, after *
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("*model.TagConnection", &cnctn),
@@ -85,13 +93,19 @@ func (r *queryResolver) Tag(ctx context.Context, id string) (*model.TagNode, err
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Tag").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.String("id", id)))
 	oDto, err := r.usecases.tag.Execute(ctx, dto.NewTagInDto(id))
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.TagNode", nil),
@@ -100,7 +114,7 @@ func (r *queryResolver) Tag(ctx context.Context, id string) (*model.TagNode, err
 	}
 	nd, err := r.converters.tag.ToTag(ctx, oDto)
 	if err != nil {
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.TagNode", nil),
@@ -108,7 +122,7 @@ func (r *queryResolver) Tag(ctx context.Context, id string) (*model.TagNode, err
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("*model.TageNode", &nd),

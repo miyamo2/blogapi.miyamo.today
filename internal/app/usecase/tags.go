@@ -2,7 +2,10 @@ package usecase
 
 import (
 	"context"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"github.com/miyamo2/blogapi/internal/utils"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"log/slog"
 
@@ -24,7 +27,13 @@ func (u *Tags) Execute(ctx context.Context, in dto.TagsInDto) (dto.TagsOutDto, e
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 	out, err := func() (dto.TagsOutDto, error) {
 		if in.First() != 0 {
@@ -35,14 +44,14 @@ func (u *Tags) Execute(ctx context.Context, in dto.TagsInDto) (dto.TagsOutDto, e
 		return u.execute(ctx)
 	}()
 	if err != nil {
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.TagsOutDto", out),
 				slog.Any("error", err)))
 		return out, err
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDto", out),
@@ -55,7 +64,13 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("executeNextPaging").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
 	response, err := u.tSvcClt.GetNextTags(ctx, &pb.GetNextTagsRequest{
@@ -64,7 +79,7 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 	})
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.TagsOutDto", nil),
@@ -91,7 +106,7 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 			das))
 	}
 	out := dto.NewTagsOutDto(dts, dto.TagsOutDtoWithHasNext(response.StillExists))
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDto", out),
@@ -104,7 +119,13 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("executePrevPaging").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
 	response, err := u.tSvcClt.GetPrevTags(ctx, &pb.GetPrevTagsRequest{
@@ -113,7 +134,7 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 	})
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.TagsOutDto", nil),
@@ -140,7 +161,7 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 			das))
 	}
 	out := dto.NewTagsOutDto(dts, dto.TagsOutDtoWithHasPrev(response.StillExists))
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDto", out),
@@ -153,11 +174,17 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("execute").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN")
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN")
 	response, err := u.tSvcClt.GetAllTags(ctx, &emptypb.Empty{})
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.TagsOutDto", nil),
@@ -184,7 +211,7 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDto, error) {
 			das))
 	}
 	out := dto.NewTagsOutDto(dts)
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDto", out),

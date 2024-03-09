@@ -7,6 +7,8 @@ package resolver
 import (
 	"context"
 	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"log/slog"
 
 	"github.com/miyamo2/blogapi-core/util/duration"
@@ -21,7 +23,13 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Articles").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.Any("first", first),
 			slog.Any("last", last),
@@ -44,7 +52,7 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.ArticleConnection", nil),
@@ -55,7 +63,7 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.ArticleConnection", nil),
@@ -65,7 +73,7 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 	cnctn, ok := r.converters.articles.ToArticles(ctx, oDto)
 	if !ok {
 		err := ErrFailedToConvertToArticleConnection
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.ArticleConnection", nil),
@@ -73,7 +81,7 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("*model.ArticleConnection", &cnctn),
@@ -86,13 +94,19 @@ func (r *queryResolver) Article(ctx context.Context, id string) (*model.ArticleN
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Article").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.String("id", id)))
 	oDto, err := r.usecases.article.Execute(ctx, dto.NewArticleInDto(id))
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.ArticleNode", nil),
@@ -102,7 +116,7 @@ func (r *queryResolver) Article(ctx context.Context, id string) (*model.ArticleN
 	nd, ok := r.converters.article.ToArticle(ctx, oDto)
 	if !ok {
 		err := ErrFailedToConvertToArticleNode
-		slog.InfoContext(ctx, "END",
+		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.ArticleNode", nil),
@@ -110,7 +124,7 @@ func (r *queryResolver) Article(ctx context.Context, id string) (*model.ArticleN
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("*model.ArticleNode", &nd),

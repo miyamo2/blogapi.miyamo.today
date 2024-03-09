@@ -3,6 +3,8 @@ package converter
 import (
 	"context"
 	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"github.com/miyamo2/blogapi-core/util/duration"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"log/slog"
@@ -29,13 +31,19 @@ func (c Converter) ToArticle(ctx context.Context, from dto.ArticleOutDto) (*mode
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToArticle").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
 	n, err := c.articleNodeFromArticleTagDto(ctx, from.Article())
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.ArticleNode", nil),
@@ -50,7 +58,13 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("articleNodeFromArticleTagDto").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
 	tegs := make([]*model.ArticleTagEdge, 0, len(from.Tags()))
 	for _, tag := range from.Tags() {
@@ -81,7 +95,7 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 	if err != nil {
 		err = errors.Join(err, ErrParseTime)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("parameters",
 				slog.Any("*model.ArticleNode", nil),
@@ -92,7 +106,7 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 	if err != nil {
 		err = errors.Join(err, ErrParseTime)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("parameters",
 				slog.Any("*model.ArticleNode", nil),
@@ -108,7 +122,7 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 		UpdatedAt:    updtd,
 		Tags:         &tcnn,
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("parameters",
 			slog.Any("*model.ArticleNode", an),
@@ -120,7 +134,13 @@ func (c Converter) ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*mo
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToArticles").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
 	aegs := make([]*model.ArticleEdge, 0, len(from.Articles()))
 	for _, article := range from.Articles() {
@@ -128,7 +148,7 @@ func (c Converter) ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*mo
 		if err != nil {
 			err = errors.WithStack(err)
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			slog.WarnContext(ctx, "END",
+			lgr.WarnContext(ctx, "END",
 				slog.String("duration", dw.SDuration()),
 				slog.Group("returns",
 					slog.Any("*model.ArticleConnection", nil),
@@ -170,7 +190,7 @@ func (c Converter) ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*mo
 		PageInfo:   &pg,
 		TotalCount: len(aegs),
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("*model.ArticleConnection", cnctn),
@@ -183,19 +203,25 @@ func (c Converter) ToTag(ctx context.Context, from dto.TagOutDto) (*model.TagNod
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToTag").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
 	n, err := c.tagNodeFromTagArticleDto(ctx, from.Tag())
 	if err != nil {
 		err = errors.Join(err, ErrFailedToConvertToTagNode)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("returns",
 				slog.Any("*model.TagNode", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("*model.TagNode", n),
@@ -208,7 +234,13 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("tagNodeFromTagArticleDto").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
 	aegs := make([]*model.TagArticleEdge, 0, len(from.Articles()))
 	for _, article := range from.Articles() {
@@ -216,7 +248,7 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 		if err != nil {
 			err = errors.Join(err, ErrParseTime)
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			slog.WarnContext(ctx, "END",
+			lgr.WarnContext(ctx, "END",
 				slog.String("duration", dw.SDuration()),
 				slog.Group("parameters",
 					slog.Any("*model.ArticleNode", nil),
@@ -227,7 +259,7 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 		if err != nil {
 			err = errors.Join(err, ErrParseTime)
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			slog.WarnContext(ctx, "END",
+			lgr.WarnContext(ctx, "END",
 				slog.String("duration", dw.SDuration()),
 				slog.Group("parameters",
 					slog.Any("*model.ArticleNode", nil),
@@ -265,7 +297,7 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 		Name:     from.Name(),
 		Articles: &acnctn,
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("parameters",
 			slog.Any("*model.TagNode", n),
@@ -277,7 +309,13 @@ func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagC
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToTags").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
 	tegs := make([]*model.TagEdge, 0, len(from.Tags()))
 	for _, tag := range from.Tags() {
@@ -285,7 +323,7 @@ func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagC
 		if err != nil {
 			err = errors.WithStack(err)
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			slog.WarnContext(ctx, "END",
+			lgr.WarnContext(ctx, "END",
 				slog.String("duration", dw.SDuration()),
 				slog.Group("returns",
 					slog.Any("*model.TagConnection", nil),
@@ -327,7 +365,7 @@ func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagC
 		PageInfo:   &pg,
 		TotalCount: len(tegs),
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("*model.TagConnection", cnctn),

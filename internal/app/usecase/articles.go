@@ -2,7 +2,10 @@ package usecase
 
 import (
 	"context"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi-core/log"
 	"github.com/miyamo2/blogapi/internal/utils"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"log/slog"
 
@@ -24,7 +27,13 @@ func (u *Articles) Execute(ctx context.Context, in dto.ArticlesInDto) (dto.Artic
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 	out, err := func() (dto.ArticlesOutDto, error) {
 		if in.First() != 0 {
@@ -35,14 +44,14 @@ func (u *Articles) Execute(ctx context.Context, in dto.ArticlesInDto) (dto.Artic
 		return u.execute(ctx)
 	}()
 	if err != nil {
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.ArticleOutDto", out),
 				slog.Any("error", err)))
 		return out, err
 	}
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("*dto.ArticleOutDto", out),
@@ -55,7 +64,13 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("executeNextPaging").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 	response, err := u.aSvcClt.GetNextArticles(ctx, &pb.GetNextArticlesRequest{
 		First: int32(in.First()),
@@ -63,7 +78,7 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 	})
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.ArticleOutDto", nil),
@@ -90,7 +105,7 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 			ts))
 	}
 	out := dto.NewArticlesOutDto(das, dto.ArticlesOutDtoWithHasNext(response.StillExists))
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("*dto.ArticleOutDto", out),
@@ -103,7 +118,13 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("executePrevPaging").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN",
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
 	response, err := u.aSvcClt.GetPrevArticles(ctx, &pb.GetPrevArticlesRequest{
@@ -112,7 +133,7 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 	})
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.ArticleOutDto", nil),
@@ -139,7 +160,7 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 			ts))
 	}
 	out := dto.NewArticlesOutDto(das, dto.ArticlesOutDtoWithHasPrev(response.StillExists))
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("*dto.ArticleOutDto", out),
@@ -152,11 +173,17 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("execute").End()
 	dw := duration.Start()
-	slog.InfoContext(ctx, "BEGIN")
+	lgr, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		lgr = log.DefaultLogger()
+	}
+	lgr.InfoContext(ctx, "BEGIN")
 	response, err := u.aSvcClt.GetAllArticles(ctx, &emptypb.Empty{})
 	if err != nil {
 		err = errors.WithStack(err)
-		slog.WarnContext(ctx, "END",
+		lgr.WarnContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
 				slog.Any("*dto.ArticleOutDto", nil),
@@ -183,7 +210,7 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 			ts))
 	}
 	out := dto.NewArticlesOutDto(das)
-	slog.InfoContext(ctx, "END",
+	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
 			slog.Any("*dto.ArticleOutDto", out),

@@ -45,11 +45,12 @@ var Gqlgen = fx.Options(
 		}
 	}),
 	fx.Provide(gqlgen.NewExecutableSchema),
-	fx.Provide(func(schema graphql.ExecutableSchema, app *newrelic.Application) *handler.Server {
+	fx.Provide(func(schema graphql.ExecutableSchema, nr *newrelic.Application) *handler.Server {
 		srv := handler.NewDefaultServer(schema)
-		srv.AroundOperations(middleware.StartNewRelicTransaction(app))
+		srv.AroundOperations(middleware.StartNewRelicTransaction(nr))
 		srv.AroundOperations(middleware.SetBlogAPIContextToContext)
 		srv.AroundRootFields(middleware.StartNewRelicSegment)
+		srv.AroundOperations(middleware.SetLoggerToContext(nr))
 		return srv
 	}),
 )

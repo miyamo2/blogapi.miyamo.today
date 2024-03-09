@@ -9,13 +9,14 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.11.4
+	github.com/miyamo2/altnrslog v0.4.0
 	github.com/miyamo2/blogapi-core v0.17.0
 	github.com/miyamo2/blogapi-core/echo v0.1.0
 	github.com/miyamo2/blogapi-core/graphql v0.2.1
 	github.com/miyamo2/blogproto-gen/article/client v0.3.0
 	github.com/miyamo2/blogproto-gen/tag/client v0.3.2
 	github.com/newrelic/go-agent/v3 v3.30.0
-	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1
+	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog v1.0.0
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.0.4
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.1
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
@@ -43,8 +44,8 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/miyamo2/altnrslog v0.4.0 // indirect
 	github.com/newrelic/csec-go-agent v0.6.0 // indirect
+	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 // indirect
 	github.com/oklog/ulid/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
