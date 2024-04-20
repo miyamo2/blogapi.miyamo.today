@@ -77,6 +77,6 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: peter-evans/create-or-update-comment@v3
         with:
-          token: ${{ secrets.COVERAGE_COMMENT_ON_PR }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.number }}
           body-path: "coverage.txt"
