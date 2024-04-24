@@ -1,0 +1,6 @@
+[submodule "federator/.api"]
+	path = federator/.api
+	url = https://github.com/miyamo2/schema.miyamo.today
+[submodule "protogen/.proto"]
+	path = protogen/.proto
+	url = https://github.com/miyamo2/proto.miyamo.today
