@@ -3,7 +3,7 @@ package provider
 import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/miyamo2/blogapi-core/graphql/middleware"
+	"github.com/miyamo2/api.miyamo.today/core/graphql/middleware"
 	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi/internal/if-adapter/controller/graphql/resolver"
 	"github.com/miyamo2/blogapi/internal/if-adapter/controller/graphql/resolver/presenter/converter"

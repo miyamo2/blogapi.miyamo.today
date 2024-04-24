@@ -2,16 +2,17 @@ package pb
 
 import (
 	"context"
+	"testing"
+
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
-	mpresenter "github.com/miyamo2/blogapi-article-service/internal/mock/if-adapter/controller/pb/presenter"
-	musecase "github.com/miyamo2/blogapi-article-service/internal/mock/if-adapter/controller/pb/usecase"
-	"github.com/miyamo2/blogproto-gen/article/server/pb"
+	"github.com/miyamo2/api.miyamo.today/article-service/internal/app/usecase/dto"
+	mpresenter "github.com/miyamo2/api.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/presenter"
+	musecase "github.com/miyamo2/api.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/usecase"
+	"github.com/miyamo2/api.miyamo.today/protogen/article/server/pb"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"testing"
 )
 
 func TestArticleServiceServer_GetArticleById(t *testing.T) {

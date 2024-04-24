@@ -33,7 +33,7 @@ func (sw *Watch) Duration() time.Duration {
 
 // SDuration returns the elapsed time as "15:04:05.000000000" format.
 //
-// See: https://pkg.go.dev/github.com/miyamo2/blogapi-core/pkg/util/stopwatch/#Duration
+// See: https://pkg.go.dev/github.com/miyamo2/api.miyamo.today/core/pkg/util/stopwatch/#Duration
 func (sw *Watch) SDuration() string {
 	return time.Unix(0, 0).UTC().Add(sw.Duration()).Format("15:04:05.000000000")
 }

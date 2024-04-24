@@ -8,7 +8,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/db"
+	"github.com/miyamo2/api.miyamo.today/core/db"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

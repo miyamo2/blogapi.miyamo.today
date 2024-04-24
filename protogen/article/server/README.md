@@ -1,9 +1,9 @@
-# blogproto-gen/article/server
+# api.miyamo.today/protogen/article/server
 
-blogproto-gen/article/server is a implementation of [miyamo2/blogproto](https://github.com/miyamo2/blogproto) article.proto's server.
+api.miyamo.today/protogen/article/server is a implementation of [miyamo2/blogproto](https://github.com/miyamo2/blogproto) article.proto's server.
 
 ## Installation
 
 ```sh
-go get github.com/miyamo2/blogproto-gen/article/server
+go get github.com/miyamo2/api.miyamo.today/protogen/article/server
 ```

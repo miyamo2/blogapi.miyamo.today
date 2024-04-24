@@ -6,12 +6,12 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/miyamo2/blogapi-tag-service/internal/infra/rdb/query/model"
+	"github.com/miyamo2/api.miyamo.today/tag-service/internal/infra/rdb/query/model"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/db"
-	gwrapper "github.com/miyamo2/blogapi-core/db/gorm"
+	"github.com/miyamo2/api.miyamo.today/core/db"
+	gwrapper "github.com/miyamo2/api.miyamo.today/core/db/gorm"
 	"gorm.io/driver/postgres"
 )
 

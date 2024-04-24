@@ -4,8 +4,8 @@ package presenter
 import (
 	"context"
 
-	"github.com/miyamo2/blogapi-tag-service/internal/if-adapter/controller/pb/usecase"
-	"github.com/miyamo2/blogproto-gen/tag/server/pb"
+	"github.com/miyamo2/api.miyamo.today/protogen/tag/server/pb"
+	"github.com/miyamo2/api.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
 )
 
 // ToGetByIdConverter is a converter interface for converting from GetById use-case's dto to pb response.

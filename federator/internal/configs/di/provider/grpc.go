@@ -7,8 +7,8 @@ import (
 
 	"google.golang.org/grpc/balancer/roundrobin"
 
-	apb "github.com/miyamo2/blogproto-gen/article/client/pb"
-	tpb "github.com/miyamo2/blogproto-gen/tag/client/pb"
+	apb "github.com/miyamo2/api.miyamo.today/protogen/article/client/pb"
+	tpb "github.com/miyamo2/api.miyamo.today/protogen/tag/client/pb"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"go.uber.org/fx"

@@ -10,11 +10,11 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/miyamo2/altnrslog v0.4.0
-	github.com/miyamo2/blogapi-core v0.17.0
-	github.com/miyamo2/blogapi-core/echo v0.1.0
-	github.com/miyamo2/blogapi-core/graphql v0.2.1
-	github.com/miyamo2/blogproto-gen/article/client v0.3.0
-	github.com/miyamo2/blogproto-gen/tag/client v0.3.2
+	github.com/miyamo2/api.miyamo.today/core v0.17.0
+	github.com/miyamo2/api.miyamo.today/core/echo v0.1.0
+	github.com/miyamo2/api.miyamo.today/core/graphql v0.2.1
+	github.com/miyamo2/api.miyamo.today/protogen/article/client v0.3.0
+	github.com/miyamo2/api.miyamo.today/protogen/tag/client v0.3.2
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog v1.0.0
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.0.4

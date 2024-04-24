@@ -7,8 +7,8 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/miyamo2/altnrslog"
-	blogapicontext "github.com/miyamo2/blogapi-core/context"
-	"github.com/miyamo2/blogapi-core/log"
+	blogapicontext "github.com/miyamo2/api.miyamo.today/core/context"
+	"github.com/miyamo2/api.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
 )

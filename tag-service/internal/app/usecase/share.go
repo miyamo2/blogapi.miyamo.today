@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"github.com/miyamo2/blogapi-tag-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi-tag-service/internal/infra/rdb/query/model"
+	"github.com/miyamo2/api.miyamo.today/tag-service/internal/app/usecase/dto"
+	"github.com/miyamo2/api.miyamo.today/tag-service/internal/infra/rdb/query/model"
 )
 
 // tagDtoFromQueryModel converts query.Tag to dto.Tag

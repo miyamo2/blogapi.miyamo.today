@@ -3,8 +3,8 @@ package query
 
 import (
 	"context"
-	"github.com/miyamo2/blogapi-core/db"
-	"github.com/miyamo2/blogapi-tag-service/internal/app/usecase/query/model"
+	"github.com/miyamo2/api.miyamo.today/core/db"
+	"github.com/miyamo2/api.miyamo.today/tag-service/internal/app/usecase/query/model"
 )
 
 // TagService is a query service interface.

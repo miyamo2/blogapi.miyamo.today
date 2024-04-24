@@ -5,9 +5,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	dynamotypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/db"
-	"github.com/miyamo2/blogapi-core/db/dynamodb/client"
-	mclient "github.com/miyamo2/blogapi-core/internal/mock/infra/dynamodb/client"
+	"github.com/miyamo2/api.miyamo.today/core/db"
+	"github.com/miyamo2/api.miyamo.today/core/db/dynamodb/client"
+	mclient "github.com/miyamo2/api.miyamo.today/core/internal/mock/infra/dynamodb/client"
 	"go.uber.org/mock/gomock"
 	"testing"
 )

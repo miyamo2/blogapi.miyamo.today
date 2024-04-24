@@ -1,6 +1,6 @@
 package pb
 
-import "github.com/miyamo2/blogproto-gen/article/client/pb/internal"
+import "github.com/miyamo2/api.miyamo.today/protogen/article/client/pb/internal"
 
 type GetArticleByIdRequest = internal.GetArticleByIdRequest
 

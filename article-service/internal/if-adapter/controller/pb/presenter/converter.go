@@ -3,8 +3,9 @@ package presenter
 
 import (
 	"context"
-	"github.com/miyamo2/blogapi-article-service/internal/if-adapter/controller/pb/usecase"
-	"github.com/miyamo2/blogproto-gen/article/server/pb"
+
+	"github.com/miyamo2/api.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
+	"github.com/miyamo2/api.miyamo.today/protogen/article/server/pb"
 )
 
 type ToGetNextConverter[T usecase.Tag, A usecase.Article[T], O usecase.GetNextOutDto[T, A]] interface {

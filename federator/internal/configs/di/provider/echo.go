@@ -9,7 +9,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/goccy/go-json"
 	"github.com/labstack/echo/v4"
-	"github.com/miyamo2/blogapi-core/echo/s11n"
+	"github.com/miyamo2/api.miyamo.today/core/echo/s11n"
 	nrecho "github.com/newrelic/go-agent/v3/integrations/nrecho-v4"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"

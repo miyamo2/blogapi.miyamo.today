@@ -1,10 +1,10 @@
-module github.com/miyamo2/blogapi-core/grpc
+module github.com/miyamo2/api.miyamo.today/core/grpc
 
 go 1.21
 
 require (
 	github.com/miyamo2/altnrslog v0.4.0
-	github.com/miyamo2/blogapi-core v0.14.0
+	github.com/miyamo2/api.miyamo.today/core v0.14.0
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/oklog/ulid/v2 v2.1.0
 	google.golang.org/grpc v1.62.0

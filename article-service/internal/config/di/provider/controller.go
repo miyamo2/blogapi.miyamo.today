@@ -1,9 +1,9 @@
 package provider
 
 import (
-	impl "github.com/miyamo2/blogapi-article-service/internal/if-adapter/controller/pb"
-	"github.com/miyamo2/blogapi-core/grpc/interceptor"
-	"github.com/miyamo2/blogproto-gen/article/server/pb"
+	impl "github.com/miyamo2/api.miyamo.today/article-service/internal/if-adapter/controller/pb"
+	"github.com/miyamo2/api.miyamo.today/core/grpc/interceptor"
+	"github.com/miyamo2/api.miyamo.today/protogen/article/server/pb"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"go.uber.org/fx"

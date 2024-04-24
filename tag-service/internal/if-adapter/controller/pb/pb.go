@@ -3,18 +3,19 @@ package pb
 import (
 	"context"
 	"fmt"
-	"github.com/miyamo2/altnrslog"
 	"log/slog"
+
+	"github.com/miyamo2/altnrslog"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/util/duration"
-	"github.com/miyamo2/blogapi-tag-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi-tag-service/internal/if-adapter/controller/pb/presenter"
-	"github.com/miyamo2/blogapi-tag-service/internal/if-adapter/controller/pb/usecase"
-	"github.com/miyamo2/blogproto-gen/tag/server/pb"
+	"github.com/miyamo2/api.miyamo.today/core/util/duration"
+	"github.com/miyamo2/api.miyamo.today/protogen/tag/server/pb"
+	"github.com/miyamo2/api.miyamo.today/tag-service/internal/app/usecase/dto"
+	"github.com/miyamo2/api.miyamo.today/tag-service/internal/if-adapter/controller/pb/presenter"
+	"github.com/miyamo2/api.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 )
 

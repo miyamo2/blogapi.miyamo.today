@@ -1,4 +1,4 @@
-module github.com/miyamo2/blogproto-gen/tag/server
+module github.com/miyamo2/api.miyamo.today/protogen/tag/server
 
 go 1.21.3
 

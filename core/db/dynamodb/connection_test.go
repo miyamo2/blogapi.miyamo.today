@@ -2,9 +2,9 @@ package dynamodb
 
 import (
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/db/dynamodb/client"
-	"github.com/miyamo2/blogapi-core/db/dynamodb/internal"
-	mclient "github.com/miyamo2/blogapi-core/internal/mock/infra/dynamodb/client"
+	"github.com/miyamo2/api.miyamo.today/core/db/dynamodb/client"
+	"github.com/miyamo2/api.miyamo.today/core/db/dynamodb/internal"
+	mclient "github.com/miyamo2/api.miyamo.today/core/internal/mock/infra/dynamodb/client"
 	"go.uber.org/mock/gomock"
 	"testing"
 )

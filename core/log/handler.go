@@ -2,11 +2,11 @@ package log
 
 import (
 	"context"
-	"github.com/miyamo2/blogapi-core/internal"
+	"github.com/miyamo2/api.miyamo.today/core/internal"
 	"io"
 	"log/slog"
 
-	blogapictx "github.com/miyamo2/blogapi-core/context"
+	blogapictx "github.com/miyamo2/api.miyamo.today/core/context"
 )
 
 type Logger struct {

@@ -12,8 +12,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	usecase "github.com/miyamo2/blogapi-tag-service/internal/if-adapter/controller/pb/usecase"
-	pb "github.com/miyamo2/blogproto-gen/tag/server/pb"
+	usecase "github.com/miyamo2/api.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
+	pb "github.com/miyamo2/api.miyamo.today/protogen/tag/server/pb"
 	gomock "go.uber.org/mock/gomock"
 )
 

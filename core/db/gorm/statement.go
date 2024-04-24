@@ -7,9 +7,9 @@ import (
 	"log/slog"
 
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/db"
-	"github.com/miyamo2/blogapi-core/log"
-	"github.com/miyamo2/blogapi-core/util/duration"
+	"github.com/miyamo2/api.miyamo.today/core/db"
+	"github.com/miyamo2/api.miyamo.today/core/log"
+	"github.com/miyamo2/api.miyamo.today/core/util/duration"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/gorm"
 )

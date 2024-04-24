@@ -4,10 +4,10 @@ import (
 	"context"
 	"github.com/miyamo2/altnrslog"
 
-	"github.com/miyamo2/blogapi-core/log"
+	"github.com/miyamo2/api.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/newrelic"
 
-	blogapicontext "github.com/miyamo2/blogapi-core/context"
+	blogapicontext "github.com/miyamo2/api.miyamo.today/core/context"
 	"github.com/oklog/ulid/v2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"

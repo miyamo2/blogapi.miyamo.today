@@ -2,9 +2,9 @@ package dynamodb
 
 import (
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/db/dynamodb/client"
-	"github.com/miyamo2/blogapi-core/db/dynamodb/internal"
-	"github.com/miyamo2/blogapi-core/log"
+	"github.com/miyamo2/api.miyamo.today/core/db/dynamodb/client"
+	"github.com/miyamo2/api.miyamo.today/core/db/dynamodb/internal"
+	"github.com/miyamo2/api.miyamo.today/core/log"
 )
 
 var ErrClientNotInitialized = errors.New("dynamodb client is not initialized")

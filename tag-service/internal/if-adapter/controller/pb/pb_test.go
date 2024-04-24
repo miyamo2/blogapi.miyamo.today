@@ -8,10 +8,10 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi-tag-service/internal/app/usecase/dto"
-	mpresenter "github.com/miyamo2/blogapi-tag-service/internal/mock/if-adapter/controller/pb/presenter"
-	musecase "github.com/miyamo2/blogapi-tag-service/internal/mock/if-adapter/controller/pb/usecase"
-	"github.com/miyamo2/blogproto-gen/tag/server/pb"
+	"github.com/miyamo2/api.miyamo.today/protogen/tag/server/pb"
+	"github.com/miyamo2/api.miyamo.today/tag-service/internal/app/usecase/dto"
+	mpresenter "github.com/miyamo2/api.miyamo.today/tag-service/internal/mock/if-adapter/controller/pb/presenter"
+	musecase "github.com/miyamo2/api.miyamo.today/tag-service/internal/mock/if-adapter/controller/pb/usecase"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/testing/protocmp"
 )
