@@ -1,7 +1,7 @@
 package pb
 
 import (
-	"github.com/miyamo2/api.miyamo.today/protogen/article/server/pb/internal"
+	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/server/pb/internal"
 	"google.golang.org/grpc"
 )
 

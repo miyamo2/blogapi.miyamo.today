@@ -7,8 +7,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/api.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/api.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 )
 
 func TestConverter_ToArticle(t *testing.T) {

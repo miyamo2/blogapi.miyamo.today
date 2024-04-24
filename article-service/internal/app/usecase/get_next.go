@@ -2,21 +2,22 @@ package usecase
 
 import (
 	"context"
-	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/api.miyamo.today/core/log"
-	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"log/slog"
 
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi.miyamo.today/core/log"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
+	"github.com/newrelic/go-agent/v3/newrelic"
+
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/api.miyamo.today/article-service/internal/app/usecase/dto"
-	iquery "github.com/miyamo2/api.miyamo.today/article-service/internal/app/usecase/query"
-	"github.com/miyamo2/api.miyamo.today/article-service/internal/infra/rdb/query"
-	"github.com/miyamo2/api.miyamo.today/core/db"
-	"github.com/miyamo2/api.miyamo.today/core/util/duration"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	iquery "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/query"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 )
 
-// GetNext is an implementation of github.com/miyamo2/api.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetNext
+// GetNext is an implementation of github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetNext
 type GetNext struct {
 	txmn db.TransactionManager
 	qs   iquery.ArticleService[query.Tag, *query.Article]

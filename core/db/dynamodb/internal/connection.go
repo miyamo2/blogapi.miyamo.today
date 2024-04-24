@@ -1,8 +1,9 @@
 package internal
 
 import (
-	"github.com/miyamo2/api.miyamo.today/core/db/dynamodb/client"
 	"sync"
+
+	"github.com/miyamo2/blogapi.miyamo.today/core/db/dynamodb/client"
 )
 
 var (

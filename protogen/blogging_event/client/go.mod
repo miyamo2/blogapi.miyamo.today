@@ -1,4 +1,4 @@
-module github.com/miyamo2/api.miyamo.today/protogen/blogging_event/client
+module github.com/miyamo2/blogapi.miyamo.today/protogen/blogging_event/client
 
 go 1.21.3
 

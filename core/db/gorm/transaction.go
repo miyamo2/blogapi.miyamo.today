@@ -3,16 +3,17 @@ package gorm
 import (
 	"context"
 	"fmt"
-	"github.com/miyamo2/altnrslog"
 	"log/slog"
 
-	"github.com/miyamo2/api.miyamo.today/core/util/duration"
+	"github.com/miyamo2/altnrslog"
+
+	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/api.miyamo.today/core/db"
-	"github.com/miyamo2/api.miyamo.today/core/db/internal"
-	"github.com/miyamo2/api.miyamo.today/core/log"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db/internal"
+	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 )
 
 var _ db.Transaction = (*Transaction)(nil)

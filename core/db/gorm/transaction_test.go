@@ -2,13 +2,14 @@ package gorm
 
 import (
 	"context"
+	"testing"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/api.miyamo.today/core/db"
-	"github.com/miyamo2/api.miyamo.today/core/db/internal"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db/internal"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"testing"
 )
 
 func TestTransaction_Commit(t *testing.T) {

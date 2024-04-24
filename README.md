@@ -1,1 +1,1 @@
-# api.miyamo.today
+# blogapi.miyamo.today

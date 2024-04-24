@@ -1,9 +1,9 @@
 package provider
 
 import (
-	"github.com/miyamo2/api.miyamo.today/federator/internal/app/usecase"
-	"github.com/miyamo2/api.miyamo.today/federator/internal/app/usecase/dto"
-	abstract "github.com/miyamo2/api.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	abstract "github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
 	"go.uber.org/fx"
 )
 

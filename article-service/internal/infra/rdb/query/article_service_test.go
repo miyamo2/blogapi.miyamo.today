@@ -2,14 +2,15 @@ package query
 
 import (
 	"context"
-	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/api.miyamo.today/core/db"
-	gwrapper "github.com/miyamo2/api.miyamo.today/core/db/gorm"
-	"gorm.io/driver/postgres"
 	"reflect"
 	"regexp"
 	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
+	"gorm.io/driver/postgres"
 )
 
 func TestArticleService_GetById(t *testing.T) {

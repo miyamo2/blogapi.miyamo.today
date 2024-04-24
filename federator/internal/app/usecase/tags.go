@@ -5,15 +5,15 @@ import (
 	"log/slog"
 
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/api.miyamo.today/core/log"
-	"github.com/miyamo2/api.miyamo.today/federator/internal/utils"
+	"github.com/miyamo2/blogapi.miyamo.today/core/log"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/api.miyamo.today/core/util/duration"
-	"github.com/miyamo2/api.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/api.miyamo.today/protogen/tag/client/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/client/pb"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 

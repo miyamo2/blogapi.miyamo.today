@@ -6,9 +6,9 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/api.miyamo.today/core/log"
-	"github.com/miyamo2/api.miyamo.today/protogen/tag/server/pb"
-	"github.com/miyamo2/api.miyamo.today/tag-service/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/core/log"
+	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )

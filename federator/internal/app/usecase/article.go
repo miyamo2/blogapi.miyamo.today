@@ -5,13 +5,13 @@ import (
 	"log/slog"
 
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/api.miyamo.today/core/log"
+	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/api.miyamo.today/core/util/duration"
-	"github.com/miyamo2/api.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/api.miyamo.today/protogen/article/client/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/client/pb"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 

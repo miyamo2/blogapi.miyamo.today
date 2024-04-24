@@ -5,7 +5,7 @@ FROM golang:${GO_VERSION}-alpine3.18 as build
 
 ARG GITHUB_TOKEN
 
-WORKDIR /go/src/github.com/miyamo2/api.miyamo.today/federator
+WORKDIR /go/src/github.com/miyamo2/blogapi.miyamo.today/federator
 
 RUN apk update \
     && apk add --no-cache git
@@ -24,6 +24,6 @@ WORKDIR /app
 RUN apk update \
     && apk add --upgrade curl
 
-COPY --from=build /go/src/github.com/miyamo2/api.miyamo.today/federator/bin/blogapi /app/blogapi
+COPY --from=build /go/src/github.com/miyamo2/blogapi.miyamo.today/federator/bin/blogapi /app/blogapi
 
 CMD ["/app/blogapi"]

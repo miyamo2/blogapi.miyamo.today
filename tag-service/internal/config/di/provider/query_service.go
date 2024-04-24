@@ -1,9 +1,9 @@
 package provider
 
 import (
-	"github.com/miyamo2/api.miyamo.today/tag-service/internal/app/usecase/query"
-	impl "github.com/miyamo2/api.miyamo.today/tag-service/internal/infra/rdb/query"
-	"github.com/miyamo2/api.miyamo.today/tag-service/internal/infra/rdb/query/model"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/query"
+	impl "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/rdb/query"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
 	"go.uber.org/fx"
 )
 

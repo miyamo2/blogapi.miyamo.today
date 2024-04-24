@@ -2,14 +2,15 @@ package dynamodb
 
 import (
 	"context"
-	dynamotypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
-	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/api.miyamo.today/core/db/dynamodb/client"
-	"github.com/miyamo2/api.miyamo.today/core/db/internal"
-	mclient "github.com/miyamo2/api.miyamo.today/core/internal/mock/infra/dynamodb/client"
-	"go.uber.org/mock/gomock"
 	"log/slog"
 	"testing"
+
+	dynamotypes "github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
+	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db/dynamodb/client"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db/internal"
+	mclient "github.com/miyamo2/blogapi.miyamo.today/core/internal/mock/infra/dynamodb/client"
+	"go.uber.org/mock/gomock"
 )
 
 func TestTransaction_Commit(t *testing.T) {

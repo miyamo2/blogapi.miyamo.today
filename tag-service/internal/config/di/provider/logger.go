@@ -1,12 +1,13 @@
 package provider
 
 import (
-	"github.com/miyamo2/api.miyamo.today/core/log"
+	"log/slog"
+	"os"
+
+	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"go.uber.org/fx"
-	"log/slog"
-	"os"
 )
 
 var Logger = fx.Options(

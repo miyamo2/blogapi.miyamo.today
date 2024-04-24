@@ -4,8 +4,8 @@ package converter
 import (
 	"context"
 
-	"github.com/miyamo2/api.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
-	"github.com/miyamo2/api.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 )
 
 type ArticleConverter[T dto.Tag, AT dto.ArticleTag[T], O dto.ArticleOutDto[T, AT]] interface {

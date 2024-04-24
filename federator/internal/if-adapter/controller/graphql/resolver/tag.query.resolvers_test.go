@@ -7,10 +7,10 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/api.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/api.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
-	mconverter "github.com/miyamo2/api.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/presenter/converter"
-	musecase "github.com/miyamo2/api.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/usecase"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	mconverter "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/presenter/converter"
+	musecase "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/usecase"
 	"go.uber.org/mock/gomock"
 )
 

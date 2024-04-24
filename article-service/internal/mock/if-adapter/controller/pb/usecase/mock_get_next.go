@@ -12,7 +12,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	usecase "github.com/miyamo2/api.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
+	usecase "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
 	gomock "go.uber.org/mock/gomock"
 )
 

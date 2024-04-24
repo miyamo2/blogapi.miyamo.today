@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/api.miyamo.today/core/internal"
+	"github.com/miyamo2/blogapi.miyamo.today/core/internal"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
 )

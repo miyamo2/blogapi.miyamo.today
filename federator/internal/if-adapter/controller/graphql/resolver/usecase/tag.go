@@ -4,7 +4,7 @@ package usecase
 import (
 	"context"
 
-	"github.com/miyamo2/api.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
 )
 
 // Tag is a use-case of getting a tag by id.
