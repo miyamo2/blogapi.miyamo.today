@@ -1,0 +1,55 @@
+name: staging_release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions: write-all
+
+jobs:
+  staging_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up aws cli
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Get ECR Repository Name
+        id: ecr-repo
+        env:
+          ENV_NAME: dev
+          REPO: ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+        run: |
+          REPO_NAME=$(aws ssm get-parameters --names /blog/cicd/${{ env.ENV_NAME }}/ecr/${{ env.REPO }}/name --output text --query Parameters[0].Value)
+          echo "::add-mask::$REPO_NAME"
+          echo "repository=$REPO_NAME" >> $GITHUB_OUTPUT
+
+      - name: Build & Push Docker Image
+        env:
+          ENV_NAME: dev
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ steps.ecr-repo.outputs.repository }}
+          GIT_REPO: ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+          TAG: ${{ github.sha }}
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} -f ./.build/package/Dockerfile --build-arg GITHUB_TOKEN=${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }} .
+          docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }}
+          aws ssm put-parameter --name /blog/cicd/${{ env.ENV_NAME }}/ecr/${{ env.GIT_REPO }}/tag --value ${{ env.TAG }} --type String --overwrite --region ap-northeast-1
+
+      - name: Dispatch blog-cloud-infra
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }}
+          repository: ${{ github.repository_owner }}/blog-cloud-infra
+          event-type: update_blog-api_dev_ecr
