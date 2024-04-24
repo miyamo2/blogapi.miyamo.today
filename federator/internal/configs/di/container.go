@@ -1,7 +1,7 @@
 package di
 
 import (
-	"github.com/miyamo2/blogapi/internal/configs/di/provider"
+	"github.com/miyamo2/api.miyamo.today/federator/internal/configs/di/provider"
 	"go.uber.org/fx"
 )
 

@@ -2,15 +2,16 @@ package resolver
 
 import (
 	"context"
-	"github.com/cockroachdb/errors"
-	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi/internal/if-adapter/presenters/graphql/model"
-	mconverter "github.com/miyamo2/blogapi/internal/mock/if-adapter/controller/graphql/resolver/presenter/converter"
-	musecase "github.com/miyamo2/blogapi/internal/mock/if-adapter/controller/graphql/resolver/usecase"
-	"go.uber.org/mock/gomock"
 	"testing"
 	"time"
+
+	"github.com/cockroachdb/errors"
+	"github.com/google/go-cmp/cmp"
+	"github.com/miyamo2/api.miyamo.today/federator/internal/app/usecase/dto"
+	"github.com/miyamo2/api.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	mconverter "github.com/miyamo2/api.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/presenter/converter"
+	musecase "github.com/miyamo2/api.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/usecase"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_queryResolver_Article(t *testing.T) {

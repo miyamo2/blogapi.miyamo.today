@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/labstack/echo/v4"
-	"github.com/miyamo2/blogapi/internal/configs/di"
+	"github.com/miyamo2/api.miyamo.today/federator/internal/configs/di"
 	"go.uber.org/fx"
 
 	"github.com/joho/godotenv"

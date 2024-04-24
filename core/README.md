@@ -6,4 +6,4 @@
 [![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/miyamo2/api.miyamo.today/core/release.yaml?event=release&logo=github%20actions)](https://github.com/miyamo2/api.miyamo.today/core/actions?query=workflow%3Arelease)
 [![GitHub](https://img.shields.io/github/license/miyamo2/api.miyamo.today/core)](https://img.shields.io/github/license/miyamo2/api.miyamo.today/core)
 
-Application Core Library for [miyamo2/blog-api](https://github.com/miyamo2/blogapi).
+Application Core Library for [miyamo2/api.miyamo.today](https://github.com/miyamo2/api.miyamo.today/federator).

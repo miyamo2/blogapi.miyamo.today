@@ -2,12 +2,13 @@ package converter
 
 import (
 	"context"
-	"github.com/cockroachdb/errors"
-	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi/internal/if-adapter/presenters/graphql/model"
 	"testing"
 	"time"
+
+	"github.com/cockroachdb/errors"
+	"github.com/google/go-cmp/cmp"
+	"github.com/miyamo2/api.miyamo.today/federator/internal/app/usecase/dto"
+	"github.com/miyamo2/api.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 )
 
 func TestConverter_ToArticle(t *testing.T) {

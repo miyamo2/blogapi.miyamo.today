@@ -1,4 +1,4 @@
-module github.com/miyamo2/blogapi
+module github.com/miyamo2/api.miyamo.today/federator
 
 go 1.21.3
 

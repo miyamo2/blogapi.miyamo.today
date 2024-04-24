@@ -2,16 +2,17 @@ package converter
 
 import (
 	"context"
+	"log/slog"
+	"time"
+
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/api.miyamo.today/core/log"
 	"github.com/miyamo2/api.miyamo.today/core/util/duration"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
-	"log/slog"
-	"time"
 
-	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi/internal/if-adapter/presenters/graphql/model"
+	"github.com/miyamo2/api.miyamo.today/federator/internal/app/usecase/dto"
+	"github.com/miyamo2/api.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
