@@ -3,12 +3,12 @@ package provider
 import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/miyamo2/blogapi-core/graphql/middleware"
-	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi/internal/if-adapter/controller/graphql/resolver"
-	"github.com/miyamo2/blogapi/internal/if-adapter/controller/graphql/resolver/presenter/converter"
-	"github.com/miyamo2/blogapi/internal/if-adapter/controller/graphql/resolver/usecase"
-	"github.com/miyamo2/blogapi/internal/infra/fw/gqlgen"
+	"github.com/miyamo2/blogapi.miyamo.today/core/graphql/middleware"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converter"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/fw/gqlgen"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"go.uber.org/fx"
 )

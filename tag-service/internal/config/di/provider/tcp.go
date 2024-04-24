@@ -4,7 +4,7 @@ import (
 	"net"
 	"os"
 
-	"github.com/miyamo2/blogapi-tag-service/internal/infra/tcp"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/tcp"
 	"go.uber.org/fx"
 )
 

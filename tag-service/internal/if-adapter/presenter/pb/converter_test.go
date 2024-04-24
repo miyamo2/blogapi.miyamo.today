@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi-tag-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogproto-gen/tag/server/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 

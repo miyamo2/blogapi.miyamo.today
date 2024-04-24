@@ -2,15 +2,16 @@ package usecase
 
 import (
 	"context"
-	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi-article-service/internal/infra/rdb/query"
-	mquery "github.com/miyamo2/blogapi-article-service/internal/mock/app/usecase/query"
-	mdb "github.com/miyamo2/blogapi-article-service/internal/mock/blogapi-core/db"
-	"github.com/miyamo2/blogapi-core/db"
-	"go.uber.org/mock/gomock"
 	"reflect"
 	"testing"
+
+	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
+	mquery "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/app/usecase/query"
+	mdb "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/blogapi.miyamo.today/core/db"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	"go.uber.org/mock/gomock"
 )
 
 func TestGetById_Execute(t *testing.T) {

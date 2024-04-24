@@ -1,6 +1,6 @@
 package pb
 
-import "github.com/miyamo2/blogproto-gen/blogging_event/client/pb/internal"
+import "github.com/miyamo2/blogapi.miyamo.today/protogen/blogging_event/client/pb/internal"
 
 type CreateArticleRequest = internal.CreateArticleRequest
 

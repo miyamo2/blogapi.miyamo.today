@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	gwrapper "github.com/miyamo2/blogapi-core/db/gorm"
+	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
 	"go.uber.org/fx"
 	"gorm.io/driver/postgres"

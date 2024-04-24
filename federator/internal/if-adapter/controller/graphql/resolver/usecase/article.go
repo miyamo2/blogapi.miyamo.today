@@ -3,7 +3,8 @@ package usecase
 
 import (
 	"context"
-	"github.com/miyamo2/blogapi/internal/if-adapter/controller/graphql/resolver/usecase/dto"
+
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
 )
 
 // Article is a use-case of getting an article by id.

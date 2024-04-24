@@ -12,8 +12,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	dto "github.com/miyamo2/blogapi/internal/if-adapter/controller/graphql/resolver/usecase/dto"
-	model "github.com/miyamo2/blogapi/internal/if-adapter/presenters/graphql/model"
+	dto "github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
+	model "github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 	gomock "go.uber.org/mock/gomock"
 )
 

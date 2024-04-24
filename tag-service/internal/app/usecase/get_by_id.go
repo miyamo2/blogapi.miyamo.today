@@ -3,19 +3,20 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/blogapi-core/log"
 	"log/slog"
 
-	"github.com/miyamo2/blogapi-tag-service/internal/infra/rdb/query/model"
+	"github.com/miyamo2/altnrslog"
+	"github.com/miyamo2/blogapi.miyamo.today/core/log"
+
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi-core/db"
-	"github.com/miyamo2/blogapi-core/util/duration"
-	"github.com/miyamo2/blogapi-tag-service/internal/app/usecase/dto"
-	iquery "github.com/miyamo2/blogapi-tag-service/internal/app/usecase/query"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
+	iquery "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/query"
 )
 
 // GetById is an implementation of usecase.GetById

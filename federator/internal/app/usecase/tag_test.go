@@ -2,14 +2,15 @@ package usecase
 
 import (
 	"context"
-	"github.com/cockroachdb/errors"
-	blogapictx "github.com/miyamo2/blogapi-core/context"
-	"github.com/miyamo2/blogapi/internal/app/usecase/dto"
-	mpb "github.com/miyamo2/blogapi/internal/mock/github.com/miyamo2/blogproto-gen/tag/client/pb"
-	"github.com/miyamo2/blogproto-gen/tag/client/pb"
-	"go.uber.org/mock/gomock"
 	"reflect"
 	"testing"
+
+	"github.com/cockroachdb/errors"
+	blogapictx "github.com/miyamo2/blogapi.miyamo.today/core/context"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	mpb "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/github.com/miyamo2/blogapi.miyamo.today/protogen/tag/client/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/client/pb"
+	"go.uber.org/mock/gomock"
 )
 
 func TestTag_Execute(t *testing.T) {

@@ -1,9 +1,9 @@
 package provider
 
 import (
-	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi-article-service/internal/if-adapter/controller/pb/presenter"
-	impl "github.com/miyamo2/blogapi-article-service/internal/if-adapter/presenter/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/presenter"
+	impl "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/presenter/pb"
 	"go.uber.org/fx"
 )
 

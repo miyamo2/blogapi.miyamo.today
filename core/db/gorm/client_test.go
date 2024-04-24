@@ -2,9 +2,10 @@ package gorm
 
 import (
 	"context"
-	"github.com/miyamo2/blogapi-core/db/gorm/internal/conn"
-	"github.com/miyamo2/blogapi-core/db/gorm/internal/dial"
 	"testing"
+
+	"github.com/miyamo2/blogapi.miyamo.today/core/db/gorm/internal/conn"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db/gorm/internal/dial"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"

@@ -2,14 +2,15 @@ package pb
 
 import (
 	"context"
+	"log/slog"
+
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi-core/log"
-	"github.com/miyamo2/blogproto-gen/article/server/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/core/log"
+	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/server/pb"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"log/slog"
 )
 
 type Converter struct{}

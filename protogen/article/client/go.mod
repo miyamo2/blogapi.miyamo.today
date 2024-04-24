@@ -1,4 +1,4 @@
-module github.com/miyamo2/blogproto-gen/article/client
+module github.com/miyamo2/blogapi.miyamo.today/protogen/article/client
 
 go 1.21.3
 

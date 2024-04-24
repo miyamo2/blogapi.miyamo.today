@@ -3,8 +3,9 @@ package query
 
 import (
 	"context"
-	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/query/model"
-	"github.com/miyamo2/blogapi-core/db"
+
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/query/model"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 )
 
 // ArticleService is a query service interface.

@@ -2,11 +2,12 @@ package pb
 
 import (
 	"context"
-	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi-article-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogproto-gen/article/server/pb"
-	"google.golang.org/protobuf/testing/protocmp"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/server/pb"
+	"google.golang.org/protobuf/testing/protocmp"
 )
 
 func TestConverter_ToGetNextArticlesResponse(t *testing.T) {

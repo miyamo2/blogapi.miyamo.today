@@ -1,6 +1,6 @@
 package pb
 
-import "github.com/miyamo2/blogproto-gen/tag/server/pb/internal"
+import "github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server/pb/internal"
 
 type GetTagByIdRequest = internal.GetTagByIdRequest
 
