@@ -1,0 +1,36 @@
+coverage:
+  status:
+    patch:
+      default:
+        target: 80%
+    project:
+      core:
+        flags: [core]
+      article-service:
+        flags: [article-service]
+      tag-service:
+        flags: [tag-service]
+      federator:
+        flags: [federator]
+
+comment:
+  layout: "diff, flags, files"
+  behavior: default
+
+flags:
+  core:
+    paths:
+      - core/
+    carryforward: true
+  article-service:
+    paths:
+      - article-service/
+    carryforward: true
+  tag-service:
+    paths:
+      - tag-service/
+    carryforward: true
+  federator:
+    paths:
+      - federator/
+    carryforward: true
