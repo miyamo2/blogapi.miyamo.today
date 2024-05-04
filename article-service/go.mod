@@ -10,7 +10,7 @@ require (
 	github.com/miyamo2/altnrslog v0.4.0
 	github.com/miyamo2/blogapi.miyamo.today/core v0.17.0
 	github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.1
-	github.com/miyamo2/blogapi.miyamo.today/protogen/article/server v0.2.0
+	github.com/miyamo2/blogapi.miyamo.today/protogen/article/server v0.3.0
 	github.com/newrelic/go-agent/v3 v3.30.0
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.1
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.0
@@ -18,7 +18,7 @@ require (
 	go.uber.org/fx v1.20.1
 	go.uber.org/mock v0.4.0
 	google.golang.org/grpc v1.62.0
-	google.golang.org/protobuf v1.32.0
+	google.golang.org/protobuf v1.33.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
 )
@@ -40,7 +40,7 @@ require (
 	github.com/jackc/pgtype v1.8.1 // indirect
 	github.com/jackc/pgx v3.6.2+incompatible // indirect
 	github.com/jackc/pgx/v4 v4.13.0 // indirect
-	github.com/jackc/pgx/v5 v5.5.0 // indirect
+	github.com/jackc/pgx/v5 v5.5.4 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
@@ -57,10 +57,10 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
-	golang.org/x/crypto v0.20.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240228224816-df926f6c8641 // indirect
 )

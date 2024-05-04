@@ -9,7 +9,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
 	mquery "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/app/usecase/query"
-	mdb "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/blogapi.miyamo.today/core/db"
+	mdb "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/core/db"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	"go.uber.org/mock/gomock"
 )
