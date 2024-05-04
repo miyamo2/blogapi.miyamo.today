@@ -9,7 +9,7 @@ require (
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/newrelic/go-agent/v3 v3.32.0
 	gorm.io/driver/postgres v1.5.7
-	gorm.io/gorm v1.25.7-0.20240204074919-46816ad31dde
+	gorm.io/gorm v1.25.10
 )
 
 require (
