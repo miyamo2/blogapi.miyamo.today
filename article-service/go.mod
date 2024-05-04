@@ -13,7 +13,7 @@ require (
 	github.com/miyamo2/blogapi.miyamo.today/protogen/article/server v0.3.1
 	github.com/newrelic/go-agent/v3 v3.33.0
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.1
-	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.0
+	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.1
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	go.uber.org/fx v1.20.1
 	go.uber.org/mock v0.4.0
@@ -32,14 +32,14 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
-	github.com/jackc/pgconn v1.10.0 // indirect
+	github.com/jackc/pgconn v1.14.3 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgproto3/v2 v2.1.1 // indirect
+	github.com/jackc/pgproto3/v2 v2.3.3 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/jackc/pgtype v1.8.1 // indirect
+	github.com/jackc/pgtype v1.14.0 // indirect
 	github.com/jackc/pgx v3.6.2+incompatible // indirect
-	github.com/jackc/pgx/v4 v4.13.0 // indirect
+	github.com/jackc/pgx/v4 v4.18.2 // indirect
 	github.com/jackc/pgx/v5 v5.5.4 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
