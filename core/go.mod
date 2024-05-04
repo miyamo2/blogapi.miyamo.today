@@ -3,7 +3,7 @@ module github.com/miyamo2/blogapi.miyamo.today/core
 go 1.21
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.0
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/Songmu/flextime v0.1.0
 	github.com/cockroachdb/errors v1.11.1
 	github.com/miyamo2/altnrslog v0.4.2
