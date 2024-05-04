@@ -40,10 +40,10 @@ jobs:
           go test $TARGET -v -coverpkg=$TARGET -coverprofile=coverage.out
 
       - name: Upload unit test coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v4.3.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.out
+          files: ./core/coverage.out
           fail_ci_if_error: false
           verbose: true
           flags: core

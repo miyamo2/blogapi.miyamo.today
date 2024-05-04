@@ -66,10 +66,10 @@ jobs:
           exit ${PIPESTATUS[0]}
 
       - name: Upload unit test coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v4.3.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.out
+          files: ./tag-service/coverage.out
           fail_ci_if_error: false
           verbose: true
           flags: tag-service
