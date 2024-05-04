@@ -27,9 +27,6 @@ permissions: write-all
 jobs:
   ci:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: core
 
     steps:
       - uses: actions/checkout@v4
@@ -46,6 +43,7 @@ jobs:
           cache-dependency-path: go.sum
 
       - name: Go Build
+        working-directory: core
         run: |
           go mod tidy
           go build -v ./...
@@ -56,16 +54,19 @@ jobs:
           reviewdog_version: latest
 
       - name: Setup staticcheck
+        working-directory: core
         run: |
           go install honnef.co/go/tools/cmd/staticcheck@latest
 
       - name: staticcheck with reviewdog
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: core
         run: |
           staticcheck ./... | reviewdog -f=staticcheck -reporter=github-pr-check -level warning
 
       - name: Go Test
+        working-directory: core
         run: |
           go test ./... -v -coverpkg=./... -coverprofile=coverage.out
           exit ${PIPESTATUS[0]}
