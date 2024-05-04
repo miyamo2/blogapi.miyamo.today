@@ -12,7 +12,7 @@ require (
 	github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.3
 	github.com/miyamo2/blogapi.miyamo.today/protogen/article/server v0.3.1
 	github.com/newrelic/go-agent/v3 v3.33.0
-	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.1
+	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.3
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.0
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	go.uber.org/fx v1.20.1
