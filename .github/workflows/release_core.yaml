@@ -10,9 +10,6 @@ permissions: write-all
 jobs:
   release:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: core
 
     steps:
       - uses: actions/checkout@v4
@@ -29,12 +26,14 @@ jobs:
           cache-dependency-path: go.sum
 
       - name: Go Generate
+        working-directory: core
         run: |
           go mod tidy
           go generate ./...
           git diff --exit-code
 
       - name: Unit Test
+        working-directory: core
         run: |
           TARGET=$(go list ./... | grep -v "mock")
           go test $TARGET -v -coverpkg=$TARGET -coverprofile=coverage.out
@@ -51,11 +50,13 @@ jobs:
 
       - name: Extract Version
         id: versioning
+        working-directory: core
         run: |
           VERSION="core/v$(sed -n 's/##\s\([0-9.]*\)\s.*/\1/p' CHANGELOG.md | head -1)"
           echo ::set-output name=version::$VERSION
 
       - name: Extract changes from prev version
+        working-directory: core
         run: |
           git fetch --prune --unshallow
           PRETAG=$(git tag --sort -v:refname | grep core/v | head -1)
