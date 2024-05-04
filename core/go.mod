@@ -7,7 +7,7 @@ require (
 	github.com/Songmu/flextime v0.1.0
 	github.com/cockroachdb/errors v1.11.1
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/newrelic/go-agent/v3 v3.32.0
+	github.com/newrelic/go-agent/v3 v3.33.0
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.7-0.20240204074919-46816ad31dde
 )
