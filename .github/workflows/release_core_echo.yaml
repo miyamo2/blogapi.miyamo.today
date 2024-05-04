@@ -37,7 +37,8 @@ jobs:
       - name: Unit Test
         run: |
           TARGET=$(go list ./... | grep -v "mock")
-          go test $TARGET -v -coverpkg=$TARGET -coverprofile=coverage
+          go test $TARGET -v -coverprofile=coverage.out
+          exit ${PIPESTATUS[0]}
 
       - name: Extract Version
         id: versioning
