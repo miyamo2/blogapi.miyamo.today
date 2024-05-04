@@ -13,7 +13,7 @@ require (
 	github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server v0.3.3
 	github.com/newrelic/go-agent/v3 v3.33.0
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog v1.0.0
-	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.2
+	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.3
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.0
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	go.uber.org/fx v1.20.1
