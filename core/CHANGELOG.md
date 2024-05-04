@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.18.1 - 2024-05-04
+
+⬆️ Update dependencies
+
+- `github.com/DATA-DOG/go-sqlmock`
+- `github.com/newrelic/go-agent/v3`
+- `gorm.io/gorm`
+- `gorm.io/driver/postgres`
+- `github.com/miyamo2/altnrslog`
+
 ## 0.18.0 - 2024-05-04
 
 💥 Breaking Changes
