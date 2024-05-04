@@ -62,5 +62,5 @@ jobs:
       - name: Go Test
         working-directory: core/echo
         run: |
-          go test ./... -v -coverpkg=./... -coverprofile=coverage
+          go test ./... -v -coverpkg=./... -coverprofile=coverage.out
           exit ${PIPESTATUS[0]}

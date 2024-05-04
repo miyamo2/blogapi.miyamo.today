@@ -68,7 +68,8 @@ jobs:
       - name: Go Test
         working-directory: core
         run: |
-          go test ./... -v -coverpkg=./... -coverprofile=coverage
+          TARGET=$(go list ./... | grep -v "mock")
+          go test $TARGET -v -coverprofile=coverage.out
           exit ${PIPESTATUS[0]}
 
       - name: Upload unit test coverage to Codecov
