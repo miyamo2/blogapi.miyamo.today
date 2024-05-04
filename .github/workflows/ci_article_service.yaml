@@ -70,8 +70,7 @@ jobs:
         uses: codecov/codecov-action@v4.3.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./article-service/
-          files: coverage.out
+          files: ./article-service/coverage.out
           fail_ci_if_error: false
           verbose: true
           flags: article-service
