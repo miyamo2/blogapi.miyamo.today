@@ -62,8 +62,10 @@ jobs:
       - name: Go Test
         working-directory: tag-service
         run: |
+          pwd
           TARGET=$(go list ./... | grep -v "mock")
           go test $TARGET -v -coverpkg=$TARGET -coverprofile=coverage
+          ls
           exit ${PIPESTATUS[0]}
 
       - name: Upload unit test coverage to Codecov
