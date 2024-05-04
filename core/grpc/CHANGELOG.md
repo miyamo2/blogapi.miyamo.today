@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3 - 2024-05-04
+
+🚑️ Fix Broken `go.sum`
+
 ## 0.2.2 - 2024-05-04
 
 ⬆️ `github.com/miyamo2/blogapi.miyamo.today/core` to v0.18.0
