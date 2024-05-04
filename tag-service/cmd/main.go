@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/config/di"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/configs/di"
 	"go.uber.org/fx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
