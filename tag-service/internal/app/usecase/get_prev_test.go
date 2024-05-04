@@ -7,7 +7,7 @@ import (
 
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
 	mquery "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/mock/app/usecase/query"
-	mdb "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/mock/blogapi.miyamo.today/core/db"
+	mdb "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/mock/core/db"
 	"go.uber.org/mock/gomock"
 
 	"github.com/cockroachdb/errors"
