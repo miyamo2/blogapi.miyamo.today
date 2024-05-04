@@ -68,7 +68,7 @@ jobs:
       - name: Go Test
         working-directory: core
         run: |
-          go test ./... -v -coverpkg=./... -coverprofile=coverage.out
+          go test ./... -v -coverpkg=./... -coverprofile=coverage
           exit ${PIPESTATUS[0]}
 
       - name: Upload unit test coverage to Codecov
@@ -76,7 +76,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ github.workspace }}
-          file: ${{ github.workspace }}/core/coverage.out
+          file: ${{ github.workspace }}/core/coverage
           fail_ci_if_error: false
           verbose: true
           flags: core

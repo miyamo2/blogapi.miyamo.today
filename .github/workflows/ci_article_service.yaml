@@ -63,7 +63,7 @@ jobs:
         working-directory: article-service
         run: |
           TARGET=$(go list ./... | grep -v "mock")
-          go test $TARGET -v -coverpkg=$TARGET -coverprofile=coverage.out
+          go test $TARGET -v -coverpkg=$TARGET -coverprofile=coverage
           exit ${PIPESTATUS[0]}
 
       - name: Upload unit test coverage to Codecov
@@ -71,7 +71,7 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           directory: ${{ github.workspace }}
-          file: ${{ github.workspace }}/article-service/coverage.out
+          file: ${{ github.workspace }}/article-service/coverage
           fail_ci_if_error: false
           verbose: true
           flags: article-service
