@@ -18,7 +18,7 @@ require (
 	github.com/newrelic/go-agent/v3 v3.33.0
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog v1.0.0
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.0.4
-	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.1
+	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.3
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	github.com/vektah/gqlparser/v2 v2.5.11
 	go.uber.org/fx v1.20.1
