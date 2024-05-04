@@ -6,8 +6,8 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/Songmu/flextime v0.1.0
 	github.com/cockroachdb/errors v1.11.1
-	github.com/miyamo2/altnrslog v0.4.0
-	github.com/newrelic/go-agent/v3 v3.30.0
+	github.com/miyamo2/altnrslog v0.4.2
+	github.com/newrelic/go-agent/v3 v3.32.0
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.5
 )
