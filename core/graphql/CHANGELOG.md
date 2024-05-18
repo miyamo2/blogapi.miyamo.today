@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.5 - 2024-05-18
+
+⬆️ `github.com/99designs/gqlgen` to v0.17.46
+
 ## 0.2.4 - 2024-05-06
 
 ⬆️ `github.com/miyamo2/blogapi.miyamo.today/core` to v0.18.1
