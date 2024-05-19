@@ -1,0 +1,60 @@
+name: staging-deploy_tag-service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tag-service/**"
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:
+  staging_deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tag-service
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up aws cli
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Get ECR Repository Name
+        id: ecr-repo
+        env:
+          ENV_NAME: dev
+          REPO: ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
+        run: |
+          REPO_NAME=$(aws ssm get-parameters --names /miyamo-today/cicd/${{ env.ENV_NAME }}/ecr/tag-service/name --output text --query Parameters[0].Value) 
+          echo "repository=$REPO_NAME" >> $GITHUB_OUTPUT
+
+      - name: Build & Push Docker Image
+        env:
+          ENV_NAME: dev
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ steps.ecr-repo.outputs.repository }}
+          TAG: ${{ github.sha }}
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/tag-service:${{ env.TAG }} -f ./.build/package/Dockerfile --build-arg GITHUB_TOKEN=${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }} .
+          docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/tag-service:${{ env.TAG }}
+          aws ssm put-parameter --name /miyamo-today/cicd/${{ env.ENV_NAME }}/ecr/tag-service/tag --value ${{ env.TAG }} --type String --overwrite --region ap-northeast-1
+
+      - name: Dispatch infra-miyamo-today
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }}
+          repository: ${{ github.repository_owner }}/infra.miyamo.today
+          event-type: update_miyamo-today-api-tag_dev_ecr
