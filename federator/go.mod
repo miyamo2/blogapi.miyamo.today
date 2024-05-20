@@ -12,7 +12,7 @@ require (
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/miyamo2/blogapi.miyamo.today/core v0.18.1
 	github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.0
-	github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.2.4
+	github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.2.5
 	github.com/miyamo2/blogapi.miyamo.today/protogen/article/client v0.3.1
 	github.com/miyamo2/blogapi.miyamo.today/protogen/tag/client v0.3.3
 	github.com/newrelic/go-agent/v3 v3.33.0
