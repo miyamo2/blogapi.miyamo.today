@@ -70,8 +70,8 @@ github.com/miyamo2/blogapi.miyamo.today/core v0.18.1 h1:KPp+oCUPI4gRb1lc2tQ7xxzS
 github.com/miyamo2/blogapi.miyamo.today/core v0.18.1/go.mod h1:SMvbbRTrV5I2FkCOaEp2+pLAcuZH9FfOcAIBrPDRcd4=
 github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.0 h1:cHobz3s7D8TR0dBZeVxERfdSXsegvc8OkVp4FKleJ+c=
 github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.0/go.mod h1:1YzdFxihMoDyhw03o32mooKoi1JBfo46uy1AFd0a36M=
-github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.2.4 h1:tB2uExnSn5vjUwOFYtnRMGdTB6iq/+dHmc4Bpry7vIU=
-github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.2.4/go.mod h1:FT2LS6wrYEA1VoHOL/MnkakJ4HmaBibQyBlM52W++LU=
+github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.2.5 h1:u2iGeH4rungaD961oZHSDITG1b8sjUDL6CUEdE6kssk=
+github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.2.5/go.mod h1:rXKKT7UAia/HX1XFDDHFU6gk4xsjLlcSGbPcrBUU52I=
 github.com/miyamo2/blogapi.miyamo.today/protogen/article/client v0.3.1 h1:BxO/+B7CeSNcRY1qDorPOSdz91B8k1qDmgGXLlSAPxM=
 github.com/miyamo2/blogapi.miyamo.today/protogen/article/client v0.3.1/go.mod h1:Psc0Y3gWHKjIw7L1gjj1rT0f413mopeH0UniP5oT3Eo=
 github.com/miyamo2/blogapi.miyamo.today/protogen/tag/client v0.3.3 h1:eYwd7Hz1qXQ0Gj5K7Gc5AJQishwksxdxqO0DHJz0itM=
