@@ -5,7 +5,7 @@ go 1.21.3
 require (
 	github.com/99designs/gqlgen v0.17.47
 	github.com/cockroachdb/errors v1.11.1
-	github.com/goccy/go-json v0.10.2
+	github.com/goccy/go-json v0.10.3
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.12.0
