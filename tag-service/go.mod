@@ -16,7 +16,7 @@ require (
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.3
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.1
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
-	go.uber.org/fx v1.21.1
+	go.uber.org/fx v1.22.0
 	go.uber.org/mock v0.4.0
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.34.1
