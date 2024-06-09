@@ -3,11 +3,11 @@ package gorm
 import (
 	"context"
 	"fmt"
+	"github.com/cockroachdb/errors"
 	"log/slog"
 
 	"github.com/miyamo2/altnrslog"
 
-	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
@@ -60,13 +60,9 @@ func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error
 		if err != nil {
 			return errors.Wrap(err, "failed to get gorm conn connection")
 		}
-		tx = conn.Begin()
-		err = s.function(ctx, tx, s.out)
-		if err != nil {
-			tx.Rollback()
+		if err = s.function(ctx, conn, s.out); err != nil {
 			return errors.Wrap(err, "failed to execute stmt")
 		}
-		tx.Commit()
 		return nil
 	}
 	return s.function(ctx, tx, s.out)
