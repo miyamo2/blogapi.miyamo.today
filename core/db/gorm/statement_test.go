@@ -27,14 +27,10 @@ func TestStatement_Execute(t *testing.T) {
 		}
 
 		rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
-		mock.ExpectBegin()
-		mock.ExpectPrepare(regexp.QuoteMeta(
-			`SELECT "id" FROM "dummies"`))
 		q := mock.ExpectPrepare(regexp.QuoteMeta(
 			`SELECT "id" FROM "dummies"`))
 		q.ExpectQuery().
 			WillReturnRows(rows)
-		mock.ExpectCommit()
 		dialector := postgres.New(postgres.Config{
 			Conn: sqlDB,
 		})
