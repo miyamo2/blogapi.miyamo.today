@@ -29,27 +29,26 @@ func Get(ctx context.Context) (*gorm.DB, error) {
 		SkipDefaultTransaction: true,
 	}
 
-	if db != nil {
-		return db.Session(&sc), nil
-	}
-	logger.Info("gorm connection is not initialized")
-	dial.Mu.RLock()
-	defer dial.Mu.RUnlock()
-	if dial.Instance == nil {
-		return nil, ErrDialectorNotInitialized
-	}
-	dialector := *dial.Instance
+	if db == nil {
+		logger.Info("gorm connection is not initialized")
+		dial.Mu.RLock()
+		defer dial.Mu.RUnlock()
+		if dial.Instance == nil {
+			return nil, ErrDialectorNotInitialized
+		}
+		dialector := *dial.Instance
 
-	db, err = gorm.Open(dialector, &gorm.Config{
-		SkipDefaultTransaction: true,
-		PrepareStmt:            true,
-	})
-	if err != nil {
-		logger.Warn("failed to initialize gorm connection")
-		return nil, err
+		db, err = gorm.Open(dialector, &gorm.Config{
+			SkipDefaultTransaction: true,
+			PrepareStmt:            true,
+		})
+		if err != nil {
+			logger.Warn("failed to initialize gorm connection")
+			return nil, err
+		}
+		conn.Instance = db
+		logger.Info("completed gorm connection initialization")
 	}
-	conn.Instance = db
-	logger.Info("completed gorm connection initialization")
 	return db.Session(&sc), nil
 }
 
