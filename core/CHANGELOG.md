@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.19.0 - 2024-06-10
+
+### 🚀️ New Features
+
+- `gorm.Statement` now runs without transactions by default.
+
+### ⬆️ Update dependencies
+
+- `github.com/cockroachdb/errors`
+
 ## 0.18.1 - 2024-05-04
 
 ⬆️ Update dependencies
