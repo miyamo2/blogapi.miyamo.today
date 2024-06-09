@@ -4,7 +4,7 @@ go 1.21.3
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/cockroachdb/errors v1.11.1
+	github.com/cockroachdb/errors v1.11.3
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/miyamo2/altnrslog v0.4.2
