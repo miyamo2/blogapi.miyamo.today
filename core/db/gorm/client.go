@@ -52,6 +52,19 @@ func Get(ctx context.Context) (*gorm.DB, error) {
 	return db.Session(&sc), nil
 }
 
+// Initialize initializes gorm database connection.
+func Initialize(db *gorm.DB) {
+	log.DefaultLogger().Info("initialize gorm database connection")
+	conn.Mu.Lock()
+	defer conn.Mu.Unlock()
+	if conn.Instance != nil {
+		log.DefaultLogger().Warn("gorm database connection is already initialized")
+		return
+	}
+	conn.Instance = db
+	log.DefaultLogger().Info("completed gorm database connection initialization")
+}
+
 // InitializeDialector initializes gorm database dialector.
 func InitializeDialector(dialector *gorm.Dialector) {
 	log.DefaultLogger().Info("initialize gorm database dialector")
