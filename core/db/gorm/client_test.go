@@ -83,7 +83,6 @@ func TestGet(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
@@ -126,9 +125,9 @@ func TestInitialize(t *testing.T) {
 			},
 			expectOverwrite: true,
 			beforeFunc: func() {
-				dial.Mu.Lock()
-				defer dial.Mu.Unlock()
-				dial.Instance = nil
+				conn.Mu.Lock()
+				defer conn.Mu.Unlock()
+				conn.Instance = nil
 			},
 		},
 		"happy_path/gorm_connection_is_already_initialized": {
@@ -166,7 +165,6 @@ func TestInitialize(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
@@ -220,7 +218,6 @@ func TestInvalidate(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
@@ -286,7 +283,6 @@ func TestInitializeDialector(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
@@ -335,7 +331,6 @@ func TestInvalidateDialector(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
