@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG GO_VERSION=1.22.4
 
-FROM golang:${GO_VERSION}-alpine3.18 as build
+FROM golang:${GO_VERSION}-alpine3.20 as build
 
 ARG GITHUB_TOKEN
 
@@ -17,7 +17,7 @@ RUN go mod download
 
 RUN go build -o ./bin/federator ./cmd/main.go
 
-FROM alpine:3.18
+FROM alpine:3.20
 
 WORKDIR /app
 
