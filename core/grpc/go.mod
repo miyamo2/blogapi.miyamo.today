@@ -1,6 +1,6 @@
 module github.com/miyamo2/blogapi.miyamo.today/core/grpc
 
-go 1.21
+go 1.22
 
 require (
 	github.com/miyamo2/altnrslog v0.4.2
