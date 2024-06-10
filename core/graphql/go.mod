@@ -3,7 +3,7 @@ module github.com/miyamo2/blogapi.miyamo.today/core/graphql
 go 1.22
 
 require (
-	github.com/99designs/gqlgen v0.17.47
+	github.com/99designs/gqlgen v0.17.48
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/miyamo2/blogapi.miyamo.today/core v0.18.1
 	github.com/newrelic/go-agent/v3 v3.33.0
