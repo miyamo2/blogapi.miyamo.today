@@ -83,6 +83,7 @@ func TestGet(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
@@ -165,6 +166,7 @@ func TestInitialize(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
@@ -218,6 +220,7 @@ func TestInvalidate(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
@@ -283,6 +286,7 @@ func TestInitializeDialector(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
@@ -331,6 +335,7 @@ func TestInvalidateDialector(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
+			t.Parallel()
 			if tt.beforeFunc != nil {
 				tt.beforeFunc()
 			}
