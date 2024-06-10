@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.20.0 - 2024-06-10
+
+### 🚀️ New Features
+
+- Added `gorm.Initialize`, the function initialize the GORM connection.
+
 ## 0.19.0 - 2024-06-10
 
 ### 🚀️ New Features
