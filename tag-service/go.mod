@@ -1,6 +1,6 @@
 module github.com/miyamo2/blogapi.miyamo.today/tag-service
 
-go 1.21.3
+go 1.22
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
