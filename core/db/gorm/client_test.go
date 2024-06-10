@@ -100,6 +100,89 @@ func TestGet(t *testing.T) {
 	}
 }
 
+func TestInitialize(t *testing.T) {
+	type testCase struct {
+		args            func() *gorm.DB
+		expectOverwrite bool
+		beforeFunc      func()
+	}
+
+	tests := map[string]testCase{
+		"happy_path": {
+			args: func() *gorm.DB {
+				sqlDB, _, err := sqlmock.New()
+				if err != nil {
+					panic(err)
+				}
+				dialector := postgres.New(postgres.Config{
+					Conn: sqlDB,
+				})
+				db, err := gorm.Open(dialector)
+				if err != nil {
+					panic(err)
+				}
+				return db
+			},
+			expectOverwrite: true,
+			beforeFunc: func() {
+				dial.Mu.Lock()
+				defer dial.Mu.Unlock()
+				dial.Instance = nil
+			},
+		},
+		"happy_path/gorm_connection_is_already_initialized": {
+			args: func() *gorm.DB {
+				sqlDB, _, err := sqlmock.New()
+				if err != nil {
+					panic(err)
+				}
+				dialector := postgres.New(postgres.Config{
+					Conn: sqlDB,
+				})
+				db, err := gorm.Open(dialector)
+				if err != nil {
+					panic(err)
+				}
+				return db
+			},
+			beforeFunc: func() {
+				sqlDB, _, err := sqlmock.New()
+				if err != nil {
+					panic(err)
+				}
+				dialector := postgres.New(postgres.Config{
+					Conn: sqlDB,
+				})
+				db, err := gorm.Open(dialector)
+				if err != nil {
+					panic(err)
+				}
+				conn.Mu.Lock()
+				defer conn.Mu.Unlock()
+				conn.Instance = db
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if tt.beforeFunc != nil {
+				tt.beforeFunc()
+			}
+			args := tt.args()
+			Initialize(args)
+			if tt.expectOverwrite {
+				if conn.Instance != args {
+					t.Errorf("Initialize() is not updating the connection.")
+					return
+				}
+			} else if conn.Instance == args {
+				t.Errorf("Initialize() is updating the connection.")
+				return
+			}
+		})
+	}
+}
+
 func TestInvalidate(t *testing.T) {
 	type testCase struct {
 		beforeFunc func()
@@ -149,9 +232,9 @@ func TestInvalidate(t *testing.T) {
 
 func TestInitializeDialector(t *testing.T) {
 	type testCase struct {
-		args          func() *gorm.Dialector
-		wantOverwrite bool
-		beforeFunc    func()
+		args            func() *gorm.Dialector
+		expectOverwrite bool
+		beforeFunc      func()
 	}
 
 	tests := map[string]testCase{
@@ -166,7 +249,7 @@ func TestInitializeDialector(t *testing.T) {
 				})
 				return &dialector
 			},
-			wantOverwrite: true,
+			expectOverwrite: true,
 			beforeFunc: func() {
 				dial.Mu.Lock()
 				defer dial.Mu.Unlock()
@@ -205,7 +288,7 @@ func TestInitializeDialector(t *testing.T) {
 			}
 			args := tt.args()
 			InitializeDialector(args)
-			if tt.wantOverwrite {
+			if tt.expectOverwrite {
 				if dial.Instance != args {
 					t.Errorf("InitializeDialector() is not updating the dialector.")
 					return
