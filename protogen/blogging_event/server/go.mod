@@ -1,6 +1,6 @@
 module github.com/miyamo2/blogapi.miyamo.today/protogen/blogging_event/server
 
-go 1.21.3
+go 1.22
 
 require (
 	google.golang.org/grpc v1.60.1
