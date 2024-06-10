@@ -125,9 +125,9 @@ func TestInitialize(t *testing.T) {
 			},
 			expectOverwrite: true,
 			beforeFunc: func() {
-				dial.Mu.Lock()
-				defer dial.Mu.Unlock()
-				dial.Instance = nil
+				conn.Mu.Lock()
+				defer conn.Mu.Unlock()
+				conn.Instance = nil
 			},
 		},
 		"happy_path/gorm_connection_is_already_initialized": {
