@@ -20,7 +20,7 @@ require (
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.0
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.3
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
-	github.com/vektah/gqlparser/v2 v2.5.12
+	github.com/vektah/gqlparser/v2 v2.5.16
 	go.uber.org/fx v1.22.0
 	go.uber.org/mock v0.4.0
 	google.golang.org/grpc v1.64.0
