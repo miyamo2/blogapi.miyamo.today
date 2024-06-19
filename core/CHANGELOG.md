@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.21.0 - 2024-06-19
+
+### 🚀️ New Features
+
+- Added `db.GetAndStartWithDBSource`, the function specified the database source to start transaction.
+
 ## 0.20.0 - 2024-06-10
 
 ### 🚀️ New Features
