@@ -3,6 +3,7 @@ package gorm
 import (
 	"context"
 	"fmt"
+	"gorm.io/plugin/dbresolver"
 	"log/slog"
 
 	"github.com/miyamo2/altnrslog"
@@ -25,7 +26,7 @@ type Transaction struct {
 	errQueue  chan error
 }
 
-func (t *Transaction) process(ctx context.Context) {
+func (t *Transaction) process(ctx context.Context, dbSource string) {
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		logger = log.DefaultLogger()
@@ -43,6 +44,9 @@ func (t *Transaction) process(ctx context.Context) {
 		err = errors.Wrap(err, "failed to get gorm connection")
 		t.errQueue <- err
 		return
+	}
+	if dbSource != "" {
+		conn.Clauses(dbresolver.Use(dbSource))
 	}
 	tx := conn.Begin()
 TX:
@@ -133,9 +137,13 @@ var _ db.TransactionManager = (*manager)(nil)
 type manager struct {
 }
 
-func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
+func (m manager) GetAndStart(ctx context.Context, options ...db.GetAndStartOption) (db.Transaction, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("BlogAPICore: Gorm Get And Start Transaction").End()
+	prop := db.GetAndStartProperty{}
+	for _, opt := range options {
+		opt(&prop)
+	}
 	dw := duration.Start()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
@@ -163,7 +171,7 @@ func (m manager) GetAndStart(ctx context.Context) (db.Transaction, error) {
 	if err != nil {
 		pctx = ctx
 	}
-	go t.process(pctx)
+	go t.process(pctx, prop.Source)
 	return t, nil
 }
 

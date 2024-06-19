@@ -10,6 +10,7 @@ require (
 	github.com/newrelic/go-agent/v3 v3.33.0
 	gorm.io/driver/postgres v1.5.7
 	gorm.io/gorm v1.25.10
+	gorm.io/plugin/dbresolver v1.5.2
 )
 
 require (
