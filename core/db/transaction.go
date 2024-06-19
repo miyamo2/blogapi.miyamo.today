@@ -16,8 +16,23 @@ type Transaction interface {
 	SubscribeError() <-chan error
 }
 
+// GetAndStartProperty is a property for GetAndStart.
+type GetAndStartProperty struct {
+	Source string
+}
+
+// GetAndStartOption is an option for GetAndStart.
+type GetAndStartOption func(*GetAndStartProperty)
+
+// GetAndStartWithDBSource specify db source for GetAndStart.
+func GetAndStartWithDBSource(source string) GetAndStartOption {
+	return func(p *GetAndStartProperty) {
+		p.Source = source
+	}
+}
+
 // TransactionManager manages transaction.
 type TransactionManager interface {
 	// GetAndStart gets transaction and starts it.
-	GetAndStart(ctx context.Context) (Transaction, error)
+	GetAndStart(ctx context.Context, options ...GetAndStartOption) (Transaction, error)
 }
