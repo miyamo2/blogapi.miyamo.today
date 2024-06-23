@@ -61,7 +61,7 @@ jobs:
           tar -xvf ds.tar.gz
           mkdir $HOME/bin
           mv  dist_linux/ $HOME/bin/
-          echo ::add-path::$HOME/bin
+          echo "$HOME/bin" >> $GITHUB_PATH
           docker-slim build --target ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} --preserve-path /usr/local/bin/ --preserve-path /usr/local/app
 
       - name: Push Docker Image
