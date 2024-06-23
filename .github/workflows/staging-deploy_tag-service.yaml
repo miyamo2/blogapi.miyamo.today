@@ -53,7 +53,7 @@ jobs:
       - uses: kitabisa/docker-slim-action@v1.1.1
         env:
           DSLIM_HTTP_PROBE: false
-          DSLIM_PRESERVE_PATH: /usr/local/bin/
+          DSLIM_PRESERVE_PATH: /bin/
         with:
           target: ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-repo.outputs.repository }}
           tag: ${{ github.sha }}
