@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.18.1
+	github.com/miyamo2/blogapi.miyamo.today/core v0.20.0
 	github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.4
 	github.com/miyamo2/blogapi.miyamo.today/protogen/article/server v0.3.1
 	github.com/newrelic/go-agent/v3 v3.33.0

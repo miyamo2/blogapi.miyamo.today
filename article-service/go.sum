@@ -132,8 +132,8 @@ github.com/mattn/go-isatty v0.0.7/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hd
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/miyamo2/altnrslog v0.4.2 h1:JZLZz0gDGtWnY0lki2LbxAfLUrxBUdYyuVn70brrhnU=
 github.com/miyamo2/altnrslog v0.4.2/go.mod h1:TVxN4FJJYkkxwsJJuXXUxuQgVlTOxMu92h2RKxoThxw=
-github.com/miyamo2/blogapi.miyamo.today/core v0.18.1 h1:KPp+oCUPI4gRb1lc2tQ7xxzSZsQH/7csWpI55zDpyqM=
-github.com/miyamo2/blogapi.miyamo.today/core v0.18.1/go.mod h1:SMvbbRTrV5I2FkCOaEp2+pLAcuZH9FfOcAIBrPDRcd4=
+github.com/miyamo2/blogapi.miyamo.today/core v0.20.0 h1:80xyvEMuB2VsiqKkkihQu9JWPhCcZfNBpzOrDYbS3rY=
+github.com/miyamo2/blogapi.miyamo.today/core v0.20.0/go.mod h1:RT3haKcECAVEwaONlnQcwXQb/r48s6SQbz2mzWwuuC4=
 github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.4 h1:acBxwWVK8AJQTQGVG3NipG92qbGk84b+7lzevnjYgNo=
 github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.4/go.mod h1:2tasWlEqF4ZhLqAyKwhDXIv/QDA0sKpItrDYREdRuJE=
 github.com/miyamo2/blogapi.miyamo.today/protogen/article/server v0.3.1 h1:EcqaLmrAKKIc0/YViYB3xx3obkKnirwtuInHZ+LTf4I=
