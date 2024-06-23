@@ -50,12 +50,15 @@ jobs:
         run: |
           docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} -f ./.build/package/Dockerfile --build-arg GITHUB_TOKEN=${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }} .
 
-      - uses: kitabisa/docker-slim-action@v1
+      - name: Slim Docker Image
         env:
-          DSLIM_HTTP_PROBE: false
-        with:
-          target: ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-repo.outputs.repository }}
-          tag: ${{ github.sha }}
+          ENV_NAME: dev
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ steps.ecr-repo.outputs.repository }}
+          TAG: ${{ github.sha }}
+        run: |
+          curl -sL https://raw.githubusercontent.com/slimtoolkit/slim/master/scripts/install-slim.sh | sudo -E bash -
+          docker-slim build --target ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} --preserve-path /usr/local/bin/ --preserve-path /usr/local/app
 
       - name: Push Docker Image
         env:
