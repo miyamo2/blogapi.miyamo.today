@@ -15,7 +15,7 @@ RUN export GOPRIVATE=github.com/miyamo2
 RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
 RUN go mod download
 
-RUN go build -o ./bin/federator ./cmd/main.go
+RUN go build -ldflags="-s -w" -trimpath -o ./bin/federator ./cmd/main.go
 
 FROM alpine:3.20
 
