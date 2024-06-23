@@ -54,7 +54,7 @@ jobs:
         env:
           DSLIM_HTTP_PROBE: false
         with:
-          target: ${{ env.REGISTRY }}/${{ env.REPOSITORY }}
+          target: ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-repo.outputs.repository }}
           tag: ${{ github.sha }}
 
       - name: Push Docker Image
