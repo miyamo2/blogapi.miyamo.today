@@ -41,7 +41,7 @@ jobs:
           REPO_NAME=$(aws ssm get-parameters --names /miyamo-today/cicd/${{ env.ENV_NAME }}/ecr/tag-service/name --output text --query Parameters[0].Value) 
           echo "repository=$REPO_NAME" >> $GITHUB_OUTPUT
 
-      - name: Build Docker Image
+      - name: Build & Push Docker Image
         env:
           ENV_NAME: dev
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -49,22 +49,6 @@ jobs:
           TAG: ${{ github.sha }}
         run: |
           docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} -f ./.build/package/Dockerfile --build-arg GITHUB_TOKEN=${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }} .
-
-      - uses: kitabisa/docker-slim-action@v1.1.1
-        env:
-          DSLIM_HTTP_PROBE: false
-          DSLIM_PRESERVE_PATH: /bin/
-        with:
-          target: ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-repo.outputs.repository }}
-          tag: ${{ github.sha }}
-
-      - name: Push Docker Image
-        env:
-          ENV_NAME: dev
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ steps.ecr-repo.outputs.repository }}
-          TAG: ${{ github.sha }}
-        run: |
           docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }}
           aws ssm put-parameter --name /miyamo-today/cicd/${{ env.ENV_NAME }}/ecr/tag-service/tag --value ${{ env.TAG }} --type String --overwrite --region ap-northeast-1
 
