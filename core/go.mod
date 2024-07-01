@@ -8,7 +8,7 @@ require (
 	github.com/cockroachdb/errors v1.11.3
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/newrelic/go-agent/v3 v3.33.0
-	gorm.io/driver/postgres v1.5.7
+	gorm.io/driver/postgres v1.5.9
 	gorm.io/gorm v1.25.10
 	gorm.io/plugin/dbresolver v1.5.2
 )
@@ -21,7 +21,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/jackc/pgx/v5 v5.5.4 // indirect
+	github.com/jackc/pgx/v5 v5.5.5 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
