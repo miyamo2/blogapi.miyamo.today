@@ -10,7 +10,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.20.0
+	github.com/miyamo2/blogapi.miyamo.today/core v0.21.0
 	github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.0
 	github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.2.5
 	github.com/miyamo2/blogapi.miyamo.today/protogen/article/client v0.3.1

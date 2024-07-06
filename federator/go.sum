@@ -66,8 +66,8 @@ github.com/mitchellh/mapstructure v1.5.0 h1:jeMsZIYE/09sWLaz43PL7Gy6RuMjD2eJVyua
 github.com/mitchellh/mapstructure v1.5.0/go.mod h1:bFUtVrKA4DC2yAKiSyO/QUcy7e+RRV2QTWOzhPopBRo=
 github.com/miyamo2/altnrslog v0.4.2 h1:JZLZz0gDGtWnY0lki2LbxAfLUrxBUdYyuVn70brrhnU=
 github.com/miyamo2/altnrslog v0.4.2/go.mod h1:TVxN4FJJYkkxwsJJuXXUxuQgVlTOxMu92h2RKxoThxw=
-github.com/miyamo2/blogapi.miyamo.today/core v0.20.0 h1:80xyvEMuB2VsiqKkkihQu9JWPhCcZfNBpzOrDYbS3rY=
-github.com/miyamo2/blogapi.miyamo.today/core v0.20.0/go.mod h1:RT3haKcECAVEwaONlnQcwXQb/r48s6SQbz2mzWwuuC4=
+github.com/miyamo2/blogapi.miyamo.today/core v0.21.0 h1:43DrrDO4hcc8boUt/B+ESCSzE2uP9AzBLoSN9ULOuuM=
+github.com/miyamo2/blogapi.miyamo.today/core v0.21.0/go.mod h1:3hNHz32QRlFvX4GC8QXePjWWimU3JfHlBfZv//We4FI=
 github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.0 h1:cHobz3s7D8TR0dBZeVxERfdSXsegvc8OkVp4FKleJ+c=
 github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.0/go.mod h1:1YzdFxihMoDyhw03o32mooKoi1JBfo46uy1AFd0a36M=
 github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.2.5 h1:u2iGeH4rungaD961oZHSDITG1b8sjUDL6CUEdE6kssk=
