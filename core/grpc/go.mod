@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/miyamo2/blogapi.miyamo.today/core v0.21.0
-	github.com/newrelic/go-agent/v3 v3.33.0
+	github.com/newrelic/go-agent/v3 v3.33.1
 	github.com/oklog/ulid/v2 v2.1.0
 	google.golang.org/grpc v1.65.0
 )
