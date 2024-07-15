@@ -89,8 +89,8 @@ github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 h1:ug
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0/go.mod h1:5+hmfTxwzTj022CzgB8RpMZeY4AVBav25MvcTKSX/vg=
 github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.1 h1:mkl4+u79s6bL7mPzdTdyLhwXpr5XqaRf2vJu4v1PcgI=
 github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.1/go.mod h1:BZWCHE6p7gjXJdjrLRRSAtSfO/SWtUJA93yUHAjuCCg=
-github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.3 h1:oamBZ7SJgS3fgnSPEVmkvWo/Rw1p0CvuEm7vcgncc5I=
-github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.3/go.mod h1:62DyPk5BZRXbaLP3DrKROT6C8YBtHAb/ZqhrALCPNYY=
+github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4 h1:W2ieA1YqYINmo1CrHTmG48I+WQ8F9tiG85kIGKJcEmI=
+github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4/go.mod h1:rSwAuMNUCW8w5uLIQ46h0mV44yv53yuRgZIW6wylA7c=
 github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0 h1:TmAihIxCqgz3v9OR19J7mK2ggEQjGdhz2FEOvszU1SI=
 github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0/go.mod h1:yXUqcAzlKNVIsSyoaI2ILdpvBeMCz3Ko/ASl4Vbg2i4=
 github.com/newrelic/go-agent/v3/integrations/nrsecurityagent v1.1.0 h1:gqkTDYUHWUyiG+u0PJQCRh98rcHLxP/w7GtIbJDVULY=
