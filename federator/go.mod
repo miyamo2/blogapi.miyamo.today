@@ -16,7 +16,7 @@ require (
 	github.com/miyamo2/blogapi.miyamo.today/protogen/article/client v0.3.1
 	github.com/miyamo2/blogapi.miyamo.today/protogen/tag/client v0.3.3
 	github.com/newrelic/go-agent/v3 v3.33.1
-	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog v1.2.0
+	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog v1.3.0
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.1
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
