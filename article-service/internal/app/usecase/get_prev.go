@@ -101,7 +101,7 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 		}
 		if err != nil {
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			lgr.WarnContext(ctx, "transaction has error. err: %+v", err)
+			lgr.WarnContext(ctx, "transaction has error.", slog.String("err", err.Error()))
 		}
 	}
 	lgr.InfoContext(ctx, "END",
