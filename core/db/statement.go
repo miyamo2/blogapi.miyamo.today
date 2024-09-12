@@ -1,3 +1,4 @@
+//go:generate mockgen -source=$GOFILE -destination ../../tag-service/internal/mock/core/db/mock_statement.go -package mock_db
 package db
 
 import "context"
