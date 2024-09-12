@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.21.1 - 2024-09-12
+
+### ⬆️ Update dependencies
+
+- `gorm.io/driver/postgres`
+- `github.com/newrelic/go-agent/v3`
+- `gorm.io/gorm`
+
 ## 0.21.0 - 2024-06-19
 
 ### 🚀️ New Features
