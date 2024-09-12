@@ -97,7 +97,7 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 		}
 		if err != nil {
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			lgr.WarnContext(ctx, "transaction has error. err: %+v", err)
+			lgr.WarnContext(ctx, "transaction has error.", slog.String("err", err.Error()))
 		}
 	}
 	lgr.InfoContext(ctx, "END",
