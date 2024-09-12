@@ -8,7 +8,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.20.0
+	github.com/miyamo2/blogapi.miyamo.today/core v0.21.0
 	github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.4
 	github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server v0.3.3
 	github.com/newrelic/go-agent/v3 v3.33.1
@@ -63,4 +63,5 @@ require (
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
+	gorm.io/plugin/dbresolver v1.5.2 // indirect
 )
