@@ -5,6 +5,7 @@
 //
 //	mockgen -source=get_prev.go -destination=../../../../mock/if-adapter/controller/pb/usecase/mock_get_prev.go -package=mock_usecase
 //
+
 // Package mock_usecase is a generated GoMock package.
 package mock_usecase
 
