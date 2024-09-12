@@ -5,6 +5,7 @@
 //
 //	mockgen -source=article_service.go -destination=../../../mock/app/usecase/query/mock_article_service.go -package=mock_query
 //
+
 // Package mock_query is a generated GoMock package.
 package mock_query
 

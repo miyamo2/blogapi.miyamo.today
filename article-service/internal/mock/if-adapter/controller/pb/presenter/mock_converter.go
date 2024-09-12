@@ -5,6 +5,7 @@
 //
 //	mockgen -source=converter.go -destination=../../../../mock/if-adapter/controller/pb/presenter/mock_converter.go -package=presenter
 //
+
 // Package presenter is a generated GoMock package.
 package presenter
 

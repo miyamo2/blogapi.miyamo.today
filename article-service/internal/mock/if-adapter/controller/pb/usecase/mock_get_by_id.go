@@ -5,6 +5,7 @@
 //
 //	mockgen -source=get_by_id.go -destination=../../../../mock/if-adapter/controller/pb/usecase/mock_get_by_id.go -package=mock_usecase
 //
+
 // Package mock_usecase is a generated GoMock package.
 package mock_usecase
 
