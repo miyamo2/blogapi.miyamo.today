@@ -1,6 +1,6 @@
 module github.com/miyamo2/blogapi.miyamo.today/core
 
-go 1.22
+go 1.23
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
