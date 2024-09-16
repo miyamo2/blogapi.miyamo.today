@@ -134,8 +134,8 @@ github.com/mattn/go-isatty v0.0.7/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hd
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/miyamo2/altnrslog v0.4.2 h1:JZLZz0gDGtWnY0lki2LbxAfLUrxBUdYyuVn70brrhnU=
 github.com/miyamo2/altnrslog v0.4.2/go.mod h1:TVxN4FJJYkkxwsJJuXXUxuQgVlTOxMu92h2RKxoThxw=
-github.com/miyamo2/blogapi.miyamo.today/core v0.21.0 h1:43DrrDO4hcc8boUt/B+ESCSzE2uP9AzBLoSN9ULOuuM=
-github.com/miyamo2/blogapi.miyamo.today/core v0.21.0/go.mod h1:3hNHz32QRlFvX4GC8QXePjWWimU3JfHlBfZv//We4FI=
+github.com/miyamo2/blogapi.miyamo.today/core v0.21.1 h1:SnIf7Tzz4ZqOyCnsplYZPPodZkoWwI0v+jNfEDcwvX8=
+github.com/miyamo2/blogapi.miyamo.today/core v0.21.1/go.mod h1:3RE954JzCU1+LdWPKPwqA3+w3IDJToKBNY6rLxaaAz4=
 github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.4 h1:acBxwWVK8AJQTQGVG3NipG92qbGk84b+7lzevnjYgNo=
 github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.4/go.mod h1:2tasWlEqF4ZhLqAyKwhDXIv/QDA0sKpItrDYREdRuJE=
 github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server v0.3.3 h1:DCx5f3hJJi1fEkJfd4Pofgpp/L+Gzzhrji5+mrYyXb8=
@@ -143,8 +143,8 @@ github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server v0.3.3/go.mod h1:psz
 github.com/newrelic/csec-go-agent v0.7.0 h1:PBVk1Q1rVfXj/WyqhrQiK3U+MfH6k/GeQM8uNExu5oY=
 github.com/newrelic/csec-go-agent v0.7.0/go.mod h1:jsO5yk+pdNBoVE2CmjiasRsrf00S3K9QZsyS0SFLuAo=
 github.com/newrelic/go-agent/v3 v3.0.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
-github.com/newrelic/go-agent/v3 v3.33.1 h1:eWOtty43cyxrMKws4VNPdebgEB6ujFTf0yxPsgB0M80=
-github.com/newrelic/go-agent/v3 v3.33.1/go.mod h1:SMdqPzE/ghkWdY0rYGSD7Clw2daK/XH6pUnVd4albg4=
+github.com/newrelic/go-agent/v3 v3.34.0 h1:jhtX+YUrAh2ddgPGIixMYq4+nCBrEN4ETGyi2h/zWJw=
+github.com/newrelic/go-agent/v3 v3.34.0/go.mod h1:VNsi+XA7YsgF4fHES8l/U6OhAHhU3IdLDFkB/wpevvA=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 h1:QHUFxBPgC8YYcCRCGfteWJUnaQjetEFTmd67KQ44t1M=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1/go.mod h1:eATzimYSQLsG+VFK2xJXWmniC1+zr44K7Owz5WEAoqc=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog v1.2.0 h1:5TN/n8B6LOOeHgKw06aK6hVH54GFDHfKw0JDrlLMDwU=
