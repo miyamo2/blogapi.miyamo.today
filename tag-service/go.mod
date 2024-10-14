@@ -16,7 +16,7 @@ require (
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.1
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
-	go.uber.org/fx v1.22.1
+	go.uber.org/fx v1.23.0
 	go.uber.org/mock v0.4.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
@@ -53,7 +53,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	go.uber.org/dig v1.17.1 // indirect
+	go.uber.org/dig v1.18.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
