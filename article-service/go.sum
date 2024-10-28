@@ -143,8 +143,8 @@ github.com/miyamo2/blogapi.miyamo.today/protogen/article/server v0.3.1/go.mod h1
 github.com/newrelic/csec-go-agent v0.6.0 h1:0/1UFUicqIcDwkhFkrXBtRfUzGsZrH/mWlBzLwPJVFU=
 github.com/newrelic/csec-go-agent v0.6.0/go.mod h1:jsO5yk+pdNBoVE2CmjiasRsrf00S3K9QZsyS0SFLuAo=
 github.com/newrelic/go-agent/v3 v3.0.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
-github.com/newrelic/go-agent/v3 v3.33.1 h1:eWOtty43cyxrMKws4VNPdebgEB6ujFTf0yxPsgB0M80=
-github.com/newrelic/go-agent/v3 v3.33.1/go.mod h1:SMdqPzE/ghkWdY0rYGSD7Clw2daK/XH6pUnVd4albg4=
+github.com/newrelic/go-agent/v3 v3.35.1 h1:N43qBNDILmnwLDCSfnE1yy6adyoVEU95nAOtdUgG4vA=
+github.com/newrelic/go-agent/v3 v3.35.1/go.mod h1:GNTda53CohAhkgsc7/gqSsJhDZjj8vaky5u+vKz7wqM=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 h1:QHUFxBPgC8YYcCRCGfteWJUnaQjetEFTmd67KQ44t1M=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1/go.mod h1:eATzimYSQLsG+VFK2xJXWmniC1+zr44K7Owz5WEAoqc=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 h1:ugrng2OpXAEmwCQgLNmIGM8m0MZiitpswBVotVjyivA=
