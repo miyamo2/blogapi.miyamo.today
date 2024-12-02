@@ -134,8 +134,8 @@ github.com/mattn/go-isatty v0.0.7/go.mod h1:Iq45c/XA43vh69/j3iqttzPXn0bhXyGjM0Hd
 github.com/mattn/go-isatty v0.0.12/go.mod h1:cbi8OIDigv2wuxKPP5vlRcQ1OAZbq2CE4Kysco4FUpU=
 github.com/miyamo2/altnrslog v0.4.2 h1:JZLZz0gDGtWnY0lki2LbxAfLUrxBUdYyuVn70brrhnU=
 github.com/miyamo2/altnrslog v0.4.2/go.mod h1:TVxN4FJJYkkxwsJJuXXUxuQgVlTOxMu92h2RKxoThxw=
-github.com/miyamo2/blogapi.miyamo.today/core v0.21.0 h1:43DrrDO4hcc8boUt/B+ESCSzE2uP9AzBLoSN9ULOuuM=
-github.com/miyamo2/blogapi.miyamo.today/core v0.21.0/go.mod h1:3hNHz32QRlFvX4GC8QXePjWWimU3JfHlBfZv//We4FI=
+github.com/miyamo2/blogapi.miyamo.today/core v0.21.1 h1:SnIf7Tzz4ZqOyCnsplYZPPodZkoWwI0v+jNfEDcwvX8=
+github.com/miyamo2/blogapi.miyamo.today/core v0.21.1/go.mod h1:3RE954JzCU1+LdWPKPwqA3+w3IDJToKBNY6rLxaaAz4=
 github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.4 h1:acBxwWVK8AJQTQGVG3NipG92qbGk84b+7lzevnjYgNo=
 github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.4/go.mod h1:2tasWlEqF4ZhLqAyKwhDXIv/QDA0sKpItrDYREdRuJE=
 github.com/miyamo2/blogapi.miyamo.today/protogen/article/server v0.3.1 h1:EcqaLmrAKKIc0/YViYB3xx3obkKnirwtuInHZ+LTf4I=
@@ -143,8 +143,8 @@ github.com/miyamo2/blogapi.miyamo.today/protogen/article/server v0.3.1/go.mod h1
 github.com/newrelic/csec-go-agent v0.6.0 h1:0/1UFUicqIcDwkhFkrXBtRfUzGsZrH/mWlBzLwPJVFU=
 github.com/newrelic/csec-go-agent v0.6.0/go.mod h1:jsO5yk+pdNBoVE2CmjiasRsrf00S3K9QZsyS0SFLuAo=
 github.com/newrelic/go-agent/v3 v3.0.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
-github.com/newrelic/go-agent/v3 v3.33.1 h1:eWOtty43cyxrMKws4VNPdebgEB6ujFTf0yxPsgB0M80=
-github.com/newrelic/go-agent/v3 v3.33.1/go.mod h1:SMdqPzE/ghkWdY0rYGSD7Clw2daK/XH6pUnVd4albg4=
+github.com/newrelic/go-agent/v3 v3.34.0 h1:jhtX+YUrAh2ddgPGIixMYq4+nCBrEN4ETGyi2h/zWJw=
+github.com/newrelic/go-agent/v3 v3.34.0/go.mod h1:VNsi+XA7YsgF4fHES8l/U6OhAHhU3IdLDFkB/wpevvA=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 h1:QHUFxBPgC8YYcCRCGfteWJUnaQjetEFTmd67KQ44t1M=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1/go.mod h1:eATzimYSQLsG+VFK2xJXWmniC1+zr44K7Owz5WEAoqc=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 h1:ugrng2OpXAEmwCQgLNmIGM8m0MZiitpswBVotVjyivA=
@@ -344,8 +344,8 @@ gorm.io/driver/mysql v1.5.6/go.mod h1:sEtPWMiqiN1N1cMXoXmBbd8C6/l+TESwriotuRRpkD
 gorm.io/driver/postgres v1.5.9 h1:DkegyItji119OlcaLjqN11kHoUgZ/j13E0jkJZgD6A8=
 gorm.io/driver/postgres v1.5.9/go.mod h1:DX3GReXH+3FPWGrrgffdvCk3DQ1dwDPdmbenSkweRGI=
 gorm.io/gorm v1.25.7/go.mod h1:hbnx/Oo0ChWMn1BIhpy1oYozzpM15i4YPuHDmfYtwg8=
-gorm.io/gorm v1.25.10 h1:dQpO+33KalOA+aFYGlK+EfxcI5MbO7EP2yYygwh9h+s=
-gorm.io/gorm v1.25.10/go.mod h1:hbnx/Oo0ChWMn1BIhpy1oYozzpM15i4YPuHDmfYtwg8=
+gorm.io/gorm v1.25.11 h1:/Wfyg1B/je1hnDx3sMkX+gAlxrlZpn6X0BXRlwXlvHg=
+gorm.io/gorm v1.25.11/go.mod h1:xh7N7RHfYlNc5EmcI/El95gXusucDrQnHXe0+CgWcLQ=
 gorm.io/plugin/dbresolver v1.5.2 h1:Iut7lW4TXNoVs++I+ra3zxjSxTRj4ocIeFEVp4lLhII=
 gorm.io/plugin/dbresolver v1.5.2/go.mod h1:jPh59GOQbO7v7v28ZKZPd45tr+u3vyT+8tHdfdfOWcU=
 honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt0JzvZhAg=
