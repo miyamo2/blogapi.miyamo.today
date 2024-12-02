@@ -9,17 +9,17 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/presenter"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/server/pb"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-// ArticleServiceServer is implementation of pb.ArticleServiceServer
+// ArticleServiceServer is implementation of grpc.ArticleServiceServer
 type ArticleServiceServer struct {
-	pb.UnimplementedArticleServiceServer
+	grpc.UnimplementedArticleServiceServer
 	getByIdUsecase usecase.GetById
 	getAllUsecase  usecase.GetAll
 	getNextUsecase usecase.GetNext
@@ -37,8 +37,8 @@ var (
 	ErrConversionToGetPrevArticlesFailed = errors.New("conversion to get_prev_articles_response failed")
 )
 
-// GetAllArticles is implementation of pb.ArticleServiceServer.GetAllArticles
-func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.Empty) (*pb.GetAllArticlesResponse, error) {
+// GetAllArticles is implementation of grpc.ArticleServiceServer.GetAllArticles
+func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.Empty) (*grpc.GetAllArticlesResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAllArticles").End()
 	dw := duration.Start()
@@ -57,7 +57,7 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("pb.GetAllArticlesResponse", nil),
+				slog.Any("grpc.GetAllArticlesResponse", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
@@ -73,8 +73,8 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 	return res, nil
 }
 
-// GetNextArticles is implementation of pb.ArticleServiceServer.GetNextArticles
-func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *pb.GetNextArticlesRequest) (*pb.GetNextArticlesResponse, error) {
+// GetNextArticles is implementation of grpc.ArticleServiceServer.GetNextArticles
+func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *grpc.GetNextArticlesRequest) (*grpc.GetNextArticlesResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetNextArticles").End()
 	dw := duration.Start()
@@ -93,7 +93,7 @@ func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *pb.GetNe
 		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("pb.GetNextArticlesResponse", nil),
+				slog.Any("grpc.GetNextArticlesResponse", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
@@ -109,8 +109,8 @@ func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *pb.GetNe
 	return res, nil
 }
 
-// GetArticleById is implementation of pb.ArticleServiceServer.GetArticleById
-func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *pb.GetArticleByIdRequest) (*pb.GetArticleByIdResponse, error) {
+// GetArticleById is implementation of grpc.ArticleServiceServer.GetArticleById
+func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *grpc.GetArticleByIdRequest) (*grpc.GetArticleByIdResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetArticleById").End()
 	dw := duration.Start()
@@ -145,8 +145,8 @@ func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *pb.GetArt
 	return res, nil
 }
 
-// GetPrevArticles is implementation of pb.ArticleServiceServer.GetPrevArticles
-func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *pb.GetPrevArticlesRequest) (*pb.GetPrevArticlesResponse, error) {
+// GetPrevArticles is implementation of grpc.ArticleServiceServer.GetPrevArticles
+func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *grpc.GetPrevArticlesRequest) (*grpc.GetPrevArticlesResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetPrevArticles").End()
 	dw := duration.Start()

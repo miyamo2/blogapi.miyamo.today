@@ -1,9 +1,11 @@
 package provider
 
 import (
+	"github.com/google/wire"
 	impl "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/query"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
-	"go.uber.org/fx"
+	"github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 )
 
 // compatibility check
@@ -14,23 +16,29 @@ var (
 	_ usecase.GetPrev = (*impl.GetPrev)(nil)
 )
 
-var Usecase = fx.Options(
-	fx.Provide(
-		fx.Annotate(
-			impl.NewGetById,
-			fx.As(new(usecase.GetById)),
-		),
-		fx.Annotate(
-			impl.NewGetAll,
-			fx.As(new(usecase.GetAll)),
-		),
-		fx.Annotate(
-			impl.NewGetNext,
-			fx.As(new(usecase.GetNext)),
-		),
-		fx.Annotate(
-			impl.NewGetPrev,
-			fx.As(new(usecase.GetPrev)),
-		),
-	),
+func GetByIdUsecase(qs query.ArticleService) *impl.GetById {
+	return impl.NewGetById(gorm.Manager(), qs)
+}
+
+func GetAllUsecase(qs query.ArticleService) *impl.GetAll {
+	return impl.NewGetAll(gorm.Manager(), qs)
+}
+
+func GetNextUsecase(qs query.ArticleService) *impl.GetNext {
+	return impl.NewGetNext(gorm.Manager(), qs)
+}
+
+func GetPrevUsecase(qs query.ArticleService) *impl.GetPrev {
+	return impl.NewGetPrev(gorm.Manager(), qs)
+}
+
+var UsecaseSet = wire.NewSet(
+	GetByIdUsecase,
+	wire.Bind(new(usecase.GetById), new(*impl.GetById)),
+	GetAllUsecase,
+	wire.Bind(new(usecase.GetAll), new(*impl.GetAll)),
+	GetNextUsecase,
+	wire.Bind(new(usecase.GetNext), new(*impl.GetNext)),
+	GetPrevUsecase,
+	wire.Bind(new(usecase.GetPrev), new(*impl.GetPrev)),
 )

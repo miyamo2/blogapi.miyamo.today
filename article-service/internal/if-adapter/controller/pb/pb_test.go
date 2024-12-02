@@ -2,6 +2,7 @@ package pb
 
 import (
 	"context"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"testing"
 
 	"github.com/cockroachdb/errors"
@@ -9,7 +10,6 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 	mpresenter "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/presenter"
 	musecase "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/usecase"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/server/pb"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -18,16 +18,16 @@ import (
 func TestArticleServiceServer_GetArticleById(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *pb.GetArticleByIdRequest
+		in  *grpc.GetArticleByIdRequest
 	}
 	type want struct {
-		response *pb.GetArticleByIdResponse
+		response *grpc.GetArticleByIdResponse
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetByIdOutDto
 		setupUsecase   func(out dto.GetByIdOutDto, u *musecase.MockGetById)
-		setupConverter func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter)
+		setupConverter func(from dto.GetByIdOutDto, res *grpc.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -50,7 +50,7 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
+			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -58,20 +58,20 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetArticleByIdRequest{
+				in: &grpc.GetArticleByIdRequest{
 					Id: "1",
 				},
 			},
 			want: want{
-				response: &pb.GetArticleByIdResponse{
-					Article: &pb.Article{
+				response: &grpc.GetArticleByIdResponse{
+					Article: &grpc.Article{
 						Id:           "1",
 						Title:        "happy_path/article_has_tag",
 						Body:         "## happy_path/article_has_tag",
 						ThumbnailUrl: "1234567890",
 						CreatedAt:    "2020-01-01T00:00:00Z",
 						UpdatedAt:    "2020-01-01T00:00:00Z",
-						Tags: []*pb.Tag{
+						Tags: []*grpc.Tag{
 							{
 								Id:   "1",
 								Name: "happy_path",
@@ -88,14 +88,14 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(nil, errGetArticleById).Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
+			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetArticleByIdRequest{
+				in: &grpc.GetArticleByIdRequest{
 					Id: "1",
 				},
 			},
@@ -111,7 +111,7 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
+			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -119,7 +119,7 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetArticleByIdRequest{
+				in: &grpc.GetArticleByIdRequest{
 					Id: "1",
 				},
 			},
@@ -165,13 +165,13 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 		ctx context.Context
 	}
 	type want struct {
-		response *pb.GetAllArticlesResponse
+		response *grpc.GetAllArticlesResponse
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetAllOutDto
 		setupUsecase   func(out dto.GetAllOutDto, u *musecase.MockGetAll)
-		setupConverter func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter)
+		setupConverter func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -212,7 +212,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -222,8 +222,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 				ctx: context.Background(),
 			},
 			want: want{
-				response: &pb.GetAllArticlesResponse{
-					Articles: []*pb.Article{
+				response: &grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple_article1",
@@ -231,7 +231,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -249,7 +249,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -287,7 +287,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -297,8 +297,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 				ctx: context.Background(),
 			},
 			want: want{
-				response: &pb.GetAllArticlesResponse{
-					Articles: []*pb.Article{
+				response: &grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/single_article",
@@ -306,7 +306,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -329,7 +329,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 					Execute(gomock.Any()).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -339,8 +339,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 				ctx: context.Background(),
 			},
 			want: want{
-				response: &pb.GetAllArticlesResponse{
-					Articles: []*pb.Article{},
+				response: &grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{},
 				},
 				err: nil,
 			},
@@ -352,7 +352,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 					Execute(gomock.Any()).
 					Return(nil, errGetAllArticles).Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -374,7 +374,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -423,16 +423,16 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *pb.GetNextArticlesRequest
+		in  *grpc.GetNextArticlesRequest
 	}
 	type want struct {
-		response *pb.GetNextArticlesResponse
+		response *grpc.GetNextArticlesResponse
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetNextOutDto
 		setupUsecase   func(out dto.GetNextOutDto, u *musecase.MockGetNext)
-		setupConverter func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter)
+		setupConverter func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -475,7 +475,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -483,14 +483,14 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextArticlesRequest{
+				in: &grpc.GetNextArticlesRequest{
 					First: 2,
 					After: &cursor,
 				},
 			},
 			want: want{
-				response: &pb.GetNextArticlesResponse{
-					Articles: []*pb.Article{
+				response: &grpc.GetNextArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple_article1",
@@ -498,7 +498,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -516,7 +516,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -555,7 +555,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -563,14 +563,14 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextArticlesRequest{
+				in: &grpc.GetNextArticlesRequest{
 					First: 1,
 					After: pCursor,
 				},
 			},
 			want: want{
-				response: &pb.GetNextArticlesResponse{
-					Articles: []*pb.Article{
+				response: &grpc.GetNextArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/single_article",
@@ -578,7 +578,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -602,7 +602,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 					Execute(gomock.Any(), dto.NewGetNextInDto(2, pCursor)).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -610,14 +610,14 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextArticlesRequest{
+				in: &grpc.GetNextArticlesRequest{
 					First: 2,
 					After: pCursor,
 				},
 			},
 			want: want{
-				response: &pb.GetNextArticlesResponse{
-					Articles:    []*pb.Article{},
+				response: &grpc.GetNextArticlesResponse{
+					Articles:    []*grpc.Article{},
 					StillExists: false,
 				},
 				err: nil,
@@ -630,14 +630,14 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 					Execute(gomock.Any(), dto.NewGetNextInDto(2, pCursor)).
 					Return(nil, errGetAllArticles).Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextArticlesRequest{
+				in: &grpc.GetNextArticlesRequest{
 					First: 2,
 					After: pCursor,
 				},
@@ -656,7 +656,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -664,7 +664,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextArticlesRequest{
+				in: &grpc.GetNextArticlesRequest{
 					First: 1,
 					After: pCursor,
 				},
@@ -709,16 +709,16 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *pb.GetPrevArticlesRequest
+		in  *grpc.GetPrevArticlesRequest
 	}
 	type want struct {
-		response *pb.GetPrevArticlesResponse
+		response *grpc.GetPrevArticlesResponse
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetPrevOutDto
 		setupUsecase   func(out dto.GetPrevOutDto, u *musecase.MockGetPrev)
-		setupConverter func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter)
+		setupConverter func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -761,7 +761,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -769,14 +769,14 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevArticlesRequest{
+				in: &grpc.GetPrevArticlesRequest{
 					Last:   2,
 					Before: &cursor,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevArticlesResponse{
-					Articles: []*pb.Article{
+				response: &grpc.GetPrevArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple_article1",
@@ -784,7 +784,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -802,7 +802,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -841,7 +841,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -849,14 +849,14 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevArticlesRequest{
+				in: &grpc.GetPrevArticlesRequest{
 					Last:   1,
 					Before: pCursor,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevArticlesResponse{
-					Articles: []*pb.Article{
+				response: &grpc.GetPrevArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/single_article",
@@ -864,7 +864,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -888,7 +888,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 					Execute(gomock.Any(), dto.NewGetPrevInDto(2, pCursor)).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -896,14 +896,14 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevArticlesRequest{
+				in: &grpc.GetPrevArticlesRequest{
 					Last:   2,
 					Before: pCursor,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevArticlesResponse{
-					Articles:    []*pb.Article{},
+				response: &grpc.GetPrevArticlesResponse{
+					Articles:    []*grpc.Article{},
 					StillExists: false,
 				},
 				err: nil,
@@ -916,14 +916,14 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 					Execute(gomock.Any(), dto.NewGetPrevInDto(2, pCursor)).
 					Return(nil, errGetAllArticles).Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevArticlesRequest{
+				in: &grpc.GetPrevArticlesRequest{
 					Last:   2,
 					Before: pCursor,
 				},
@@ -942,7 +942,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -950,7 +950,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevArticlesRequest{
+				in: &grpc.GetPrevArticlesRequest{
 					Last:   1,
 					Before: pCursor,
 				},

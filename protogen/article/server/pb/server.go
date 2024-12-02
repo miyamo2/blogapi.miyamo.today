@@ -5,11 +5,11 @@ import (
 	"google.golang.org/grpc"
 )
 
-type ArticleServiceServer = internal.ArticleServiceServer
+type ArticleServiceServer internal.ArticleServiceServer
 
-type UnimplementedArticleServiceServer = internal.UnimplementedArticleServiceServer
+type UnimplementedArticleServiceServer internal.UnimplementedArticleServiceServer
 
-type UnsafeArticleServiceServer = internal.UnsafeArticleServiceServer
+type UnsafeArticleServiceServer internal.UnsafeArticleServiceServer
 
 func RegisterArticleServiceServer(s grpc.ServiceRegistrar, srv ArticleServiceServer) {
 	internal.RegisterArticleServiceServer(s, srv)

@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-type TagServiceClient = internal.TagServiceClient
+type TagServiceClient internal.TagServiceClient
 
 func NewTagServiceClient(cc grpc.ClientConnInterface) TagServiceClient {
 	return internal.NewTagServiceClient(cc)
