@@ -26,8 +26,8 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 	}
 	type testCase struct {
 		outDto         dto.GetByIdOutDto
-		setupUsecase   func(out dto.GetByIdOutDto, u *musecase.MockGetById[dto.GetByIdInDto, dto.Tag, *dto.GetByIdOutDto])
-		setupConverter func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto])
+		setupUsecase   func(out dto.GetByIdOutDto, u *musecase.MockGetById)
+		setupConverter func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -44,13 +44,13 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 				"2020-01-01T00:00:00Z",
 				[]dto.Tag{
 					dto.NewTag("1", "happy_path")}),
-			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById[dto.GetByIdInDto, dto.Tag, *dto.GetByIdOutDto]) {
+			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto]) {
+			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -83,12 +83,12 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			},
 		},
 		"unhappy_path/usecase_returns_error": {
-			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById[dto.GetByIdInDto, dto.Tag, *dto.GetByIdOutDto]) {
+			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(nil, errGetArticleById).Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto]) {
+			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -106,12 +106,12 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			wantErr: true,
 		},
 		"unhappy_path/failed_to_convert": {
-			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById[dto.GetByIdInDto, dto.Tag, *dto.GetByIdOutDto]) {
+			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto]) {
+			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -135,10 +135,10 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			out := tt.outDto
-			u := musecase.NewMockGetById[dto.GetByIdInDto, dto.Tag, *dto.GetByIdOutDto](ctrl)
+			u := musecase.NewMockGetById(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
-			conv := mpresenter.NewMockToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto](ctrl)
+			conv := mpresenter.NewMockToGetByIdConverter(ctrl)
 			tt.setupConverter(out, response, conv)
 			s := NewArticleServiceServer(u, nil, nil, nil, conv, nil, nil, nil)
 			got, err := s.GetArticleById(tt.args.ctx, tt.args.in)
@@ -170,8 +170,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 	}
 	type testCase struct {
 		outDto         dto.GetAllOutDto
-		setupUsecase   func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Tag, dto.Article, *dto.GetAllOutDto])
-		setupConverter func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto])
+		setupUsecase   func(out dto.GetAllOutDto, u *musecase.MockGetAll)
+		setupConverter func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -206,13 +206,13 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 						},
 					),
 				}),
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -281,13 +281,13 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 						},
 					),
 				}),
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -324,12 +324,12 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 		},
 		"happy_path/zero_article": {
 			outDto: dto.NewGetAllOutDto([]dto.Article{}),
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -347,12 +347,12 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 		},
 		"unhappy_path/usecase_returns_error": {
 			outDto: dto.GetAllOutDto{},
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(nil, errGetAllArticles).Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -368,13 +368,13 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 		},
 		"unhappy_path/failed_to_convert": {
 			outDto: dto.GetAllOutDto{},
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -394,10 +394,10 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			out := tt.outDto
-			u := musecase.NewMockGetAll[dto.Tag, dto.Article, *dto.GetAllOutDto](ctrl)
+			u := musecase.NewMockGetAll(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
-			conv := mpresenter.NewMockToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto](ctrl)
+			conv := mpresenter.NewMockToGetAllConverter(ctrl)
 			tt.setupConverter(out, response, conv)
 			s := NewArticleServiceServer(nil, u, nil, nil, nil, conv, nil, nil)
 
@@ -431,8 +431,8 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 	}
 	type testCase struct {
 		outDto         dto.GetNextOutDto
-		setupUsecase   func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto])
-		setupConverter func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto])
+		setupUsecase   func(out dto.GetNextOutDto, u *musecase.MockGetNext)
+		setupConverter func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -469,13 +469,13 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 						},
 					),
 				}, true),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(2, pCursor)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -549,13 +549,13 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 						},
 					),
 				}, true),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(1, pCursor)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -597,12 +597,12 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 		},
 		"happy_path/zero_article": {
 			outDto: dto.NewGetNextOutDto([]dto.Article{}, false),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(2, pCursor)).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -625,12 +625,12 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 		},
 		"unhappy_path/usecase_returns_error": {
 			outDto: dto.GetNextOutDto{},
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(2, pCursor)).
 					Return(nil, errGetAllArticles).Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -650,13 +650,13 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 		},
 		"unhappy_path/failed_to_convert": {
 			outDto: dto.GetNextOutDto{},
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(1, pCursor)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -680,10 +680,10 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			out := tt.outDto
-			u := musecase.NewMockGetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto](ctrl)
+			u := musecase.NewMockGetNext(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
-			conv := mpresenter.NewMockToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto](ctrl)
+			conv := mpresenter.NewMockToGetNextConverter(ctrl)
 			tt.setupConverter(out, response, conv)
 			s := NewArticleServiceServer(nil, nil, u, nil, nil, nil, conv, nil)
 
@@ -717,8 +717,8 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 	}
 	type testCase struct {
 		outDto         dto.GetPrevOutDto
-		setupUsecase   func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto])
-		setupConverter func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto])
+		setupUsecase   func(out dto.GetPrevOutDto, u *musecase.MockGetPrev)
+		setupConverter func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -755,13 +755,13 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 						},
 					),
 				}, true),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(2, pCursor)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -835,13 +835,13 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 						},
 					),
 				}, true),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(1, pCursor)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -883,12 +883,12 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 		},
 		"happy_path/zero_article": {
 			outDto: dto.NewGetPrevOutDto([]dto.Article{}, false),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(2, pCursor)).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -911,12 +911,12 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 		},
 		"unhappy_path/usecase_returns_error": {
 			outDto: dto.GetPrevOutDto{},
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(2, pCursor)).
 					Return(nil, errGetAllArticles).Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -936,13 +936,13 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 		},
 		"unhappy_path/failed_to_convert": {
 			outDto: dto.GetPrevOutDto{},
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(1, pCursor)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevArticlesResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -966,10 +966,10 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			out := tt.outDto
-			u := musecase.NewMockGetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto](ctrl)
+			u := musecase.NewMockGetPrev(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
-			conv := mpresenter.NewMockToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto](ctrl)
+			conv := mpresenter.NewMockToGetPrevConverter(ctrl)
 			tt.setupConverter(out, response, conv)
 			s := NewArticleServiceServer(nil, nil, nil, u, nil, nil, nil, conv)
 

@@ -27,7 +27,7 @@ func TestGetPrev_Execute(t *testing.T) {
 		args                    args
 		setupTransaction        func(tx *mdb.MockTransaction, stmt *mdb.MockStatement)
 		setupTransactionManager func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction)
-		setupArticleService     func(qs *mquery.MockArticleService[query.Tag, *query.Article], stmt *mdb.MockStatement)
+		setupArticleService     func(qs *mquery.MockArticleService, stmt *mdb.MockStatement)
 		want                    want
 		wantErr                 bool
 	}
@@ -56,7 +56,7 @@ func TestGetPrev_Execute(t *testing.T) {
 			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
 				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService[query.Tag, *query.Article], stmt *mdb.MockStatement) {
+			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				qs.EXPECT().GetAll(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a1 := query.NewArticle(
@@ -117,7 +117,7 @@ func TestGetPrev_Execute(t *testing.T) {
 			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
 				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService[query.Tag, *query.Article], stmt *mdb.MockStatement) {
+			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				qs.EXPECT().GetAll(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a1 := query.NewArticle(
@@ -198,7 +198,7 @@ func TestGetPrev_Execute(t *testing.T) {
 			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
 				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService[query.Tag, *query.Article], stmt *mdb.MockStatement) {
+			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				qs.EXPECT().GetAll(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						result := make([]*query.Article, 0)
@@ -229,7 +229,7 @@ func TestGetPrev_Execute(t *testing.T) {
 			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
 				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService[query.Tag, *query.Article], stmt *mdb.MockStatement) {
+			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				qs.EXPECT().GetAll(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						result := []*query.Article{
@@ -276,7 +276,7 @@ func TestGetPrev_Execute(t *testing.T) {
 			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
 				txmn.EXPECT().GetAndStart(gomock.Any()).Return(nil, errTxmn).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService[query.Tag, *query.Article], stmt *mdb.MockStatement) {
+			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				qs.EXPECT().GetAll(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			want: func() want {
@@ -301,7 +301,7 @@ func TestGetPrev_Execute(t *testing.T) {
 			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
 				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService[query.Tag, *query.Article], stmt *mdb.MockStatement) {
+			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				qs.EXPECT().GetAll(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a := query.NewArticle(
@@ -341,7 +341,7 @@ func TestGetPrev_Execute(t *testing.T) {
 			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
 				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService[query.Tag, *query.Article], stmt *mdb.MockStatement) {
+			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				qs.EXPECT().GetAll(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a := query.NewArticle(
@@ -394,7 +394,7 @@ func TestGetPrev_Execute(t *testing.T) {
 			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
 				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService[query.Tag, *query.Article], stmt *mdb.MockStatement) {
+			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				qs.EXPECT().GetAll(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(
 					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a := query.NewArticle(
@@ -440,7 +440,7 @@ func TestGetPrev_Execute(t *testing.T) {
 			tt.setupTransaction(tx, stmt)
 			txmn := mdb.NewMockTransactionManager(ctrl)
 			tt.setupTransactionManager(txmn, tx)
-			qs := mquery.NewMockArticleService[query.Tag, *query.Article](ctrl)
+			qs := mquery.NewMockArticleService(ctrl)
 			tt.setupArticleService(qs, stmt)
 			sut := NewGetPrev(txmn, qs)
 			got, err := sut.Execute(tt.args.ctx, tt.args.in)

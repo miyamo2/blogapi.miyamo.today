@@ -20,14 +20,14 @@ import (
 // ArticleServiceServer is implementation of pb.ArticleServiceServer
 type ArticleServiceServer struct {
 	pb.UnimplementedArticleServiceServer
-	getByIdUsecase usecase.GetById[dto.GetByIdInDto, dto.Tag, *dto.GetByIdOutDto]
-	getAllUsecase  usecase.GetAll[dto.Tag, dto.Article, *dto.GetAllOutDto]
-	getNextUsecase usecase.GetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto]
-	getPrevUsecase usecase.GetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto]
-	getNextConv    presenter.ToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto]
-	getAllConv     presenter.ToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto]
-	getByIdConv    presenter.ToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto]
-	getPrevConv    presenter.ToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto]
+	getByIdUsecase usecase.GetById
+	getAllUsecase  usecase.GetAll
+	getNextUsecase usecase.GetNext
+	getPrevUsecase usecase.GetPrev
+	getNextConv    presenter.ToGetNextConverter
+	getAllConv     presenter.ToGetAllConverter
+	getByIdConv    presenter.ToGetByIdConverter
+	getPrevConv    presenter.ToGetPrevConverter
 }
 
 var (
@@ -183,14 +183,14 @@ func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *pb.GetPr
 
 // NewArticleServiceServer is constructor of ArticleServiceServer
 func NewArticleServiceServer(
-	getByIdUsecase usecase.GetById[dto.GetByIdInDto, dto.Tag, *dto.GetByIdOutDto],
-	getAllUsecase usecase.GetAll[dto.Tag, dto.Article, *dto.GetAllOutDto],
-	getNextUsecase usecase.GetNext[dto.GetNextInDto, dto.Tag, dto.Article, *dto.GetNextOutDto],
-	getPrevUsecase usecase.GetPrev[dto.GetPrevInDto, dto.Tag, dto.Article, *dto.GetPrevOutDto],
-	getByIdConv presenter.ToGetByIdConverter[dto.Tag, *dto.GetByIdOutDto],
-	getAllConv presenter.ToGetAllConverter[dto.Tag, dto.Article, *dto.GetAllOutDto],
-	getNextConv presenter.ToGetNextConverter[dto.Tag, dto.Article, *dto.GetNextOutDto],
-	getPrevConv presenter.ToGetPrevConverter[dto.Tag, dto.Article, *dto.GetPrevOutDto],
+	getByIdUsecase usecase.GetById,
+	getAllUsecase usecase.GetAll,
+	getNextUsecase usecase.GetNext,
+	getPrevUsecase usecase.GetPrev,
+	getByIdConv presenter.ToGetByIdConverter,
+	getAllConv presenter.ToGetAllConverter,
+	getNextConv presenter.ToGetNextConverter,
+	getPrevConv presenter.ToGetPrevConverter,
 ) *ArticleServiceServer {
 	return &ArticleServiceServer{
 		getByIdUsecase: getByIdUsecase,

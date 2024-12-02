@@ -20,7 +20,7 @@ import (
 // GetAll is an implementation of github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetAll
 type GetAll struct {
 	txmn db.TransactionManager
-	qs   iquery.ArticleService[query.Tag, *query.Article]
+	qs   iquery.ArticleService
 }
 
 func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
@@ -108,6 +108,6 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 }
 
 // NewGetAll is constructor of GetAll.
-func NewGetAll(txmn db.TransactionManager, qs iquery.ArticleService[query.Tag, *query.Article]) *GetAll {
+func NewGetAll(txmn db.TransactionManager, qs iquery.ArticleService) *GetAll {
 	return &GetAll{txmn: txmn, qs: qs}
 }

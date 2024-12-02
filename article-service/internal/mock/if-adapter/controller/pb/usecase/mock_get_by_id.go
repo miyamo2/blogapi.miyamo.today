@@ -13,44 +13,45 @@ import (
 	context "context"
 	reflect "reflect"
 
-	usecase "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
+	dto "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 	gomock "go.uber.org/mock/gomock"
 )
 
 // MockGetById is a mock of GetById interface.
-type MockGetById[I usecase.GetByIdInDto, T usecase.Tag, A usecase.Article[T]] struct {
+type MockGetById struct {
 	ctrl     *gomock.Controller
-	recorder *MockGetByIdMockRecorder[I, T, A]
+	recorder *MockGetByIdMockRecorder
+	isgomock struct{}
 }
 
 // MockGetByIdMockRecorder is the mock recorder for MockGetById.
-type MockGetByIdMockRecorder[I usecase.GetByIdInDto, T usecase.Tag, A usecase.Article[T]] struct {
-	mock *MockGetById[I, T, A]
+type MockGetByIdMockRecorder struct {
+	mock *MockGetById
 }
 
 // NewMockGetById creates a new mock instance.
-func NewMockGetById[I usecase.GetByIdInDto, T usecase.Tag, A usecase.Article[T]](ctrl *gomock.Controller) *MockGetById[I, T, A] {
-	mock := &MockGetById[I, T, A]{ctrl: ctrl}
-	mock.recorder = &MockGetByIdMockRecorder[I, T, A]{mock}
+func NewMockGetById(ctrl *gomock.Controller) *MockGetById {
+	mock := &MockGetById{ctrl: ctrl}
+	mock.recorder = &MockGetByIdMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockGetById[I, T, A]) EXPECT() *MockGetByIdMockRecorder[I, T, A] {
+func (m *MockGetById) EXPECT() *MockGetByIdMockRecorder {
 	return m.recorder
 }
 
 // Execute mocks base method.
-func (m *MockGetById[I, T, A]) Execute(ctx context.Context, in I) (A, error) {
+func (m *MockGetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByIdOutDto, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx, in)
-	ret0, _ := ret[0].(A)
+	ret0, _ := ret[0].(*dto.GetByIdOutDto)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockGetByIdMockRecorder[I, T, A]) Execute(ctx, in any) *gomock.Call {
+func (mr *MockGetByIdMockRecorder) Execute(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGetById[I, T, A])(nil).Execute), ctx, in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGetById)(nil).Execute), ctx, in)
 }

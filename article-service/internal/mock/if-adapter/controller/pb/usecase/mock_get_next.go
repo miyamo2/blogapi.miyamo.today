@@ -13,44 +13,45 @@ import (
 	context "context"
 	reflect "reflect"
 
-	usecase "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
+	dto "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 	gomock "go.uber.org/mock/gomock"
 )
 
 // MockGetNext is a mock of GetNext interface.
-type MockGetNext[I usecase.GetNextInDto, T usecase.Tag, A usecase.Article[T], O usecase.GetNextOutDto[T, A]] struct {
+type MockGetNext struct {
 	ctrl     *gomock.Controller
-	recorder *MockGetNextMockRecorder[I, T, A, O]
+	recorder *MockGetNextMockRecorder
+	isgomock struct{}
 }
 
 // MockGetNextMockRecorder is the mock recorder for MockGetNext.
-type MockGetNextMockRecorder[I usecase.GetNextInDto, T usecase.Tag, A usecase.Article[T], O usecase.GetNextOutDto[T, A]] struct {
-	mock *MockGetNext[I, T, A, O]
+type MockGetNextMockRecorder struct {
+	mock *MockGetNext
 }
 
 // NewMockGetNext creates a new mock instance.
-func NewMockGetNext[I usecase.GetNextInDto, T usecase.Tag, A usecase.Article[T], O usecase.GetNextOutDto[T, A]](ctrl *gomock.Controller) *MockGetNext[I, T, A, O] {
-	mock := &MockGetNext[I, T, A, O]{ctrl: ctrl}
-	mock.recorder = &MockGetNextMockRecorder[I, T, A, O]{mock}
+func NewMockGetNext(ctrl *gomock.Controller) *MockGetNext {
+	mock := &MockGetNext{ctrl: ctrl}
+	mock.recorder = &MockGetNextMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockGetNext[I, T, A, O]) EXPECT() *MockGetNextMockRecorder[I, T, A, O] {
+func (m *MockGetNext) EXPECT() *MockGetNextMockRecorder {
 	return m.recorder
 }
 
 // Execute mocks base method.
-func (m *MockGetNext[I, T, A, O]) Execute(ctx context.Context, in I) (O, error) {
+func (m *MockGetNext) Execute(ctx context.Context, in dto.GetNextInDto) (*dto.GetNextOutDto, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx, in)
-	ret0, _ := ret[0].(O)
+	ret0, _ := ret[0].(*dto.GetNextOutDto)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockGetNextMockRecorder[I, T, A, O]) Execute(ctx, in any) *gomock.Call {
+func (mr *MockGetNextMockRecorder) Execute(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGetNext[I, T, A, O])(nil).Execute), ctx, in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGetNext)(nil).Execute), ctx, in)
 }

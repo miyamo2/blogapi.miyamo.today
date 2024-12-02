@@ -13,36 +13,37 @@ import (
 	context "context"
 	reflect "reflect"
 
-	model "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/query/model"
+	query "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
 	db "github.com/miyamo2/blogapi.miyamo.today/core/db"
 	gomock "go.uber.org/mock/gomock"
 )
 
 // MockArticleService is a mock of ArticleService interface.
-type MockArticleService[T model.Tag, A model.Article[T]] struct {
+type MockArticleService struct {
 	ctrl     *gomock.Controller
-	recorder *MockArticleServiceMockRecorder[T, A]
+	recorder *MockArticleServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockArticleServiceMockRecorder is the mock recorder for MockArticleService.
-type MockArticleServiceMockRecorder[T model.Tag, A model.Article[T]] struct {
-	mock *MockArticleService[T, A]
+type MockArticleServiceMockRecorder struct {
+	mock *MockArticleService
 }
 
 // NewMockArticleService creates a new mock instance.
-func NewMockArticleService[T model.Tag, A model.Article[T]](ctrl *gomock.Controller) *MockArticleService[T, A] {
-	mock := &MockArticleService[T, A]{ctrl: ctrl}
-	mock.recorder = &MockArticleServiceMockRecorder[T, A]{mock}
+func NewMockArticleService(ctrl *gomock.Controller) *MockArticleService {
+	mock := &MockArticleService{ctrl: ctrl}
+	mock.recorder = &MockArticleServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockArticleService[T, A]) EXPECT() *MockArticleServiceMockRecorder[T, A] {
+func (m *MockArticleService) EXPECT() *MockArticleServiceMockRecorder {
 	return m.recorder
 }
 
 // GetAll mocks base method.
-func (m *MockArticleService[T, A]) GetAll(ctx context.Context, out *db.MultipleStatementResult[A], paginationOption ...db.PaginationOption) db.Statement {
+func (m *MockArticleService) GetAll(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, out}
 	for _, a := range paginationOption {
@@ -54,14 +55,14 @@ func (m *MockArticleService[T, A]) GetAll(ctx context.Context, out *db.MultipleS
 }
 
 // GetAll indicates an expected call of GetAll.
-func (mr *MockArticleServiceMockRecorder[T, A]) GetAll(ctx, out any, paginationOption ...any) *gomock.Call {
+func (mr *MockArticleServiceMockRecorder) GetAll(ctx, out any, paginationOption ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, out}, paginationOption...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockArticleService[T, A])(nil).GetAll), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockArticleService)(nil).GetAll), varargs...)
 }
 
 // GetById mocks base method.
-func (m *MockArticleService[T, A]) GetById(ctx context.Context, id string, out *db.SingleStatementResult[A]) db.Statement {
+func (m *MockArticleService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetById", ctx, id, out)
 	ret0, _ := ret[0].(db.Statement)
@@ -69,7 +70,7 @@ func (m *MockArticleService[T, A]) GetById(ctx context.Context, id string, out *
 }
 
 // GetById indicates an expected call of GetById.
-func (mr *MockArticleServiceMockRecorder[T, A]) GetById(ctx, id, out any) *gomock.Call {
+func (mr *MockArticleServiceMockRecorder) GetById(ctx, id, out any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockArticleService[T, A])(nil).GetById), ctx, id, out)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockArticleService)(nil).GetById), ctx, id, out)
 }

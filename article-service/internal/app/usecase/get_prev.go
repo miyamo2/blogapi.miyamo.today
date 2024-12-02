@@ -20,7 +20,7 @@ import (
 // GetPrev is an implementation of github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetPrev
 type GetPrev struct {
 	txmn db.TransactionManager
-	qs   iquery.ArticleService[query.Tag, *query.Article]
+	qs   iquery.ArticleService
 }
 
 func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPrevOutDto, error) {
@@ -113,6 +113,6 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 }
 
 // NewGetPrev is constructor of GetPrevPage.
-func NewGetPrev(txmn db.TransactionManager, qs iquery.ArticleService[query.Tag, *query.Article]) *GetPrev {
+func NewGetPrev(txmn db.TransactionManager, qs iquery.ArticleService) *GetPrev {
 	return &GetPrev{txmn: txmn, qs: qs}
 }

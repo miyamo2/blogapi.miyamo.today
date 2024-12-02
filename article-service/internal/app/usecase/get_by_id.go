@@ -21,7 +21,7 @@ import (
 // GetById is an implementation of github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetById
 type GetById struct {
 	txmn db.TransactionManager
-	qs   iquery.ArticleService[query.Tag, *query.Article]
+	qs   iquery.ArticleService
 }
 
 func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByIdOutDto, error) {
@@ -100,6 +100,6 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 }
 
 // NewGetById is constructor of GetById
-func NewGetById(txmn db.TransactionManager, qs iquery.ArticleService[query.Tag, *query.Article]) *GetById {
+func NewGetById(txmn db.TransactionManager, qs iquery.ArticleService) *GetById {
 	return &GetById{txmn: txmn, qs: qs}
 }
