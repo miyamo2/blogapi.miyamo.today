@@ -13,44 +13,45 @@ import (
 	context "context"
 	reflect "reflect"
 
-	usecase "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
+	dto "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 	gomock "go.uber.org/mock/gomock"
 )
 
 // MockGetAll is a mock of GetAll interface.
-type MockGetAll[T usecase.Tag, A usecase.Article[T], O usecase.GetAllOutDto[T, A]] struct {
+type MockGetAll struct {
 	ctrl     *gomock.Controller
-	recorder *MockGetAllMockRecorder[T, A, O]
+	recorder *MockGetAllMockRecorder
+	isgomock struct{}
 }
 
 // MockGetAllMockRecorder is the mock recorder for MockGetAll.
-type MockGetAllMockRecorder[T usecase.Tag, A usecase.Article[T], O usecase.GetAllOutDto[T, A]] struct {
-	mock *MockGetAll[T, A, O]
+type MockGetAllMockRecorder struct {
+	mock *MockGetAll
 }
 
 // NewMockGetAll creates a new mock instance.
-func NewMockGetAll[T usecase.Tag, A usecase.Article[T], O usecase.GetAllOutDto[T, A]](ctrl *gomock.Controller) *MockGetAll[T, A, O] {
-	mock := &MockGetAll[T, A, O]{ctrl: ctrl}
-	mock.recorder = &MockGetAllMockRecorder[T, A, O]{mock}
+func NewMockGetAll(ctrl *gomock.Controller) *MockGetAll {
+	mock := &MockGetAll{ctrl: ctrl}
+	mock.recorder = &MockGetAllMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockGetAll[T, A, O]) EXPECT() *MockGetAllMockRecorder[T, A, O] {
+func (m *MockGetAll) EXPECT() *MockGetAllMockRecorder {
 	return m.recorder
 }
 
 // Execute mocks base method.
-func (m *MockGetAll[T, A, O]) Execute(ctx context.Context) (O, error) {
+func (m *MockGetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx)
-	ret0, _ := ret[0].(O)
+	ret0, _ := ret[0].(*dto.GetAllOutDto)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockGetAllMockRecorder[T, A, O]) Execute(ctx any) *gomock.Call {
+func (mr *MockGetAllMockRecorder) Execute(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGetAll[T, A, O])(nil).Execute), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockGetAll)(nil).Execute), ctx)
 }

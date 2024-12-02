@@ -7,13 +7,13 @@ import (
 )
 
 // compatibility check
-var _ query.ArticleService[impl.Tag, *impl.Article] = (*impl.ArticleService)(nil)
+var _ query.ArticleService = (*impl.ArticleService)(nil)
 
 var QueryService = fx.Options(
 	fx.Provide(
 		fx.Annotate(
 			impl.NewArticleService,
-			fx.As(new(query.ArticleService[impl.Tag, *impl.Article])),
+			fx.As(new(query.ArticleService)),
 		),
 	),
 )

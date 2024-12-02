@@ -20,7 +20,7 @@ import (
 // GetNext is an implementation of github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetNext
 type GetNext struct {
 	txmn db.TransactionManager
-	qs   iquery.ArticleService[query.Tag, *query.Article]
+	qs   iquery.ArticleService
 }
 
 func (u *GetNext) Execute(ctx context.Context, in dto.GetNextInDto) (*dto.GetNextOutDto, error) {
@@ -113,6 +113,6 @@ func (u *GetNext) Execute(ctx context.Context, in dto.GetNextInDto) (*dto.GetNex
 }
 
 // NewGetNext is constructor of GetNextPage.
-func NewGetNext(txmn db.TransactionManager, qs iquery.ArticleService[query.Tag, *query.Article]) *GetNext {
+func NewGetNext(txmn db.TransactionManager, qs iquery.ArticleService) *GetNext {
 	return &GetNext{txmn: txmn, qs: qs}
 }

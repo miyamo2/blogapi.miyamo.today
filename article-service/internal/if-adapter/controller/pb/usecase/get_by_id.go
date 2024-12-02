@@ -3,10 +3,11 @@ package usecase
 
 import (
 	"context"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 )
 
 // GetById is a use-case interface for getting an article by id.
-type GetById[I GetByIdInDto, T Tag, A Article[T]] interface {
+type GetById interface {
 	// Execute gets an article by id.
-	Execute(ctx context.Context, in I) (A, error)
+	Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByIdOutDto, error)
 }
