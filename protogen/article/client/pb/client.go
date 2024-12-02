@@ -5,7 +5,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-type ArticleServiceClient = internal.ArticleServiceClient
+type ArticleServiceClient internal.ArticleServiceClient
 
 func NewArticleServiceClient(cc grpc.ClientConnInterface) ArticleServiceClient {
 	return internal.NewArticleServiceClient(cc)
