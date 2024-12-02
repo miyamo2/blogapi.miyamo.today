@@ -3,15 +3,15 @@ package query
 
 import (
 	"context"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
 
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/query/model"
 )
 
 // TagService is a query service interface.
-type TagService[A model.Article, T model.Tag[A]] interface {
+type TagService interface {
 	// GetById returns a single tag with articles.
-	GetById(ctx context.Context, id string, out *db.SingleStatementResult[T]) db.Statement
+	GetById(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement
 	// GetAll returns multiple tag with articles.
-	GetAll(ctx context.Context, out *db.MultipleStatementResult[T], paginationOption ...db.PaginationOption) db.Statement
+	GetAll(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement
 }

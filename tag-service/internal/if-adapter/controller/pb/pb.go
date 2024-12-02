@@ -3,6 +3,7 @@ package pb
 import (
 	"context"
 	"fmt"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	"log/slog"
 
 	"github.com/miyamo2/altnrslog"
@@ -12,24 +13,23 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server/pb"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/presenter"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 )
 
-// TagServiceServer is implementation of pb.TagServiceServer
+// TagServiceServer is implementation of grpc.TagServiceServer
 type TagServiceServer struct {
-	pb.UnimplementedTagServiceServer
-	getByIdUsecase usecase.GetById[dto.GetByIdInDto, dto.Article, *dto.GetByIdOutDto]
-	getByIdConv    presenter.ToGetByIdConverter[dto.Article, *dto.GetByIdOutDto]
-	getAllUsecase  usecase.GetAll[dto.Article, dto.Tag, *dto.GetAllOutDto]
-	getAllConv     presenter.ToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]
-	getNextUsecase usecase.GetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]
-	getNextConv    presenter.ToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]
-	getPrevUsecase usecase.GetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]
-	getPrevConv    presenter.ToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]
+	grpc.UnimplementedTagServiceServer
+	getByIdUsecase usecase.GetById
+	getByIdConv    presenter.ToGetByIdConverter
+	getAllUsecase  usecase.GetAll
+	getAllConv     presenter.ToGetAllConverter
+	getNextUsecase usecase.GetNext
+	getNextConv    presenter.ToGetNextConverter
+	getPrevUsecase usecase.GetPrev
+	getPrevConv    presenter.ToGetPrevConverter
 }
 
 var (
@@ -39,8 +39,8 @@ var (
 	ErrConversionToGetPrevTagsFailed = errors.New("conversion to get_prev_tags_response failed")
 )
 
-// GetTagById is implementation of pb.TagServiceServer#GetTagById
-func (s *TagServiceServer) GetTagById(ctx context.Context, in *pb.GetTagByIdRequest) (*pb.GetTagByIdResponse, error) {
+// GetTagById is implementation of grpc.TagServiceServer#GetTagById
+func (s *TagServiceServer) GetTagById(ctx context.Context, in *grpc.GetTagByIdRequest) (*grpc.GetTagByIdResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetTagById").End()
 	dw := duration.Start()
@@ -59,7 +59,7 @@ func (s *TagServiceServer) GetTagById(ctx context.Context, in *pb.GetTagByIdRequ
 		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*pb.GetTagByIdResponse", nil),
+				slog.Any("*grpc.GetTagByIdResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
@@ -73,13 +73,13 @@ func (s *TagServiceServer) GetTagById(ctx context.Context, in *pb.GetTagByIdRequ
 	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			// slog.Any("*pb.GetTagByIdResponse", res),
+			// slog.Any("*grpc.GetTagByIdResponse", res),
 			slog.Any("error", nil)))
 	return res, nil
 }
 
-// GetAllTags is implementation of pb.TagServiceServer#GetTagById
-func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *emptypb.Empty) (*pb.GetAllTagsResponse, error) {
+// GetAllTags is implementation of grpc.TagServiceServer#GetTagById
+func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *emptypb.Empty) (*grpc.GetAllTagsResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAllTags").End()
 	dw := duration.Start()
@@ -96,7 +96,7 @@ func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *emptypb.Empty) (*p
 		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*pb.GetAllTagsResponse", nil),
+				slog.Any("*grpc.GetAllTagsResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
@@ -110,13 +110,13 @@ func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *emptypb.Empty) (*p
 	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			// slog.Any("*pb.GetAllTagsResponse", res),
+			// slog.Any("*grpc.GetAllTagsResponse", res),
 			slog.Any("error", nil)))
 	return res, nil
 }
 
-// GetNextTags is implementation of pb.TagServiceServer#GetNextTags
-func (s *TagServiceServer) GetNextTags(ctx context.Context, in *pb.GetNextTagsRequest) (*pb.GetNextTagResponse, error) {
+// GetNextTags is implementation of grpc.TagServiceServer#GetNextTags
+func (s *TagServiceServer) GetNextTags(ctx context.Context, in *grpc.GetNextTagsRequest) (*grpc.GetNextTagResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetTagById").End()
 	dw := duration.Start()
@@ -135,7 +135,7 @@ func (s *TagServiceServer) GetNextTags(ctx context.Context, in *pb.GetNextTagsRe
 		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*pb.GetNextTagResponse", nil),
+				slog.Any("*grpc.GetNextTagResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
@@ -149,13 +149,13 @@ func (s *TagServiceServer) GetNextTags(ctx context.Context, in *pb.GetNextTagsRe
 	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			// slog.Any("*pb.GetNextTagResponse", res),
+			// slog.Any("*grpc.GetNextTagResponse", res),
 			slog.Any("error", nil)))
 	return res, nil
 }
 
-// GetPrevTags is implementation of pb.TagServiceServer#GetPrevTags
-func (s *TagServiceServer) GetPrevTags(ctx context.Context, in *pb.GetPrevTagsRequest) (*pb.GetPrevTagResponse, error) {
+// GetPrevTags is implementation of grpc.TagServiceServer#GetPrevTags
+func (s *TagServiceServer) GetPrevTags(ctx context.Context, in *grpc.GetPrevTagsRequest) (*grpc.GetPrevTagResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetPrevTags").End()
 	dw := duration.Start()
@@ -174,7 +174,7 @@ func (s *TagServiceServer) GetPrevTags(ctx context.Context, in *pb.GetPrevTagsRe
 		lgr.InfoContext(ctx, "END",
 			slog.String("duration", dw.SDuration()),
 			slog.Group("return",
-				slog.Any("*pb.GetPrevTagResponse", nil),
+				slog.Any("*grpc.GetPrevTagResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
@@ -188,21 +188,21 @@ func (s *TagServiceServer) GetPrevTags(ctx context.Context, in *pb.GetPrevTagsRe
 	lgr.InfoContext(ctx, "END",
 		slog.String("duration", dw.SDuration()),
 		slog.Group("return",
-			// slog.Any("*pb.GetPrevTagResponse", res),
+			// slog.Any("*grpc.GetPrevTagResponse", res),
 			slog.Any("error", nil)))
 	return res, nil
 }
 
 // NewTagServiceServer is constructor of TagServiceServer
 func NewTagServiceServer(
-	getByIdUsecase usecase.GetById[dto.GetByIdInDto, dto.Article, *dto.GetByIdOutDto],
-	getByIdConv presenter.ToGetByIdConverter[dto.Article, *dto.GetByIdOutDto],
-	getAllUsecase usecase.GetAll[dto.Article, dto.Tag, *dto.GetAllOutDto],
-	getAllConv presenter.ToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto],
-	getNextUsecase usecase.GetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto],
-	getNextConv presenter.ToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto],
-	getPrevUsecase usecase.GetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto],
-	getPrevConv presenter.ToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto],
+	getByIdUsecase usecase.GetById,
+	getByIdConv presenter.ToGetByIdConverter,
+	getAllUsecase usecase.GetAll,
+	getAllConv presenter.ToGetAllConverter,
+	getNextUsecase usecase.GetNext,
+	getNextConv presenter.ToGetNextConverter,
+	getPrevUsecase usecase.GetPrev,
+	getPrevConv presenter.ToGetPrevConverter,
 ) *TagServiceServer {
 	return &TagServiceServer{
 		getByIdUsecase: getByIdUsecase,

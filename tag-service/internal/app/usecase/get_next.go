@@ -22,7 +22,7 @@ import (
 // GetNext is an implementation of usecase.GetNext
 type GetNext struct {
 	txmn db.TransactionManager
-	qs   iquery.TagService[model.Article, *model.Tag]
+	qs   iquery.TagService
 }
 
 func (u *GetNext) Execute(ctx context.Context, in dto.GetNextInDto) (*dto.GetNextOutDto, error) {
@@ -94,6 +94,6 @@ func (u *GetNext) Execute(ctx context.Context, in dto.GetNextInDto) (*dto.GetNex
 }
 
 // NewGetNext is constructor of GetNext
-func NewGetNext(txmn db.TransactionManager, qs iquery.TagService[model.Article, *model.Tag]) *GetNext {
+func NewGetNext(txmn db.TransactionManager, qs iquery.TagService) *GetNext {
 	return &GetNext{txmn: txmn, qs: qs}
 }

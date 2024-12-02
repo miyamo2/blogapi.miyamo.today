@@ -26,7 +26,7 @@ func TestGetAll_Execute(t *testing.T) {
 		args                    args
 		setupTransaction        func(tx *mdb.MockTransaction, stmt *mdb.MockStatement)
 		setupTransactionManager func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction)
-		setupTagService         func(qs *mquery.MockTagService[model.Article, *model.Tag], stmt *mdb.MockStatement)
+		setupTagService         func(qs *mquery.MockTagService, stmt *mdb.MockStatement)
 		want                    want
 		wantErr                 bool
 	}
@@ -65,7 +65,7 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService[model.Article, *model.Tag], stmt *mdb.MockStatement) {
+			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
 				qs.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
@@ -143,7 +143,7 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService[model.Article, *model.Tag], stmt *mdb.MockStatement) {
+			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
 				qs.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
@@ -244,7 +244,7 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService[model.Article, *model.Tag], stmt *mdb.MockStatement) {
+			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
 				qs.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
@@ -289,7 +289,7 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService[model.Article, *model.Tag], stmt *mdb.MockStatement) {
+			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
 				qs.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
@@ -328,7 +328,7 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(nil, errTxmn).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService[model.Article, *model.Tag], stmt *mdb.MockStatement) {
+			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
 				qs.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					Times(0)
@@ -365,7 +365,7 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService[model.Article, *model.Tag], stmt *mdb.MockStatement) {
+			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
 				qs.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
@@ -418,7 +418,7 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService[model.Article, *model.Tag], stmt *mdb.MockStatement) {
+			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
 				qs.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
@@ -480,7 +480,7 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService[model.Article, *model.Tag], stmt *mdb.MockStatement) {
+			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
 				qs.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
@@ -541,7 +541,7 @@ func TestGetAll_Execute(t *testing.T) {
 			tt.setupTransaction(tx, stmt)
 			txmn := mdb.NewMockTransactionManager(ctrl)
 			tt.setupTransactionManager(txmn, tx)
-			qs := mquery.NewMockTagService[model.Article, *model.Tag](ctrl)
+			qs := mquery.NewMockTagService(ctrl)
 			tt.setupTagService(qs, stmt)
 			sut := NewGetAll(txmn, qs)
 			got, err := sut.Execute(tt.args.ctx)

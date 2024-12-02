@@ -8,8 +8,8 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server/pb"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	mpresenter "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/mock/if-adapter/controller/pb/presenter"
 	musecase "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/mock/if-adapter/controller/pb/usecase"
 	"go.uber.org/mock/gomock"
@@ -19,16 +19,16 @@ import (
 func TestTagServiceServer_GetTagById(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *pb.GetTagByIdRequest
+		in  *grpc.GetTagByIdRequest
 	}
 	type want struct {
-		response *pb.GetTagByIdResponse
+		response *grpc.GetTagByIdResponse
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetByIdOutDto
-		setupUsecase   func(out dto.GetByIdOutDto, u *musecase.MockGetById[dto.GetByIdInDto, dto.Article, *dto.GetByIdOutDto])
-		setupConverter func(from dto.GetByIdOutDto, res *pb.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Article, *dto.GetByIdOutDto])
+		setupUsecase   func(out dto.GetByIdOutDto, u *musecase.MockGetById)
+		setupConverter func(from dto.GetByIdOutDto, res *grpc.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -47,13 +47,13 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 						"2020-01-01T00:00:00Z",
 						"2020-01-01T00:00:00Z"),
 				}),
-			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById[dto.GetByIdInDto, dto.Article, *dto.GetByIdOutDto]) {
+			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Article, *dto.GetByIdOutDto]) {
+			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdTagResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -61,16 +61,16 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetTagByIdRequest{
+				in: &grpc.GetTagByIdRequest{
 					Id: "1",
 				},
 			},
 			want: want{
-				response: &pb.GetTagByIdResponse{
-					Tag: &pb.Tag{
+				response: &grpc.GetTagByIdResponse{
+					Tag: &grpc.Tag{
 						Id:   "1",
 						Name: "happy_path/tag_has_article",
-						Articles: []*pb.Article{
+						Articles: []*grpc.Article{
 							{
 								Id:           "1",
 								Title:        "happy_path/article_has_tag",
@@ -85,19 +85,19 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			},
 		},
 		"unhappy_path/usecase_returns_error": {
-			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById[dto.GetByIdInDto, dto.Article, *dto.GetByIdOutDto]) {
+			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(nil, errGetTagById).Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Article, *dto.GetByIdOutDto]) {
+			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdTagResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetTagByIdRequest{
+				in: &grpc.GetTagByIdRequest{
 					Id: "1",
 				},
 			},
@@ -108,12 +108,12 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			wantErr: true,
 		},
 		"unhappy_path/failed_to_convert": {
-			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById[dto.GetByIdInDto, dto.Article, *dto.GetByIdOutDto]) {
+			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *pb.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter[dto.Article, *dto.GetByIdOutDto]) {
+			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdTagResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -121,7 +121,7 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetTagByIdRequest{
+				in: &grpc.GetTagByIdRequest{
 					Id: "1",
 				},
 			},
@@ -137,10 +137,10 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			out := tt.outDto
-			u := musecase.NewMockGetById[dto.GetByIdInDto, dto.Article, *dto.GetByIdOutDto](ctrl)
+			u := musecase.NewMockGetById(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
-			conv := mpresenter.NewMockToGetByIdConverter[dto.Article, *dto.GetByIdOutDto](ctrl)
+			conv := mpresenter.NewMockToGetByIdConverter(ctrl)
 			tt.setupConverter(out, response, conv)
 			s := NewTagServiceServer(u, conv, nil, nil, nil, nil, nil, nil)
 			got, err := s.GetTagById(tt.args.ctx, tt.args.in)
@@ -168,13 +168,13 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 		in  *emptypb.Empty
 	}
 	type want struct {
-		response *pb.GetAllTagsResponse
+		response *grpc.GetAllTagsResponse
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetAllOutDto
-		setupUsecase   func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Article, dto.Tag, *dto.GetAllOutDto])
-		setupConverter func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto])
+		setupUsecase   func(out dto.GetAllOutDto, u *musecase.MockGetAll)
+		setupConverter func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -198,13 +198,13 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -215,12 +215,12 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 				in:  &emptypb.Empty{},
 			},
 			want: want{
-				response: &pb.GetAllTagsResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetAllTagsResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/single_article",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/single_article",
@@ -259,13 +259,13 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -276,12 +276,12 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 				in:  &emptypb.Empty{},
 			},
 			want: want{
-				response: &pb.GetAllTagsResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetAllTagsResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/multiple_article",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/multiple_article1",
@@ -332,13 +332,13 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -349,12 +349,12 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 				in:  &emptypb.Empty{},
 			},
 			want: want{
-				response: &pb.GetAllTagsResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetAllTagsResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/single_article1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article",
@@ -367,7 +367,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 						{
 							Id:   "2",
 							Name: "happy_path/multiple_tag/single_article2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article",
@@ -425,13 +425,13 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -442,12 +442,12 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 				in:  &emptypb.Empty{},
 			},
 			want: want{
-				response: &pb.GetAllTagsResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetAllTagsResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/multiple_article1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/multiple_article1",
@@ -467,7 +467,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 						{
 							Id:   "2",
 							Name: "happy_path/multiple_tag/multiple_article2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/multiple_article1",
@@ -490,12 +490,12 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 		},
 		"unhappy_path/usecase_returns_error": {
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(nil, errGetAllTag).Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Times(0)
@@ -511,12 +511,12 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			wantErr: true,
 		},
 		"unhappy_path/failed_to_convert": {
-			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
 				u.EXPECT().
 					Execute(gomock.Any()).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *pb.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto]) {
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -538,10 +538,10 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			out := tt.outDto
-			u := musecase.NewMockGetAll[dto.Article, dto.Tag, *dto.GetAllOutDto](ctrl)
+			u := musecase.NewMockGetAll(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
-			conv := mpresenter.NewMockToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto](ctrl)
+			conv := mpresenter.NewMockToGetAllConverter(ctrl)
 			tt.setupConverter(out, response, conv)
 			s := NewTagServiceServer(nil, nil, u, conv, nil, nil, nil, nil)
 			got, err := s.GetAllTags(tt.args.ctx, tt.args.in)
@@ -566,16 +566,16 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 func TestTagServiceServer_GetNextTags(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *pb.GetNextTagsRequest
+		in  *grpc.GetNextTagsRequest
 	}
 	type want struct {
-		response *pb.GetNextTagResponse
+		response *grpc.GetNextTagResponse
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetNextOutDto
-		setupUsecase   func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto])
-		setupConverter func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto])
+		setupUsecase   func(out dto.GetNextOutDto, u *musecase.MockGetNext)
+		setupConverter func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -599,13 +599,13 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -613,17 +613,17 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 1,
 				},
 			},
 			want: want{
-				response: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/single_article/has_next",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/single_article/has_next",
@@ -655,13 +655,13 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -669,17 +669,17 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 1,
 				},
 			},
 			want: want{
-				response: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/single_article/not_anymore",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/single_article/not_anymore",
@@ -716,13 +716,13 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -730,17 +730,17 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 1,
 				},
 			},
 			want: want{
-				response: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/multiple_article/has_next",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/multiple_article/has_next1",
@@ -784,13 +784,13 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -798,17 +798,17 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 1,
 				},
 			},
 			want: want{
-				response: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/multiple_article/not_anymore",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/multiple_article/not_anymore1",
@@ -856,13 +856,13 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(2, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -870,17 +870,17 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 2,
 				},
 			},
 			want: want{
-				response: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/single_article/has_next1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article/has_next",
@@ -893,7 +893,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 						{
 							Id:   "2",
 							Name: "happy_path/multiple_tag/single_article/has_next2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article/has_next",
@@ -935,13 +935,13 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(2, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -949,17 +949,17 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 2,
 				},
 			},
 			want: want{
-				response: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/single_article/not_anymore1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article/not_anymore",
@@ -972,7 +972,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 						{
 							Id:   "2",
 							Name: "happy_path/multiple_tag/single_article/not_anymore2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article/not_anymore",
@@ -1025,13 +1025,13 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(2, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1039,17 +1039,17 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 2,
 				},
 			},
 			want: want{
-				response: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/multiple_article/has_next1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/multiple_article/has_next1",
@@ -1069,7 +1069,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 						{
 							Id:   "2",
 							Name: "happy_path/multiple_tag/multiple_article/has_next2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/multiple_article/has_next1",
@@ -1130,13 +1130,13 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(2, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1144,17 +1144,17 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 2,
 				},
 			},
 			want: want{
-				response: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/multiple_article/not_anymore1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:    "1",
 									Title: "happy_path/multiple_tag/multiple_article/not_anymore1",
@@ -1166,20 +1166,20 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 		},
 		"unhappy_path/usecase_returns_error": {
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(1, nil)).
 					Return(nil, errGetNextTag).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 1,
 				},
 			},
@@ -1190,13 +1190,13 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 		},
 		"unhappy_path/failed_to_convert": {
 			outDto: dto.NewGetNextOutDto(true),
-			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetNextInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *pb.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto]) {
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -1204,7 +1204,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetNextTagsRequest{
+				in: &grpc.GetNextTagsRequest{
 					First: 1,
 				},
 			},
@@ -1219,10 +1219,10 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			out := tt.outDto
-			u := musecase.NewMockGetNext[dto.GetNextInDto, dto.Article, dto.Tag, *dto.GetNextOutDto](ctrl)
+			u := musecase.NewMockGetNext(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
-			conv := mpresenter.NewMockToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto](ctrl)
+			conv := mpresenter.NewMockToGetNextConverter(ctrl)
 			tt.setupConverter(out, response, conv)
 			s := NewTagServiceServer(nil, nil, nil, nil, u, conv, nil, nil)
 			got, err := s.GetNextTags(tt.args.ctx, tt.args.in)
@@ -1247,16 +1247,16 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 func TestTagServiceServer_GetPrevTags(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *pb.GetPrevTagsRequest
+		in  *grpc.GetPrevTagsRequest
 	}
 	type want struct {
-		response *pb.GetPrevTagResponse
+		response *grpc.GetPrevTagResponse
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetPrevOutDto
-		setupUsecase   func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto])
-		setupConverter func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto])
+		setupUsecase   func(out dto.GetPrevOutDto, u *musecase.MockGetPrev)
+		setupConverter func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter)
 		args           args
 		want           want
 		wantErr        bool
@@ -1280,13 +1280,13 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1294,17 +1294,17 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 1,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/single_article/has_prev",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/single_article/has_prev",
@@ -1336,13 +1336,13 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1350,17 +1350,17 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 1,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/single_article/not_anymore",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/single_article/not_anymore",
@@ -1397,13 +1397,13 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1411,17 +1411,17 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 1,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/multiple_article/has_prev",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/multiple_article/has_prev1",
@@ -1465,13 +1465,13 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1479,17 +1479,17 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 1,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/single_tag/multiple_article/not_anymore",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/single_tag/multiple_article/not_anymore1",
@@ -1537,13 +1537,13 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(2, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1551,17 +1551,17 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 2,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/single_article/has_prev1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article/has_prev",
@@ -1574,7 +1574,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 						{
 							Id:   "2",
 							Name: "happy_path/multiple_tag/single_article/has_prev2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article/has_prev",
@@ -1616,13 +1616,13 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(2, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1630,17 +1630,17 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 2,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/single_article/not_anymore1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article/not_anymore",
@@ -1653,7 +1653,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 						{
 							Id:   "2",
 							Name: "happy_path/multiple_tag/single_article/not_anymore2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/single_article/not_anymore",
@@ -1706,13 +1706,13 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(2, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1720,17 +1720,17 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 2,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/multiple_article/has_prev1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/multiple_article/has_prev1",
@@ -1750,7 +1750,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 						{
 							Id:   "2",
 							Name: "happy_path/multiple_tag/multiple_article/has_prev2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/multiple_tag/multiple_article/has_prev1",
@@ -1811,13 +1811,13 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					}))
 				return o
 			}(),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(2, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1825,17 +1825,17 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 2,
 				},
 			},
 			want: want{
-				response: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				response: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
 							Name: "happy_path/multiple_tag/multiple_article/not_anymore1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:    "1",
 									Title: "happy_path/multiple_tag/multiple_article/not_anymore1",
@@ -1847,20 +1847,20 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 		},
 		"unhappy_path/usecase_returns_error": {
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(1, nil)).
 					Return(nil, errGetPrevTag).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 1,
 				},
 			},
@@ -1871,13 +1871,13 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 		},
 		"unhappy_path/failed_to_convert": {
 			outDto: dto.NewGetPrevOutDto(true),
-			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
 				u.EXPECT().
 					Execute(gomock.Any(), dto.NewGetPrevInDto(1, nil)).
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *pb.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto]) {
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -1885,7 +1885,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &pb.GetPrevTagsRequest{
+				in: &grpc.GetPrevTagsRequest{
 					Last: 1,
 				},
 			},
@@ -1900,10 +1900,10 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			out := tt.outDto
-			u := musecase.NewMockGetPrev[dto.GetPrevInDto, dto.Article, dto.Tag, *dto.GetPrevOutDto](ctrl)
+			u := musecase.NewMockGetPrev(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
-			conv := mpresenter.NewMockToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto](ctrl)
+			conv := mpresenter.NewMockToGetPrevConverter(ctrl)
 			tt.setupConverter(out, response, conv)
 			s := NewTagServiceServer(nil, nil, nil, nil, nil, nil, u, conv)
 			got, err := s.GetPrevTags(tt.args.ctx, tt.args.in)

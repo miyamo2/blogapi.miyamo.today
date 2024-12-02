@@ -3,10 +3,11 @@ package usecase
 
 import (
 	"context"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 )
 
 // GetNext is a use-case interface for getting next tags.
-type GetNext[I GetNextInDto, A Article, T Tag[A], O GetNextOutDto[A, T]] interface {
+type GetNext interface {
 	// Execute gets all tags.
-	Execute(ctx context.Context, in I) (O, error)
+	Execute(ctx context.Context, in dto.GetNextInDto) (*dto.GetNextOutDto, error)
 }

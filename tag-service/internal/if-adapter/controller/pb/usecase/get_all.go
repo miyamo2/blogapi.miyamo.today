@@ -3,10 +3,11 @@ package usecase
 
 import (
 	"context"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 )
 
 // GetAll is a use-case interface for getting all tags.
-type GetAll[A Article, T Tag[A], O GetAllOutDto[A, T]] interface {
+type GetAll interface {
 	// Execute gets all tags.
-	Execute(ctx context.Context) (O, error)
+	Execute(ctx context.Context) (*dto.GetAllOutDto, error)
 }

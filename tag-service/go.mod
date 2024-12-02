@@ -6,17 +6,15 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/cockroachdb/errors v1.11.3
 	github.com/google/go-cmp v0.6.0
+	github.com/google/wire v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/miyamo2/blogapi.miyamo.today/core v0.21.1
 	github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.4
-	github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server v0.3.3
 	github.com/newrelic/go-agent/v3 v3.34.0
-	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrslog v1.2.0
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.1
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
-	go.uber.org/fx v1.22.1
 	go.uber.org/mock v0.4.0
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
@@ -53,9 +51,6 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	go.uber.org/dig v1.17.1 // indirect
-	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/net v0.25.0 // indirect

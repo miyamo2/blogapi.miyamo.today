@@ -3,31 +3,31 @@ package presenter
 
 import (
 	"context"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
 )
 
 // ToGetByIdConverter is a converter interface for converting from GetById use-case's dto to pb response.
-type ToGetByIdConverter[A usecase.Article, T usecase.Tag[A]] interface {
+type ToGetByIdConverter interface {
 	// ToGetByIdTagResponse converts from GetById use-case's dto to pb response.
-	ToGetByIdTagResponse(ctx context.Context, from T) (response *pb.GetTagByIdResponse, ok bool)
+	ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *grpc.GetTagByIdResponse, ok bool)
 }
 
 // ToGetAllConverter is a converter interface for converting from GetAll use-case's dto to pb response.
-type ToGetAllConverter[A usecase.Article, T usecase.Tag[A], O usecase.GetAllOutDto[A, T]] interface {
+type ToGetAllConverter interface {
 	// ToGetAllTagsResponse converts from GetAll use-case's dto to pb response.
-	ToGetAllTagsResponse(ctx context.Context, from O) (response *pb.GetAllTagsResponse, ok bool)
+	ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOutDto) (response *grpc.GetAllTagsResponse, ok bool)
 }
 
 // ToGetNextConverter is a converter interface for converting from GetNext use-case's dto to pb response.
-type ToGetNextConverter[A usecase.Article, T usecase.Tag[A], O usecase.GetNextOutDto[A, T]] interface {
+type ToGetNextConverter interface {
 	// ToGetNextTagsResponse converts from GetNext use-case's dto to pb response.
-	ToGetNextTagsResponse(ctx context.Context, from O) (response *pb.GetNextTagResponse, ok bool)
+	ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextOutDto) (response *grpc.GetNextTagResponse, ok bool)
 }
 
 // ToGetPrevConverter is a converter interface for converting from GetPrev use-case's dto to pb response.
-type ToGetPrevConverter[A usecase.Article, T usecase.Tag[A], O usecase.GetPrevOutDto[A, T]] interface {
+type ToGetPrevConverter interface {
 	// ToGetPrevTagsResponse converts from GetPrev use-case's dto to pb response.
-	ToGetPrevTagsResponse(ctx context.Context, from O) (response *pb.GetPrevTagResponse, ok bool)
+	ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *grpc.GetPrevTagResponse, ok bool)
 }
