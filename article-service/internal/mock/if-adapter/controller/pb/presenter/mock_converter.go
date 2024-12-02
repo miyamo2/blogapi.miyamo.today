@@ -14,7 +14,7 @@ import (
 	reflect "reflect"
 
 	dto "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
-	pb "github.com/miyamo2/blogapi.miyamo.today/protogen/article/server/pb"
+	grpc "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,10 +43,10 @@ func (m *MockToGetNextConverter) EXPECT() *MockToGetNextConverterMockRecorder {
 }
 
 // ToGetNextArticlesResponse mocks base method.
-func (m *MockToGetNextConverter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetNextOutDto) (*pb.GetNextArticlesResponse, bool) {
+func (m *MockToGetNextConverter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetNextOutDto) (*grpc.GetNextArticlesResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetNextArticlesResponse", ctx, from)
-	ret0, _ := ret[0].(*pb.GetNextArticlesResponse)
+	ret0, _ := ret[0].(*grpc.GetNextArticlesResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -82,10 +82,10 @@ func (m *MockToGetAllConverter) EXPECT() *MockToGetAllConverterMockRecorder {
 }
 
 // ToGetAllArticlesResponse mocks base method.
-func (m *MockToGetAllConverter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAllOutDto) (*pb.GetAllArticlesResponse, bool) {
+func (m *MockToGetAllConverter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAllOutDto) (*grpc.GetAllArticlesResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetAllArticlesResponse", ctx, from)
-	ret0, _ := ret[0].(*pb.GetAllArticlesResponse)
+	ret0, _ := ret[0].(*grpc.GetAllArticlesResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -121,10 +121,10 @@ func (m *MockToGetByIdConverter) EXPECT() *MockToGetByIdConverterMockRecorder {
 }
 
 // ToGetByIdArticlesResponse mocks base method.
-func (m *MockToGetByIdConverter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetByIdOutDto) (*pb.GetArticleByIdResponse, bool) {
+func (m *MockToGetByIdConverter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetByIdOutDto) (*grpc.GetArticleByIdResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetByIdArticlesResponse", ctx, from)
-	ret0, _ := ret[0].(*pb.GetArticleByIdResponse)
+	ret0, _ := ret[0].(*grpc.GetArticleByIdResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -160,10 +160,10 @@ func (m *MockToGetPrevConverter) EXPECT() *MockToGetPrevConverterMockRecorder {
 }
 
 // ToGetPrevArticlesResponse mocks base method.
-func (m *MockToGetPrevConverter) ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetPrevOutDto) (*pb.GetPrevArticlesResponse, bool) {
+func (m *MockToGetPrevConverter) ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetPrevOutDto) (*grpc.GetPrevArticlesResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetPrevArticlesResponse", ctx, from)
-	ret0, _ := ret[0].(*pb.GetPrevArticlesResponse)
+	ret0, _ := ret[0].(*grpc.GetPrevArticlesResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }

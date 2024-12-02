@@ -5,21 +5,21 @@ import (
 	"context"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/server/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 )
 
 type ToGetNextConverter interface {
-	ToGetNextArticlesResponse(ctx context.Context, from *dto.GetNextOutDto) (response *pb.GetNextArticlesResponse, ok bool)
+	ToGetNextArticlesResponse(ctx context.Context, from *dto.GetNextOutDto) (response *grpc.GetNextArticlesResponse, ok bool)
 }
 
 type ToGetAllConverter interface {
-	ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAllOutDto) (response *pb.GetAllArticlesResponse, ok bool)
+	ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAllOutDto) (response *grpc.GetAllArticlesResponse, ok bool)
 }
 
 type ToGetByIdConverter interface {
-	ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *pb.GetArticleByIdResponse, ok bool)
+	ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *grpc.GetArticleByIdResponse, ok bool)
 }
 
 type ToGetPrevConverter interface {
-	ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *pb.GetPrevArticlesResponse, ok bool)
+	ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *grpc.GetPrevArticlesResponse, ok bool)
 }

@@ -4,3 +4,6 @@
 [submodule "protogen/.proto"]
 	path = protogen/.proto
 	url = https://github.com/miyamo2/proto.miyamo.today
+[submodule "article-service/.proto"]
+	path = article-service/.proto
+	url = https://github.com/miyamo2/proto.miyamo.today

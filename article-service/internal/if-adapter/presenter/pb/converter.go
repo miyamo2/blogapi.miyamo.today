@@ -7,15 +7,15 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/server/pb"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 type Converter struct{}
 
-func (c Converter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetNextOutDto) (response *pb.GetNextArticlesResponse, ok bool) {
+func (c Converter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetNextOutDto) (response *grpc.GetNextArticlesResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetNextArticlesResponse").End()
 	lgr, err := altnrslog.FromContext(ctx)
@@ -31,17 +31,17 @@ func (c Converter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetN
 				slog.Bool("ok", ok)))
 	}()
 	fa := from.Articles()
-	pa := make([]*pb.Article, 0, len(fa))
+	pa := make([]*grpc.Article, 0, len(fa))
 	for _, a := range fa {
 		ft := a.Tags()
-		pt := make([]*pb.Tag, 0, len(ft))
+		pt := make([]*grpc.Tag, 0, len(ft))
 		for _, t := range ft {
-			pt = append(pt, &pb.Tag{
+			pt = append(pt, &grpc.Tag{
 				Id:   t.Id(),
 				Name: t.Name(),
 			})
 		}
-		pa = append(pa, &pb.Article{
+		pa = append(pa, &grpc.Article{
 			Id:           a.Id(),
 			Title:        a.Title(),
 			Body:         a.Body(),
@@ -51,7 +51,7 @@ func (c Converter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetN
 			Tags:         pt,
 		})
 	}
-	response = &pb.GetNextArticlesResponse{
+	response = &grpc.GetNextArticlesResponse{
 		Articles:    pa,
 		StillExists: from.HasNext(),
 	}
@@ -59,7 +59,7 @@ func (c Converter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetN
 	return
 }
 
-func (c Converter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAllOutDto) (response *pb.GetAllArticlesResponse, ok bool) {
+func (c Converter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAllOutDto) (response *grpc.GetAllArticlesResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetAllArticlesResponse").End()
 	lgr, err := altnrslog.FromContext(ctx)
@@ -75,17 +75,17 @@ func (c Converter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAl
 				slog.Bool("ok", ok)))
 	}()
 	fa := from.Articles()
-	pa := make([]*pb.Article, 0, len(fa))
+	pa := make([]*grpc.Article, 0, len(fa))
 	for _, a := range fa {
 		ft := a.Tags()
-		pt := make([]*pb.Tag, 0, len(ft))
+		pt := make([]*grpc.Tag, 0, len(ft))
 		for _, t := range ft {
-			pt = append(pt, &pb.Tag{
+			pt = append(pt, &grpc.Tag{
 				Id:   t.Id(),
 				Name: t.Name(),
 			})
 		}
-		pa = append(pa, &pb.Article{
+		pa = append(pa, &grpc.Article{
 			Id:           a.Id(),
 			Title:        a.Title(),
 			Body:         a.Body(),
@@ -95,14 +95,14 @@ func (c Converter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAl
 			Tags:         pt,
 		})
 	}
-	response = &pb.GetAllArticlesResponse{
+	response = &grpc.GetAllArticlesResponse{
 		Articles: pa,
 	}
 	ok = true
 	return
 }
 
-func (c Converter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *pb.GetArticleByIdResponse, ok bool) {
+func (c Converter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *grpc.GetArticleByIdResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetByIdArticlesResponse").End()
 	lgr, err := altnrslog.FromContext(ctx)
@@ -118,13 +118,13 @@ func (c Converter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetB
 				slog.Bool("ok", ok)))
 	}()
 	ft := from.Tags()
-	pt := make([]*pb.Tag, 0, len(ft))
+	pt := make([]*grpc.Tag, 0, len(ft))
 	for _, t := range ft {
-		pt = append(pt, &pb.Tag{
+		pt = append(pt, &grpc.Tag{
 			Id:   t.Id(),
 			Name: t.Name()})
 	}
-	a := &pb.Article{
+	a := &grpc.Article{
 		Id:           from.Id(),
 		Title:        from.Title(),
 		Body:         from.Body(),
@@ -133,14 +133,14 @@ func (c Converter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetB
 		UpdatedAt:    from.UpdatedAt(),
 		Tags:         pt,
 	}
-	response = &pb.GetArticleByIdResponse{
+	response = &grpc.GetArticleByIdResponse{
 		Article: a,
 	}
 	ok = true
 	return
 }
 
-func (c Converter) ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *pb.GetPrevArticlesResponse, ok bool) {
+func (c Converter) ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *grpc.GetPrevArticlesResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetPrevArticlesResponse").End()
 	lgr, err := altnrslog.FromContext(ctx)
@@ -156,17 +156,17 @@ func (c Converter) ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetP
 				slog.Bool("ok", ok)))
 	}()
 	fa := from.Articles()
-	pa := make([]*pb.Article, 0, len(fa))
+	pa := make([]*grpc.Article, 0, len(fa))
 	for _, a := range fa {
 		ft := a.Tags()
-		pt := make([]*pb.Tag, 0, len(ft))
+		pt := make([]*grpc.Tag, 0, len(ft))
 		for _, t := range ft {
-			pt = append(pt, &pb.Tag{
+			pt = append(pt, &grpc.Tag{
 				Id:   t.Id(),
 				Name: t.Name(),
 			})
 		}
-		pa = append(pa, &pb.Article{
+		pa = append(pa, &grpc.Article{
 			Id:           a.Id(),
 			Title:        a.Title(),
 			Body:         a.Body(),
@@ -176,7 +176,7 @@ func (c Converter) ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetP
 			Tags:         pt,
 		})
 	}
-	response = &pb.GetPrevArticlesResponse{
+	response = &grpc.GetPrevArticlesResponse{
 		Articles:    pa,
 		StillExists: from.HasPrevious(),
 	}

@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/server/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
@@ -16,7 +16,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 		from func() *dto.GetNextOutDto
 	}
 	type want struct {
-		result *pb.GetNextArticlesResponse
+		result *grpc.GetNextArticlesResponse
 		ok     bool
 	}
 	type testCase struct {
@@ -59,8 +59,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetNextArticlesResponse{
-					Articles: []*pb.Article{
+				result: &grpc.GetNextArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple/still_exists1",
@@ -68,7 +68,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -86,7 +86,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -138,8 +138,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetNextArticlesResponse{
-					Articles: []*pb.Article{
+				result: &grpc.GetNextArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple/still_exists1",
@@ -147,7 +147,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -165,7 +165,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -205,8 +205,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetNextArticlesResponse{
-					Articles: []*pb.Article{
+				result: &grpc.GetNextArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple/still_exists1",
@@ -214,7 +214,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -254,8 +254,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetNextArticlesResponse{
-					Articles: []*pb.Article{
+				result: &grpc.GetNextArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple/still_exists1",
@@ -263,7 +263,7 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -301,7 +301,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 		from func() *dto.GetAllOutDto
 	}
 	type want struct {
-		result *pb.GetAllArticlesResponse
+		result *grpc.GetAllArticlesResponse
 		ok     bool
 	}
 	type testCase struct {
@@ -344,8 +344,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetAllArticlesResponse{
-					Articles: []*pb.Article{
+				result: &grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple/still_exists1",
@@ -353,7 +353,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -371,7 +371,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -422,8 +422,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetAllArticlesResponse{
-					Articles: []*pb.Article{
+				result: &grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple/still_exists1",
@@ -431,7 +431,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -449,7 +449,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -488,8 +488,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetAllArticlesResponse{
-					Articles: []*pb.Article{
+				result: &grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple/still_exists1",
@@ -497,7 +497,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -536,8 +536,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetAllArticlesResponse{
-					Articles: []*pb.Article{
+				result: &grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{
 						{
 							Id:           "1",
 							Title:        "happy_path/multiple/still_exists1",
@@ -545,7 +545,7 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							ThumbnailUrl: "1234567890",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
 									Name: "1",
@@ -582,7 +582,7 @@ func TestConverter_ToGetByIdArticlesResponse(t *testing.T) {
 		from func() *dto.GetByIdOutDto
 	}
 	type want struct {
-		result *pb.GetArticleByIdResponse
+		result *grpc.GetArticleByIdResponse
 		ok     bool
 	}
 	type testCase struct {
@@ -610,15 +610,15 @@ func TestConverter_ToGetByIdArticlesResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetArticleByIdResponse{
-					Article: &pb.Article{
+				result: &grpc.GetArticleByIdResponse{
+					Article: &grpc.Article{
 						Id:           "1",
 						Title:        "happy_path/multiple/still_exists1",
 						Body:         "## happy_path/multiple/still_exists1",
 						ThumbnailUrl: "1234567890",
 						CreatedAt:    "2020-01-01T00:00:00Z",
 						UpdatedAt:    "2020-01-01T00:00:00Z",
-						Tags: []*pb.Tag{
+						Tags: []*grpc.Tag{
 							{
 								Id:   "tag1",
 								Name: "1",
