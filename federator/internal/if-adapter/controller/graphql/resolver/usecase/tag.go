@@ -3,17 +3,16 @@ package usecase
 
 import (
 	"context"
-
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 )
 
 // Tag is a use-case of getting a tag by id.
-type Tag[I dto.TagInDto, A dto.Article, TA dto.TagArticle[A], O dto.TagOutDto[A, TA]] interface {
+type Tag interface {
 	// Execute gets a tag by id.
-	Execute(ctx context.Context, in I) (O, error)
+	Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, error)
 }
 
-type Tags[I dto.TagsInDto, A dto.Article, TA dto.TagArticle[A], O dto.TagsOutDto[A, TA]] interface {
+type Tags interface {
 	// Execute gets tags.
-	Execute(ctx context.Context, in I) (O, error)
+	Execute(ctx context.Context, in dto.TagsInDto) (dto.TagsOutDto, error)
 }

@@ -1,7 +1,6 @@
 package resolver
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converter"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
 )
@@ -16,37 +15,37 @@ type Resolver struct {
 }
 
 type Usecases struct {
-	article  usecase.Article[dto.ArticleInDto, dto.Tag, dto.ArticleTag, dto.ArticleOutDto]
-	articles usecase.Articles[dto.ArticlesInDto, dto.Tag, dto.ArticleTag, dto.ArticlesOutDto]
-	tag      usecase.Tag[dto.TagInDto, dto.Article, dto.TagArticle, dto.TagOutDto]
-	tags     usecase.Tags[dto.TagsInDto, dto.Article, dto.TagArticle, dto.TagsOutDto]
+	article  usecase.Article
+	articles usecase.Articles
+	tag      usecase.Tag
+	tags     usecase.Tags
 }
 
 type UsecasesOption func(*Usecases)
 
 // WithArticleUsecase option for Usecases.
-func WithArticleUsecase(article usecase.Article[dto.ArticleInDto, dto.Tag, dto.ArticleTag, dto.ArticleOutDto]) UsecasesOption {
+func WithArticleUsecase(article usecase.Article) UsecasesOption {
 	return func(u *Usecases) {
 		u.article = article
 	}
 }
 
 // WithArticlesUsecase option for Usecases.
-func WithArticlesUsecase(articles usecase.Articles[dto.ArticlesInDto, dto.Tag, dto.ArticleTag, dto.ArticlesOutDto]) UsecasesOption {
+func WithArticlesUsecase(articles usecase.Articles) UsecasesOption {
 	return func(u *Usecases) {
 		u.articles = articles
 	}
 }
 
 // WithTagUsecase option for Usecases.
-func WithTagUsecase(tag usecase.Tag[dto.TagInDto, dto.Article, dto.TagArticle, dto.TagOutDto]) UsecasesOption {
+func WithTagUsecase(tag usecase.Tag) UsecasesOption {
 	return func(u *Usecases) {
 		u.tag = tag
 	}
 }
 
 // WithTagsUsecase option for Usecases.
-func WithTagsUsecase(tags usecase.Tags[dto.TagsInDto, dto.Article, dto.TagArticle, dto.TagsOutDto]) UsecasesOption {
+func WithTagsUsecase(tags usecase.Tags) UsecasesOption {
 	return func(u *Usecases) {
 		u.tags = tags
 	}
@@ -64,38 +63,38 @@ func NewUsecases(options ...UsecasesOption) *Usecases {
 type ConvertersOption func(*Converters)
 
 // WithArticleConverter option for Converters.
-func WithArticleConverter(article converter.ArticleConverter[dto.Tag, dto.ArticleTag, dto.ArticleOutDto]) ConvertersOption {
+func WithArticleConverter(article converter.ArticleConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.article = article
 	}
 }
 
 // WithArticlesConverter option for Converters.
-func WithArticlesConverter(articles converter.ArticlesConverter[dto.Tag, dto.ArticleTag, dto.ArticlesOutDto]) ConvertersOption {
+func WithArticlesConverter(articles converter.ArticlesConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.articles = articles
 	}
 }
 
 // WithTagConverter option for Converters.
-func WithTagConverter(tag converter.TagConverter[dto.Article, dto.TagArticle, dto.TagOutDto]) ConvertersOption {
+func WithTagConverter(tag converter.TagConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.tag = tag
 	}
 }
 
 // WithTagsConverter option for Converters.
-func WithTagsConverter(tags converter.TagsConverter[dto.Article, dto.TagArticle, dto.TagsOutDto]) ConvertersOption {
+func WithTagsConverter(tags converter.TagsConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.tags = tags
 	}
 }
 
 type Converters struct {
-	article  converter.ArticleConverter[dto.Tag, dto.ArticleTag, dto.ArticleOutDto]
-	articles converter.ArticlesConverter[dto.Tag, dto.ArticleTag, dto.ArticlesOutDto]
-	tag      converter.TagConverter[dto.Article, dto.TagArticle, dto.TagOutDto]
-	tags     converter.TagsConverter[dto.Article, dto.TagArticle, dto.TagsOutDto]
+	article  converter.ArticleConverter
+	articles converter.ArticlesConverter
+	tag      converter.TagConverter
+	tags     converter.TagsConverter
 }
 
 // NewConverters constructor of Converters.

@@ -3,23 +3,23 @@ package converter
 
 import (
 	"context"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 )
 
-type ArticleConverter[T dto.Tag, AT dto.ArticleTag[T], O dto.ArticleOutDto[T, AT]] interface {
-	ToArticle(ctx context.Context, from O) (*model.ArticleNode, bool)
+type ArticleConverter interface {
+	ToArticle(ctx context.Context, from dto.ArticleOutDto) (*model.ArticleNode, bool)
 }
 
-type ArticlesConverter[T dto.Tag, AT dto.ArticleTag[T], O dto.ArticlesOutDto[T, AT]] interface {
-	ToArticles(ctx context.Context, from O) (*model.ArticleConnection, bool)
+type ArticlesConverter interface {
+	ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*model.ArticleConnection, bool)
 }
 
-type TagConverter[A dto.Article, TA dto.TagArticle[A], O dto.TagOutDto[A, TA]] interface {
-	ToTag(ctx context.Context, from O) (*model.TagNode, error)
+type TagConverter interface {
+	ToTag(ctx context.Context, from dto.TagOutDto) (*model.TagNode, error)
 }
 
-type TagsConverter[A dto.Article, TA dto.TagArticle[A], O dto.TagsOutDto[A, TA]] interface {
-	ToTags(ctx context.Context, from O) (*model.TagConnection, error)
+type TagsConverter interface {
+	ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagConnection, error)
 }

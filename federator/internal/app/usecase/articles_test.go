@@ -2,14 +2,14 @@ package usecase
 
 import (
 	"context"
+	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	"reflect"
 	"testing"
 
 	"github.com/cockroachdb/errors"
 	blogapictx "github.com/miyamo2/blogapi.miyamo.today/core/context"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	mpb "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/protogen/article/client/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/client/pb"
+	mgrpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/infra/grpc/article"
 	"go.uber.org/mock/gomock"
 )
 
@@ -23,7 +23,7 @@ func TestArticles_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) pb.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -41,12 +41,12 @@ func TestArticles_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetNextArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetNextArticlesResponse{
-						Articles: []*pb.Article{
+					Return(&grpc.GetNextArticlesResponse{
+						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
 								Title:        "happy_path/next_paging",
@@ -54,7 +54,7 @@ func TestArticles_Execute(t *testing.T) {
 								ThumbnailUrl: "example.test",
 								CreatedAt:    "2020-01-01T00:00:00Z",
 								UpdatedAt:    "2020-01-01T00:00:00Z",
-								Tags: []*pb.Tag{
+								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
 										Name: "Tag1",
@@ -93,11 +93,11 @@ func TestArticles_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetNextArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetNextArticlesResponse{}, errTestArticles).
+					Return(&grpc.GetNextArticlesResponse{}, errTestArticles).
 					Times(1)
 				return aSvcClt
 			},
@@ -115,12 +115,12 @@ func TestArticles_Execute(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/prev_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetPrevArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetPrevArticlesResponse{
-						Articles: []*pb.Article{
+					Return(&grpc.GetPrevArticlesResponse{
+						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
 								Title:        "happy_path/prev_paging",
@@ -128,7 +128,7 @@ func TestArticles_Execute(t *testing.T) {
 								ThumbnailUrl: "example.test",
 								CreatedAt:    "2020-01-01T00:00:00Z",
 								UpdatedAt:    "2020-01-01T00:00:00Z",
-								Tags: []*pb.Tag{
+								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
 										Name: "Tag1",
@@ -167,11 +167,11 @@ func TestArticles_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetPrevArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetPrevArticlesResponse{}, errTestArticles).
+					Return(&grpc.GetPrevArticlesResponse{}, errTestArticles).
 					Times(1)
 				return aSvcClt
 			},
@@ -189,12 +189,12 @@ func TestArticles_Execute(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/execute": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetAllArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetAllArticlesResponse{
-						Articles: []*pb.Article{
+					Return(&grpc.GetAllArticlesResponse{
+						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
 								Title:        "happy_path/execute",
@@ -202,7 +202,7 @@ func TestArticles_Execute(t *testing.T) {
 								ThumbnailUrl: "example.test",
 								CreatedAt:    "2020-01-01T00:00:00Z",
 								UpdatedAt:    "2020-01-01T00:00:00Z",
-								Tags: []*pb.Tag{
+								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
 										Name: "Tag1",
@@ -236,11 +236,11 @@ func TestArticles_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/execute_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetAllArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetAllArticlesResponse{}, errTestArticles).
+					Return(&grpc.GetAllArticlesResponse{}, errTestArticles).
 					Times(1)
 				return aSvcClt
 			},
@@ -292,7 +292,7 @@ func TestArticles_executeNextPaging(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) pb.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -310,12 +310,12 @@ func TestArticles_executeNextPaging(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetNextArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetNextArticlesResponse{
-						Articles: []*pb.Article{
+					Return(&grpc.GetNextArticlesResponse{
+						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
 								Title:        "happy_path/next_paging",
@@ -323,7 +323,7 @@ func TestArticles_executeNextPaging(t *testing.T) {
 								ThumbnailUrl: "example.test",
 								CreatedAt:    "2020-01-01T00:00:00Z",
 								UpdatedAt:    "2020-01-01T00:00:00Z",
-								Tags: []*pb.Tag{
+								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
 										Name: "Tag1",
@@ -362,11 +362,11 @@ func TestArticles_executeNextPaging(t *testing.T) {
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetNextArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetNextArticlesResponse{}, errTestArticles).
+					Return(&grpc.GetNextArticlesResponse{}, errTestArticles).
 					Times(1)
 				return aSvcClt
 			},
@@ -421,7 +421,7 @@ func TestArticles_executePrevPaging(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) pb.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -439,12 +439,12 @@ func TestArticles_executePrevPaging(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/prev_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetPrevArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetPrevArticlesResponse{
-						Articles: []*pb.Article{
+					Return(&grpc.GetPrevArticlesResponse{
+						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
 								Title:        "happy_path/prev_paging",
@@ -452,7 +452,7 @@ func TestArticles_executePrevPaging(t *testing.T) {
 								ThumbnailUrl: "example.test",
 								CreatedAt:    "2020-01-01T00:00:00Z",
 								UpdatedAt:    "2020-01-01T00:00:00Z",
-								Tags: []*pb.Tag{
+								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
 										Name: "Tag1",
@@ -491,11 +491,11 @@ func TestArticles_executePrevPaging(t *testing.T) {
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetPrevArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetPrevArticlesResponse{}, errTestArticles).
+					Return(&grpc.GetPrevArticlesResponse{}, errTestArticles).
 					Times(1)
 				return aSvcClt
 			},
@@ -549,7 +549,7 @@ func TestArticles_execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) pb.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -567,12 +567,12 @@ func TestArticles_execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/all_articles": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetAllArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetAllArticlesResponse{
-						Articles: []*pb.Article{
+					Return(&grpc.GetAllArticlesResponse{
+						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
 								Title:        "happy_path/all_articles",
@@ -580,7 +580,7 @@ func TestArticles_execute(t *testing.T) {
 								ThumbnailUrl: "example.test",
 								CreatedAt:    "2020-01-01T00:00:00Z",
 								UpdatedAt:    "2020-01-01T00:00:00Z",
-								Tags: []*pb.Tag{
+								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
 										Name: "Tag1",
@@ -613,11 +613,11 @@ func TestArticles_execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/all_articles_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetAllArticles(gomock.Any(), gomock.Any()).
-					Return(&pb.GetAllArticlesResponse{}, errTestArticles).
+					Return(&grpc.GetAllArticlesResponse{}, errTestArticles).
 					Times(1)
 				return aSvcClt
 			},

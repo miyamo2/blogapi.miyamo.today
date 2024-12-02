@@ -1,40 +1,23 @@
 package provider
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	"github.com/google/wire"
 	abstract "github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converter"
-
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/converter"
-	"go.uber.org/fx"
 )
 
 // compatibility check
 var (
-	_ abstract.ArticleConverter[dto.Tag, dto.ArticleTag, dto.ArticleOutDto]   = (*converter.Converter)(nil)
-	_ abstract.ArticlesConverter[dto.Tag, dto.ArticleTag, dto.ArticlesOutDto] = (*converter.Converter)(nil)
-	_ abstract.TagConverter[dto.Article, dto.TagArticle, dto.TagOutDto]       = (*converter.Converter)(nil)
-	_ abstract.TagsConverter[dto.Article, dto.TagArticle, dto.TagsOutDto]     = (*converter.Converter)(nil)
+	_ abstract.ArticleConverter  = (*converter.Converter)(nil)
+	_ abstract.ArticlesConverter = (*converter.Converter)(nil)
+	_ abstract.TagConverter      = (*converter.Converter)(nil)
+	_ abstract.TagsConverter     = (*converter.Converter)(nil)
 )
 
-var Presenter = fx.Options(
-	fx.Provide(
-		fx.Annotate(
-			converter.NewConverter, fx.As(new(abstract.ArticleConverter[dto.Tag, dto.ArticleTag, dto.ArticleOutDto])),
-		),
-	),
-	fx.Provide(
-		fx.Annotate(
-			converter.NewConverter, fx.As(new(abstract.ArticlesConverter[dto.Tag, dto.ArticleTag, dto.ArticlesOutDto])),
-		),
-	),
-	fx.Provide(
-		fx.Annotate(
-			converter.NewConverter, fx.As(new(abstract.TagConverter[dto.Article, dto.TagArticle, dto.TagOutDto])),
-		),
-	),
-	fx.Provide(
-		fx.Annotate(
-			converter.NewConverter, fx.As(new(abstract.TagsConverter[dto.Article, dto.TagArticle, dto.TagsOutDto])),
-		),
-	),
+var PresenterSet = wire.NewSet(
+	converter.NewConverter,
+	wire.Bind(new(abstract.ArticleConverter), new(*converter.Converter)),
+	wire.Bind(new(abstract.ArticlesConverter), new(*converter.Converter)),
+	wire.Bind(new(abstract.TagConverter), new(*converter.Converter)),
+	wire.Bind(new(abstract.TagsConverter), new(*converter.Converter)),
 )

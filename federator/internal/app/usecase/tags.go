@@ -4,23 +4,22 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
-	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
-	"google.golang.org/protobuf/types/known/emptypb"
-
-	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/client/pb"
+	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
+	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Tags is a use-case of getting tags.
 type Tags struct {
 	// tSvcClt is a client of article service.
-	tSvcClt pb.TagServiceClient
+	tSvcClt grpc.TagServiceClient
 }
 
 // Execute gets a tag by id.
@@ -74,7 +73,7 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
-	response, err := u.tSvcClt.GetNextTags(ctx, &pb.GetNextTagsRequest{
+	response, err := u.tSvcClt.GetNextTags(ctx, &grpc.GetNextTagsRequest{
 		First: int32(in.First()),
 		After: utils.PtrFromString(in.After()),
 	})
@@ -129,7 +128,7 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
-	response, err := u.tSvcClt.GetPrevTags(ctx, &pb.GetPrevTagsRequest{
+	response, err := u.tSvcClt.GetPrevTags(ctx, &grpc.GetPrevTagsRequest{
 		Last:   int32(in.Last()),
 		Before: utils.PtrFromString(in.Before()),
 	})
@@ -221,7 +220,7 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDto, error) {
 }
 
 // NewTag is a constructor of Tag.
-func NewTags(tSvcClt pb.TagServiceClient) *Tags {
+func NewTags(tSvcClt grpc.TagServiceClient) *Tags {
 	return &Tags{
 		tSvcClt: tSvcClt,
 	}

@@ -2,14 +2,14 @@ package usecase
 
 import (
 	"context"
+	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
+	mgrpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/infra/grpc/article"
 	"reflect"
 	"testing"
 
 	"github.com/cockroachdb/errors"
 	blogapictx "github.com/miyamo2/blogapi.miyamo.today/core/context"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	mpb "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/protogen/article/client/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/client/pb"
 	"go.uber.org/mock/gomock"
 )
 
@@ -23,7 +23,7 @@ func TestArticle_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) pb.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -41,19 +41,19 @@ func TestArticle_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/single_tag": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
-					Return(&pb.GetArticleByIdResponse{
-						Article: &pb.Article{
+					Return(&grpc.GetArticleByIdResponse{
+						Article: &grpc.Article{
 							Id:           "Article1",
 							Title:        "happy_path/single_tag",
 							Body:         "## happy_path/single_tag",
 							ThumbnailUrl: "example.test",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "Tag1",
 									Name: "Tag1",
@@ -84,19 +84,19 @@ func TestArticle_Execute(t *testing.T) {
 			},
 		},
 		"happy_path/multiple_tags": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
-					Return(&pb.GetArticleByIdResponse{
-						Article: &pb.Article{
+					Return(&grpc.GetArticleByIdResponse{
+						Article: &grpc.Article{
 							Id:           "Article1",
 							Title:        "happy_path/multiple_tags",
 							Body:         "## happy_path/multiple_tags",
 							ThumbnailUrl: "example.test",
 							CreatedAt:    "2020-01-01T00:00:00Z",
 							UpdatedAt:    "2020-01-01T00:00:00Z",
-							Tags: []*pb.Tag{
+							Tags: []*grpc.Tag{
 								{
 									Id:   "Tag1",
 									Name: "Tag1",
@@ -138,12 +138,12 @@ func TestArticle_Execute(t *testing.T) {
 			},
 		},
 		"happy_path/no_tags": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
-					Return(&pb.GetArticleByIdResponse{
-						Article: &pb.Article{
+					Return(&grpc.GetArticleByIdResponse{
+						Article: &grpc.Article{
 							Id:           "Article1",
 							Title:        "happy_path/no_tags",
 							Body:         "## happy_path/no_tags",
@@ -172,11 +172,11 @@ func TestArticle_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/grpc_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.ArticleServiceClient {
-				aSvcClt := mpb.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
+				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
-					Return(&pb.GetArticleByIdResponse{}, errTestArticle).
+					Return(&grpc.GetArticleByIdResponse{}, errTestArticle).
 					Times(1)
 				return aSvcClt
 			},

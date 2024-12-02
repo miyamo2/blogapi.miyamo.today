@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	"log/slog"
 
 	"github.com/miyamo2/altnrslog"
@@ -13,14 +14,13 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/client/pb"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 // Articles is a use-case of getting an articles.
 type Articles struct {
 	// aSvcClt is a client of article service.
-	aSvcClt pb.ArticleServiceClient
+	aSvcClt grpc.ArticleServiceClient
 }
 
 // Execute gets an article by id.
@@ -73,7 +73,7 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 	}
 	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
-	response, err := u.aSvcClt.GetNextArticles(ctx, &pb.GetNextArticlesRequest{
+	response, err := u.aSvcClt.GetNextArticles(ctx, &grpc.GetNextArticlesRequest{
 		First: int32(in.First()),
 		After: utils.PtrFromString(in.After()),
 	})
@@ -128,7 +128,7 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 	lgr.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
-	response, err := u.aSvcClt.GetPrevArticles(ctx, &pb.GetPrevArticlesRequest{
+	response, err := u.aSvcClt.GetPrevArticles(ctx, &grpc.GetPrevArticlesRequest{
 		Last:   int32(in.Last()),
 		Before: utils.PtrFromString(in.Before()),
 	})
@@ -220,7 +220,7 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 }
 
 // NewArticles is a constructor of Articles.
-func NewArticles(aSvcClt pb.ArticleServiceClient) *Articles {
+func NewArticles(aSvcClt grpc.ArticleServiceClient) *Articles {
 	return &Articles{
 		aSvcClt: aSvcClt,
 	}

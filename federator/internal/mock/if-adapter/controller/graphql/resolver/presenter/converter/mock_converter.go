@@ -5,6 +5,7 @@
 //
 //	mockgen -source=converter.go -destination=../../../../../../mock/if-adapter/controller/graphql/resolver/presenter/converter/mock_converter.go -package=converter
 //
+
 // Package converter is a generated GoMock package.
 package converter
 
@@ -12,36 +13,37 @@ import (
 	context "context"
 	reflect "reflect"
 
-	dto "github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
+	dto "github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	model "github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 	gomock "go.uber.org/mock/gomock"
 )
 
 // MockArticleConverter is a mock of ArticleConverter interface.
-type MockArticleConverter[T dto.Tag, AT dto.ArticleTag[T], O dto.ArticleOutDto[T, AT]] struct {
+type MockArticleConverter struct {
 	ctrl     *gomock.Controller
-	recorder *MockArticleConverterMockRecorder[T, AT, O]
+	recorder *MockArticleConverterMockRecorder
+	isgomock struct{}
 }
 
 // MockArticleConverterMockRecorder is the mock recorder for MockArticleConverter.
-type MockArticleConverterMockRecorder[T dto.Tag, AT dto.ArticleTag[T], O dto.ArticleOutDto[T, AT]] struct {
-	mock *MockArticleConverter[T, AT, O]
+type MockArticleConverterMockRecorder struct {
+	mock *MockArticleConverter
 }
 
 // NewMockArticleConverter creates a new mock instance.
-func NewMockArticleConverter[T dto.Tag, AT dto.ArticleTag[T], O dto.ArticleOutDto[T, AT]](ctrl *gomock.Controller) *MockArticleConverter[T, AT, O] {
-	mock := &MockArticleConverter[T, AT, O]{ctrl: ctrl}
-	mock.recorder = &MockArticleConverterMockRecorder[T, AT, O]{mock}
+func NewMockArticleConverter(ctrl *gomock.Controller) *MockArticleConverter {
+	mock := &MockArticleConverter{ctrl: ctrl}
+	mock.recorder = &MockArticleConverterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockArticleConverter[T, AT, O]) EXPECT() *MockArticleConverterMockRecorder[T, AT, O] {
+func (m *MockArticleConverter) EXPECT() *MockArticleConverterMockRecorder {
 	return m.recorder
 }
 
 // ToArticle mocks base method.
-func (m *MockArticleConverter[T, AT, O]) ToArticle(ctx context.Context, from O) (*model.ArticleNode, bool) {
+func (m *MockArticleConverter) ToArticle(ctx context.Context, from dto.ArticleOutDto) (*model.ArticleNode, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToArticle", ctx, from)
 	ret0, _ := ret[0].(*model.ArticleNode)
@@ -50,36 +52,37 @@ func (m *MockArticleConverter[T, AT, O]) ToArticle(ctx context.Context, from O) 
 }
 
 // ToArticle indicates an expected call of ToArticle.
-func (mr *MockArticleConverterMockRecorder[T, AT, O]) ToArticle(ctx, from any) *gomock.Call {
+func (mr *MockArticleConverterMockRecorder) ToArticle(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToArticle", reflect.TypeOf((*MockArticleConverter[T, AT, O])(nil).ToArticle), ctx, from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToArticle", reflect.TypeOf((*MockArticleConverter)(nil).ToArticle), ctx, from)
 }
 
 // MockArticlesConverter is a mock of ArticlesConverter interface.
-type MockArticlesConverter[T dto.Tag, AT dto.ArticleTag[T], O dto.ArticlesOutDto[T, AT]] struct {
+type MockArticlesConverter struct {
 	ctrl     *gomock.Controller
-	recorder *MockArticlesConverterMockRecorder[T, AT, O]
+	recorder *MockArticlesConverterMockRecorder
+	isgomock struct{}
 }
 
 // MockArticlesConverterMockRecorder is the mock recorder for MockArticlesConverter.
-type MockArticlesConverterMockRecorder[T dto.Tag, AT dto.ArticleTag[T], O dto.ArticlesOutDto[T, AT]] struct {
-	mock *MockArticlesConverter[T, AT, O]
+type MockArticlesConverterMockRecorder struct {
+	mock *MockArticlesConverter
 }
 
 // NewMockArticlesConverter creates a new mock instance.
-func NewMockArticlesConverter[T dto.Tag, AT dto.ArticleTag[T], O dto.ArticlesOutDto[T, AT]](ctrl *gomock.Controller) *MockArticlesConverter[T, AT, O] {
-	mock := &MockArticlesConverter[T, AT, O]{ctrl: ctrl}
-	mock.recorder = &MockArticlesConverterMockRecorder[T, AT, O]{mock}
+func NewMockArticlesConverter(ctrl *gomock.Controller) *MockArticlesConverter {
+	mock := &MockArticlesConverter{ctrl: ctrl}
+	mock.recorder = &MockArticlesConverterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockArticlesConverter[T, AT, O]) EXPECT() *MockArticlesConverterMockRecorder[T, AT, O] {
+func (m *MockArticlesConverter) EXPECT() *MockArticlesConverterMockRecorder {
 	return m.recorder
 }
 
 // ToArticles mocks base method.
-func (m *MockArticlesConverter[T, AT, O]) ToArticles(ctx context.Context, from O) (*model.ArticleConnection, bool) {
+func (m *MockArticlesConverter) ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*model.ArticleConnection, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToArticles", ctx, from)
 	ret0, _ := ret[0].(*model.ArticleConnection)
@@ -88,36 +91,37 @@ func (m *MockArticlesConverter[T, AT, O]) ToArticles(ctx context.Context, from O
 }
 
 // ToArticles indicates an expected call of ToArticles.
-func (mr *MockArticlesConverterMockRecorder[T, AT, O]) ToArticles(ctx, from any) *gomock.Call {
+func (mr *MockArticlesConverterMockRecorder) ToArticles(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToArticles", reflect.TypeOf((*MockArticlesConverter[T, AT, O])(nil).ToArticles), ctx, from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToArticles", reflect.TypeOf((*MockArticlesConverter)(nil).ToArticles), ctx, from)
 }
 
 // MockTagConverter is a mock of TagConverter interface.
-type MockTagConverter[A dto.Article, TA dto.TagArticle[A], O dto.TagOutDto[A, TA]] struct {
+type MockTagConverter struct {
 	ctrl     *gomock.Controller
-	recorder *MockTagConverterMockRecorder[A, TA, O]
+	recorder *MockTagConverterMockRecorder
+	isgomock struct{}
 }
 
 // MockTagConverterMockRecorder is the mock recorder for MockTagConverter.
-type MockTagConverterMockRecorder[A dto.Article, TA dto.TagArticle[A], O dto.TagOutDto[A, TA]] struct {
-	mock *MockTagConverter[A, TA, O]
+type MockTagConverterMockRecorder struct {
+	mock *MockTagConverter
 }
 
 // NewMockTagConverter creates a new mock instance.
-func NewMockTagConverter[A dto.Article, TA dto.TagArticle[A], O dto.TagOutDto[A, TA]](ctrl *gomock.Controller) *MockTagConverter[A, TA, O] {
-	mock := &MockTagConverter[A, TA, O]{ctrl: ctrl}
-	mock.recorder = &MockTagConverterMockRecorder[A, TA, O]{mock}
+func NewMockTagConverter(ctrl *gomock.Controller) *MockTagConverter {
+	mock := &MockTagConverter{ctrl: ctrl}
+	mock.recorder = &MockTagConverterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockTagConverter[A, TA, O]) EXPECT() *MockTagConverterMockRecorder[A, TA, O] {
+func (m *MockTagConverter) EXPECT() *MockTagConverterMockRecorder {
 	return m.recorder
 }
 
 // ToTag mocks base method.
-func (m *MockTagConverter[A, TA, O]) ToTag(ctx context.Context, from O) (*model.TagNode, error) {
+func (m *MockTagConverter) ToTag(ctx context.Context, from dto.TagOutDto) (*model.TagNode, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToTag", ctx, from)
 	ret0, _ := ret[0].(*model.TagNode)
@@ -126,36 +130,37 @@ func (m *MockTagConverter[A, TA, O]) ToTag(ctx context.Context, from O) (*model.
 }
 
 // ToTag indicates an expected call of ToTag.
-func (mr *MockTagConverterMockRecorder[A, TA, O]) ToTag(ctx, from any) *gomock.Call {
+func (mr *MockTagConverterMockRecorder) ToTag(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToTag", reflect.TypeOf((*MockTagConverter[A, TA, O])(nil).ToTag), ctx, from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToTag", reflect.TypeOf((*MockTagConverter)(nil).ToTag), ctx, from)
 }
 
 // MockTagsConverter is a mock of TagsConverter interface.
-type MockTagsConverter[A dto.Article, TA dto.TagArticle[A], O dto.TagsOutDto[A, TA]] struct {
+type MockTagsConverter struct {
 	ctrl     *gomock.Controller
-	recorder *MockTagsConverterMockRecorder[A, TA, O]
+	recorder *MockTagsConverterMockRecorder
+	isgomock struct{}
 }
 
 // MockTagsConverterMockRecorder is the mock recorder for MockTagsConverter.
-type MockTagsConverterMockRecorder[A dto.Article, TA dto.TagArticle[A], O dto.TagsOutDto[A, TA]] struct {
-	mock *MockTagsConverter[A, TA, O]
+type MockTagsConverterMockRecorder struct {
+	mock *MockTagsConverter
 }
 
 // NewMockTagsConverter creates a new mock instance.
-func NewMockTagsConverter[A dto.Article, TA dto.TagArticle[A], O dto.TagsOutDto[A, TA]](ctrl *gomock.Controller) *MockTagsConverter[A, TA, O] {
-	mock := &MockTagsConverter[A, TA, O]{ctrl: ctrl}
-	mock.recorder = &MockTagsConverterMockRecorder[A, TA, O]{mock}
+func NewMockTagsConverter(ctrl *gomock.Controller) *MockTagsConverter {
+	mock := &MockTagsConverter{ctrl: ctrl}
+	mock.recorder = &MockTagsConverterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockTagsConverter[A, TA, O]) EXPECT() *MockTagsConverterMockRecorder[A, TA, O] {
+func (m *MockTagsConverter) EXPECT() *MockTagsConverterMockRecorder {
 	return m.recorder
 }
 
 // ToTags mocks base method.
-func (m *MockTagsConverter[A, TA, O]) ToTags(ctx context.Context, from O) (*model.TagConnection, error) {
+func (m *MockTagsConverter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagConnection, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToTags", ctx, from)
 	ret0, _ := ret[0].(*model.TagConnection)
@@ -164,7 +169,7 @@ func (m *MockTagsConverter[A, TA, O]) ToTags(ctx context.Context, from O) (*mode
 }
 
 // ToTags indicates an expected call of ToTags.
-func (mr *MockTagsConverterMockRecorder[A, TA, O]) ToTags(ctx, from any) *gomock.Call {
+func (mr *MockTagsConverterMockRecorder) ToTags(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToTags", reflect.TypeOf((*MockTagsConverter[A, TA, O])(nil).ToTags), ctx, from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToTags", reflect.TypeOf((*MockTagsConverter)(nil).ToTags), ctx, from)
 }

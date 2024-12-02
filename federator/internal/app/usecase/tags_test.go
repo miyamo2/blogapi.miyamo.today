@@ -2,14 +2,14 @@ package usecase
 
 import (
 	"context"
+	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
 	"reflect"
 	"testing"
 
 	"github.com/cockroachdb/errors"
 	blogapictx "github.com/miyamo2/blogapi.miyamo.today/core/context"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	mpb "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/protogen/tag/client/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/client/pb"
+	mgrpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/infra/grpc/tag"
 	"go.uber.org/mock/gomock"
 )
 
@@ -23,7 +23,7 @@ func TestTags_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) pb.TagServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) grpc.TagServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -41,16 +41,16 @@ func TestTags_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetNextTagResponse{
-						Tags: []*pb.Tag{
+					Return(&grpc.GetNextTagResponse{
+						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
 								Name: "Tag1",
-								Articles: []*pb.Article{
+								Articles: []*grpc.Article{
 									{
 										Id:           "Article1",
 										Title:        "Article1",
@@ -94,11 +94,11 @@ func TestTags_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetNextTagResponse{}, errTestTags).
+					Return(&grpc.GetNextTagResponse{}, errTestTags).
 					Times(1)
 				return aSvcClt
 			},
@@ -116,16 +116,16 @@ func TestTags_Execute(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/prev_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetPrevTagResponse{
-						Tags: []*pb.Tag{
+					Return(&grpc.GetPrevTagResponse{
+						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
 								Name: "Tag1",
-								Articles: []*pb.Article{
+								Articles: []*grpc.Article{
 									{
 										Id:           "Article1",
 										Title:        "Article1",
@@ -169,11 +169,11 @@ func TestTags_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetPrevTagResponse{}, errTestTags).
+					Return(&grpc.GetPrevTagResponse{}, errTestTags).
 					Times(1)
 				return aSvcClt
 			},
@@ -191,16 +191,16 @@ func TestTags_Execute(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/execute": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetAllTagsResponse{
-						Tags: []*pb.Tag{
+					Return(&grpc.GetAllTagsResponse{
+						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
 								Name: "Tag1",
-								Articles: []*pb.Article{
+								Articles: []*grpc.Article{
 									{
 										Id:           "Article1",
 										Title:        "Article1",
@@ -239,11 +239,11 @@ func TestTags_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/execute_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetAllTagsResponse{}, errTestTags).
+					Return(&grpc.GetAllTagsResponse{}, errTestTags).
 					Times(1)
 				return aSvcClt
 			},
@@ -295,7 +295,7 @@ func TestTags_executeNextPaging(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) pb.TagServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) grpc.TagServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -313,16 +313,16 @@ func TestTags_executeNextPaging(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetNextTagResponse{
-						Tags: []*pb.Tag{
+					Return(&grpc.GetNextTagResponse{
+						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
 								Name: "Tag1",
-								Articles: []*pb.Article{
+								Articles: []*grpc.Article{
 									{
 										Id:           "Article1",
 										Title:        "Article1",
@@ -366,11 +366,11 @@ func TestTags_executeNextPaging(t *testing.T) {
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetNextTagResponse{}, errTestTags).
+					Return(&grpc.GetNextTagResponse{}, errTestTags).
 					Times(1)
 				return aSvcClt
 			},
@@ -425,7 +425,7 @@ func TestTags_executePrevPaging(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) pb.TagServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) grpc.TagServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -443,16 +443,16 @@ func TestTags_executePrevPaging(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/prev_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetPrevTagResponse{
-						Tags: []*pb.Tag{
+					Return(&grpc.GetPrevTagResponse{
+						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
 								Name: "Tag1",
-								Articles: []*pb.Article{
+								Articles: []*grpc.Article{
 									{
 										Id:           "Article1",
 										Title:        "Article1",
@@ -496,11 +496,11 @@ func TestTags_executePrevPaging(t *testing.T) {
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetPrevTagResponse{}, errTestTags).
+					Return(&grpc.GetPrevTagResponse{}, errTestTags).
 					Times(1)
 				return aSvcClt
 			},
@@ -554,7 +554,7 @@ func TestTags_execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) pb.TagServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) grpc.TagServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -572,16 +572,16 @@ func TestTags_execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/all_articles": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetAllTagsResponse{
-						Tags: []*pb.Tag{
+					Return(&grpc.GetAllTagsResponse{
+						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
 								Name: "Tag1",
-								Articles: []*pb.Article{
+								Articles: []*grpc.Article{
 									{
 										Id:           "Article1",
 										Title:        "Article1",
@@ -619,11 +619,11 @@ func TestTags_execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/all_articles_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) pb.TagServiceClient {
-				aSvcClt := mpb.NewMockTagServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
+				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
 				aSvcClt.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
-					Return(&pb.GetAllTagsResponse{}, errTestTags).
+					Return(&grpc.GetAllTagsResponse{}, errTestTags).
 					Times(1)
 				return aSvcClt
 			},
