@@ -22,7 +22,7 @@ import (
 // GetPrev is an implementation of usecase.GetPrev
 type GetPrev struct {
 	txmn db.TransactionManager
-	qs   iquery.TagService[model.Article, *model.Tag]
+	qs   iquery.TagService
 }
 
 func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPrevOutDto, error) {
@@ -94,6 +94,6 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 }
 
 // NewGetPrev is constructor of GetPrev
-func NewGetPrev(txmn db.TransactionManager, qs iquery.TagService[model.Article, *model.Tag]) *GetPrev {
+func NewGetPrev(txmn db.TransactionManager, qs iquery.TagService) *GetPrev {
 	return &GetPrev{txmn: txmn, qs: qs}
 }

@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server/pb"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
+	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
@@ -16,7 +16,7 @@ func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 		from func() *dto.GetByIdOutDto
 	}
 	type want struct {
-		result *pb.GetTagByIdResponse
+		result *grpc.GetTagByIdResponse
 		ok     bool
 	}
 	type testCase struct {
@@ -44,11 +44,11 @@ func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetTagByIdResponse{
-					Tag: &pb.Tag{
+				result: &grpc.GetTagByIdResponse{
+					Tag: &grpc.Tag{
 						Id:   "tag1",
 						Name: "1",
-						Articles: []*pb.Article{
+						Articles: []*grpc.Article{
 							{
 								Id:           "1",
 								Title:        "happy_path",
@@ -83,7 +83,7 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 		from func() *dto.GetAllOutDto
 	}
 	type want struct {
-		result *pb.GetAllTagsResponse
+		result *grpc.GetAllTagsResponse
 		ok     bool
 	}
 	type testCase struct {
@@ -126,12 +126,12 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetAllTagsResponse{
-					Tags: []*pb.Tag{
+				result: &grpc.GetAllTagsResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
 							Name: "1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path",
@@ -144,7 +144,7 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 						{
 							Id:   "tag2",
 							Name: "2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path",
@@ -180,7 +180,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 		from func() *dto.GetNextOutDto
 	}
 	type want struct {
-		result *pb.GetNextTagResponse
+		result *grpc.GetNextTagResponse
 		ok     bool
 	}
 	type testCase struct {
@@ -224,12 +224,12 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				result: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
 							Name: "1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/still_exists",
@@ -242,7 +242,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 						{
 							Id:   "tag2",
 							Name: "2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/still_exists",
@@ -293,12 +293,12 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetNextTagResponse{
-					Tags: []*pb.Tag{
+				result: &grpc.GetNextTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
 							Name: "1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/not_anymore",
@@ -311,7 +311,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 						{
 							Id:   "tag2",
 							Name: "2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/not_anymore",
@@ -347,7 +347,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 		from func() *dto.GetPrevOutDto
 	}
 	type want struct {
-		result *pb.GetPrevTagResponse
+		result *grpc.GetPrevTagResponse
 		ok     bool
 	}
 	type testCase struct {
@@ -391,12 +391,12 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				result: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
 							Name: "1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/still_exists",
@@ -409,7 +409,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 						{
 							Id:   "tag2",
 							Name: "2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/still_exists",
@@ -460,12 +460,12 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &pb.GetPrevTagResponse{
-					Tags: []*pb.Tag{
+				result: &grpc.GetPrevTagResponse{
+					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
 							Name: "1",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/not_anymore",
@@ -478,7 +478,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 						{
 							Id:   "tag2",
 							Name: "2",
-							Articles: []*pb.Article{
+							Articles: []*grpc.Article{
 								{
 									Id:           "1",
 									Title:        "happy_path/not_anymore",

@@ -5,6 +5,7 @@
 //
 //	mockgen -source=tag_service.go -destination=../../../mock/app/usecase/query/mock_tag_service.go -package=mock_query
 //
+
 // Package mock_query is a generated GoMock package.
 package mock_query
 
@@ -13,35 +14,36 @@ import (
 	reflect "reflect"
 
 	db "github.com/miyamo2/blogapi.miyamo.today/core/db"
-	model "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/query/model"
+	model "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
 	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTagService is a mock of TagService interface.
-type MockTagService[A model.Article, T model.Tag[A]] struct {
+type MockTagService struct {
 	ctrl     *gomock.Controller
-	recorder *MockTagServiceMockRecorder[A, T]
+	recorder *MockTagServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockTagServiceMockRecorder is the mock recorder for MockTagService.
-type MockTagServiceMockRecorder[A model.Article, T model.Tag[A]] struct {
-	mock *MockTagService[A, T]
+type MockTagServiceMockRecorder struct {
+	mock *MockTagService
 }
 
 // NewMockTagService creates a new mock instance.
-func NewMockTagService[A model.Article, T model.Tag[A]](ctrl *gomock.Controller) *MockTagService[A, T] {
-	mock := &MockTagService[A, T]{ctrl: ctrl}
-	mock.recorder = &MockTagServiceMockRecorder[A, T]{mock}
+func NewMockTagService(ctrl *gomock.Controller) *MockTagService {
+	mock := &MockTagService{ctrl: ctrl}
+	mock.recorder = &MockTagServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockTagService[A, T]) EXPECT() *MockTagServiceMockRecorder[A, T] {
+func (m *MockTagService) EXPECT() *MockTagServiceMockRecorder {
 	return m.recorder
 }
 
 // GetAll mocks base method.
-func (m *MockTagService[A, T]) GetAll(ctx context.Context, out *db.MultipleStatementResult[T], paginationOption ...db.PaginationOption) db.Statement {
+func (m *MockTagService) GetAll(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, out}
 	for _, a := range paginationOption {
@@ -53,14 +55,14 @@ func (m *MockTagService[A, T]) GetAll(ctx context.Context, out *db.MultipleState
 }
 
 // GetAll indicates an expected call of GetAll.
-func (mr *MockTagServiceMockRecorder[A, T]) GetAll(ctx, out any, paginationOption ...any) *gomock.Call {
+func (mr *MockTagServiceMockRecorder) GetAll(ctx, out any, paginationOption ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, out}, paginationOption...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockTagService[A, T])(nil).GetAll), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAll", reflect.TypeOf((*MockTagService)(nil).GetAll), varargs...)
 }
 
 // GetById mocks base method.
-func (m *MockTagService[A, T]) GetById(ctx context.Context, id string, out *db.SingleStatementResult[T]) db.Statement {
+func (m *MockTagService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetById", ctx, id, out)
 	ret0, _ := ret[0].(db.Statement)
@@ -68,7 +70,7 @@ func (m *MockTagService[A, T]) GetById(ctx context.Context, id string, out *db.S
 }
 
 // GetById indicates an expected call of GetById.
-func (mr *MockTagServiceMockRecorder[A, T]) GetById(ctx, id, out any) *gomock.Call {
+func (mr *MockTagServiceMockRecorder) GetById(ctx, id, out any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockTagService[A, T])(nil).GetById), ctx, id, out)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockTagService)(nil).GetById), ctx, id, out)
 }

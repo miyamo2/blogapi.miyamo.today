@@ -22,7 +22,7 @@ import (
 // GetAll is an implementation of usecase.GetAll
 type GetAll struct {
 	txmn db.TransactionManager
-	qs   iquery.TagService[model.Article, *model.Tag]
+	qs   iquery.TagService
 }
 
 func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
@@ -90,6 +90,6 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 }
 
 // NewGetAll is constructor of GetAll
-func NewGetAll(txmn db.TransactionManager, qs iquery.TagService[model.Article, *model.Tag]) *GetAll {
+func NewGetAll(txmn db.TransactionManager, qs iquery.TagService) *GetAll {
 	return &GetAll{txmn: txmn, qs: qs}
 }

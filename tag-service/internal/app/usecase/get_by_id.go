@@ -22,7 +22,7 @@ import (
 // GetById is an implementation of usecase.GetById
 type GetById struct {
 	txmn db.TransactionManager
-	qs   iquery.TagService[model.Article, *model.Tag]
+	qs   iquery.TagService
 }
 
 func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByIdOutDto, error) {
@@ -102,6 +102,6 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 }
 
 // NewGetById is constructor of GetById
-func NewGetById(txmn db.TransactionManager, qs iquery.TagService[model.Article, *model.Tag]) *GetById {
+func NewGetById(txmn db.TransactionManager, qs iquery.TagService) *GetById {
 	return &GetById{txmn: txmn, qs: qs}
 }

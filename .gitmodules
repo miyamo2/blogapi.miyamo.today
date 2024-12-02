@@ -7,3 +7,6 @@
 [submodule "article-service/.proto"]
 	path = article-service/.proto
 	url = https://github.com/miyamo2/proto.miyamo.today
+[submodule "tag-service/.proto"]
+	path = tag-service/.proto
+	url = https://github.com/miyamo2/proto.miyamo.today

@@ -2,32 +2,23 @@ package provider
 
 import (
 	"database/sql"
+	"github.com/google/wire"
 	"os"
 
-	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
-	"go.uber.org/fx"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-type Dsn string
+func GormDialector() *gorm.Dialector {
+	db, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN"))
+	if err != nil {
+		panic(err)
+	}
+	dialector := postgres.New(postgres.Config{
+		Conn: db,
+	})
+	return &dialector
+}
 
-var Gorm = fx.Options(
-	fx.Provide(func() Dsn {
-		return Dsn(os.Getenv("COCKROACHDB_DSN"))
-	}),
-	fx.Provide(func(dsn Dsn) *gorm.Dialector {
-		db, err := sql.Open("nrpgx", string(dsn))
-		if err != nil {
-			panic(err)
-		}
-		dialector := postgres.New(postgres.Config{
-			Conn: db,
-		})
-		return &dialector
-	}),
-	fx.Invoke(func(dialector *gorm.Dialector) {
-		gwrapper.InitializeDialector(dialector)
-	}),
-)
+var GormSet = wire.NewSet(GormDialector)

@@ -1,35 +1,21 @@
 package provider
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
+	"github.com/google/wire"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/presenter"
 	impl "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/presenter/pb"
-	"go.uber.org/fx"
 )
 
 // compatibility check
-var _ presenter.ToGetByIdConverter[dto.Article, *dto.GetByIdOutDto] = (*impl.Converter)(nil)
-var _ presenter.ToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto] = (*impl.Converter)(nil)
-var _ presenter.ToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto] = (*impl.Converter)(nil)
-var _ presenter.ToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto] = (*impl.Converter)(nil)
+var _ presenter.ToGetNextConverter = (*impl.Converter)(nil)
+var _ presenter.ToGetAllConverter = (*impl.Converter)(nil)
+var _ presenter.ToGetByIdConverter = (*impl.Converter)(nil)
+var _ presenter.ToGetPrevConverter = (*impl.Converter)(nil)
 
-var Presenter = fx.Options(
-	fx.Provide(
-		fx.Annotate(
-			impl.NewConverter,
-			fx.As(new(presenter.ToGetByIdConverter[dto.Article, *dto.GetByIdOutDto])),
-		),
-		fx.Annotate(
-			impl.NewConverter,
-			fx.As(new(presenter.ToGetAllConverter[dto.Article, dto.Tag, *dto.GetAllOutDto])),
-		),
-		fx.Annotate(
-			impl.NewConverter,
-			fx.As(new(presenter.ToGetNextConverter[dto.Article, dto.Tag, *dto.GetNextOutDto])),
-		),
-		fx.Annotate(
-			impl.NewConverter,
-			fx.As(new(presenter.ToGetPrevConverter[dto.Article, dto.Tag, *dto.GetPrevOutDto])),
-		),
-	),
+var PresenterSet = wire.NewSet(
+	impl.NewConverter,
+	wire.Bind(new(presenter.ToGetNextConverter), new(*impl.Converter)),
+	wire.Bind(new(presenter.ToGetAllConverter), new(*impl.Converter)),
+	wire.Bind(new(presenter.ToGetByIdConverter), new(*impl.Converter)),
+	wire.Bind(new(presenter.ToGetPrevConverter), new(*impl.Converter)),
 )

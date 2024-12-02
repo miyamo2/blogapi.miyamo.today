@@ -5,6 +5,7 @@
 //
 //	mockgen -source=converter.go -destination=../../../../mock/if-adapter/controller/pb/presenter/mock_converter.go -package=presenter
 //
+
 // Package presenter is a generated GoMock package.
 package presenter
 
@@ -12,159 +13,163 @@ import (
 	context "context"
 	reflect "reflect"
 
-	usecase "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
-	pb "github.com/miyamo2/blogapi.miyamo.today/protogen/tag/server/pb"
+	dto "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
+	grpc "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	gomock "go.uber.org/mock/gomock"
 )
 
 // MockToGetByIdConverter is a mock of ToGetByIdConverter interface.
-type MockToGetByIdConverter[A usecase.Article, T usecase.Tag[A]] struct {
+type MockToGetByIdConverter struct {
 	ctrl     *gomock.Controller
-	recorder *MockToGetByIdConverterMockRecorder[A, T]
+	recorder *MockToGetByIdConverterMockRecorder
+	isgomock struct{}
 }
 
 // MockToGetByIdConverterMockRecorder is the mock recorder for MockToGetByIdConverter.
-type MockToGetByIdConverterMockRecorder[A usecase.Article, T usecase.Tag[A]] struct {
-	mock *MockToGetByIdConverter[A, T]
+type MockToGetByIdConverterMockRecorder struct {
+	mock *MockToGetByIdConverter
 }
 
 // NewMockToGetByIdConverter creates a new mock instance.
-func NewMockToGetByIdConverter[A usecase.Article, T usecase.Tag[A]](ctrl *gomock.Controller) *MockToGetByIdConverter[A, T] {
-	mock := &MockToGetByIdConverter[A, T]{ctrl: ctrl}
-	mock.recorder = &MockToGetByIdConverterMockRecorder[A, T]{mock}
+func NewMockToGetByIdConverter(ctrl *gomock.Controller) *MockToGetByIdConverter {
+	mock := &MockToGetByIdConverter{ctrl: ctrl}
+	mock.recorder = &MockToGetByIdConverterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockToGetByIdConverter[A, T]) EXPECT() *MockToGetByIdConverterMockRecorder[A, T] {
+func (m *MockToGetByIdConverter) EXPECT() *MockToGetByIdConverterMockRecorder {
 	return m.recorder
 }
 
 // ToGetByIdTagResponse mocks base method.
-func (m *MockToGetByIdConverter[A, T]) ToGetByIdTagResponse(ctx context.Context, from T) (*pb.GetTagByIdResponse, bool) {
+func (m *MockToGetByIdConverter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOutDto) (*grpc.GetTagByIdResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetByIdTagResponse", ctx, from)
-	ret0, _ := ret[0].(*pb.GetTagByIdResponse)
+	ret0, _ := ret[0].(*grpc.GetTagByIdResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // ToGetByIdTagResponse indicates an expected call of ToGetByIdTagResponse.
-func (mr *MockToGetByIdConverterMockRecorder[A, T]) ToGetByIdTagResponse(ctx, from any) *gomock.Call {
+func (mr *MockToGetByIdConverterMockRecorder) ToGetByIdTagResponse(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetByIdTagResponse", reflect.TypeOf((*MockToGetByIdConverter[A, T])(nil).ToGetByIdTagResponse), ctx, from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetByIdTagResponse", reflect.TypeOf((*MockToGetByIdConverter)(nil).ToGetByIdTagResponse), ctx, from)
 }
 
 // MockToGetAllConverter is a mock of ToGetAllConverter interface.
-type MockToGetAllConverter[A usecase.Article, T usecase.Tag[A], O usecase.GetAllOutDto[A, T]] struct {
+type MockToGetAllConverter struct {
 	ctrl     *gomock.Controller
-	recorder *MockToGetAllConverterMockRecorder[A, T, O]
+	recorder *MockToGetAllConverterMockRecorder
+	isgomock struct{}
 }
 
 // MockToGetAllConverterMockRecorder is the mock recorder for MockToGetAllConverter.
-type MockToGetAllConverterMockRecorder[A usecase.Article, T usecase.Tag[A], O usecase.GetAllOutDto[A, T]] struct {
-	mock *MockToGetAllConverter[A, T, O]
+type MockToGetAllConverterMockRecorder struct {
+	mock *MockToGetAllConverter
 }
 
 // NewMockToGetAllConverter creates a new mock instance.
-func NewMockToGetAllConverter[A usecase.Article, T usecase.Tag[A], O usecase.GetAllOutDto[A, T]](ctrl *gomock.Controller) *MockToGetAllConverter[A, T, O] {
-	mock := &MockToGetAllConverter[A, T, O]{ctrl: ctrl}
-	mock.recorder = &MockToGetAllConverterMockRecorder[A, T, O]{mock}
+func NewMockToGetAllConverter(ctrl *gomock.Controller) *MockToGetAllConverter {
+	mock := &MockToGetAllConverter{ctrl: ctrl}
+	mock.recorder = &MockToGetAllConverterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockToGetAllConverter[A, T, O]) EXPECT() *MockToGetAllConverterMockRecorder[A, T, O] {
+func (m *MockToGetAllConverter) EXPECT() *MockToGetAllConverterMockRecorder {
 	return m.recorder
 }
 
 // ToGetAllTagsResponse mocks base method.
-func (m *MockToGetAllConverter[A, T, O]) ToGetAllTagsResponse(ctx context.Context, from O) (*pb.GetAllTagsResponse, bool) {
+func (m *MockToGetAllConverter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOutDto) (*grpc.GetAllTagsResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetAllTagsResponse", ctx, from)
-	ret0, _ := ret[0].(*pb.GetAllTagsResponse)
+	ret0, _ := ret[0].(*grpc.GetAllTagsResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // ToGetAllTagsResponse indicates an expected call of ToGetAllTagsResponse.
-func (mr *MockToGetAllConverterMockRecorder[A, T, O]) ToGetAllTagsResponse(ctx, from any) *gomock.Call {
+func (mr *MockToGetAllConverterMockRecorder) ToGetAllTagsResponse(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetAllTagsResponse", reflect.TypeOf((*MockToGetAllConverter[A, T, O])(nil).ToGetAllTagsResponse), ctx, from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetAllTagsResponse", reflect.TypeOf((*MockToGetAllConverter)(nil).ToGetAllTagsResponse), ctx, from)
 }
 
 // MockToGetNextConverter is a mock of ToGetNextConverter interface.
-type MockToGetNextConverter[A usecase.Article, T usecase.Tag[A], O usecase.GetNextOutDto[A, T]] struct {
+type MockToGetNextConverter struct {
 	ctrl     *gomock.Controller
-	recorder *MockToGetNextConverterMockRecorder[A, T, O]
+	recorder *MockToGetNextConverterMockRecorder
+	isgomock struct{}
 }
 
 // MockToGetNextConverterMockRecorder is the mock recorder for MockToGetNextConverter.
-type MockToGetNextConverterMockRecorder[A usecase.Article, T usecase.Tag[A], O usecase.GetNextOutDto[A, T]] struct {
-	mock *MockToGetNextConverter[A, T, O]
+type MockToGetNextConverterMockRecorder struct {
+	mock *MockToGetNextConverter
 }
 
 // NewMockToGetNextConverter creates a new mock instance.
-func NewMockToGetNextConverter[A usecase.Article, T usecase.Tag[A], O usecase.GetNextOutDto[A, T]](ctrl *gomock.Controller) *MockToGetNextConverter[A, T, O] {
-	mock := &MockToGetNextConverter[A, T, O]{ctrl: ctrl}
-	mock.recorder = &MockToGetNextConverterMockRecorder[A, T, O]{mock}
+func NewMockToGetNextConverter(ctrl *gomock.Controller) *MockToGetNextConverter {
+	mock := &MockToGetNextConverter{ctrl: ctrl}
+	mock.recorder = &MockToGetNextConverterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockToGetNextConverter[A, T, O]) EXPECT() *MockToGetNextConverterMockRecorder[A, T, O] {
+func (m *MockToGetNextConverter) EXPECT() *MockToGetNextConverterMockRecorder {
 	return m.recorder
 }
 
 // ToGetNextTagsResponse mocks base method.
-func (m *MockToGetNextConverter[A, T, O]) ToGetNextTagsResponse(ctx context.Context, from O) (*pb.GetNextTagResponse, bool) {
+func (m *MockToGetNextConverter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextOutDto) (*grpc.GetNextTagResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetNextTagsResponse", ctx, from)
-	ret0, _ := ret[0].(*pb.GetNextTagResponse)
+	ret0, _ := ret[0].(*grpc.GetNextTagResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // ToGetNextTagsResponse indicates an expected call of ToGetNextTagsResponse.
-func (mr *MockToGetNextConverterMockRecorder[A, T, O]) ToGetNextTagsResponse(ctx, from any) *gomock.Call {
+func (mr *MockToGetNextConverterMockRecorder) ToGetNextTagsResponse(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetNextTagsResponse", reflect.TypeOf((*MockToGetNextConverter[A, T, O])(nil).ToGetNextTagsResponse), ctx, from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetNextTagsResponse", reflect.TypeOf((*MockToGetNextConverter)(nil).ToGetNextTagsResponse), ctx, from)
 }
 
 // MockToGetPrevConverter is a mock of ToGetPrevConverter interface.
-type MockToGetPrevConverter[A usecase.Article, T usecase.Tag[A], O usecase.GetPrevOutDto[A, T]] struct {
+type MockToGetPrevConverter struct {
 	ctrl     *gomock.Controller
-	recorder *MockToGetPrevConverterMockRecorder[A, T, O]
+	recorder *MockToGetPrevConverterMockRecorder
+	isgomock struct{}
 }
 
 // MockToGetPrevConverterMockRecorder is the mock recorder for MockToGetPrevConverter.
-type MockToGetPrevConverterMockRecorder[A usecase.Article, T usecase.Tag[A], O usecase.GetPrevOutDto[A, T]] struct {
-	mock *MockToGetPrevConverter[A, T, O]
+type MockToGetPrevConverterMockRecorder struct {
+	mock *MockToGetPrevConverter
 }
 
 // NewMockToGetPrevConverter creates a new mock instance.
-func NewMockToGetPrevConverter[A usecase.Article, T usecase.Tag[A], O usecase.GetPrevOutDto[A, T]](ctrl *gomock.Controller) *MockToGetPrevConverter[A, T, O] {
-	mock := &MockToGetPrevConverter[A, T, O]{ctrl: ctrl}
-	mock.recorder = &MockToGetPrevConverterMockRecorder[A, T, O]{mock}
+func NewMockToGetPrevConverter(ctrl *gomock.Controller) *MockToGetPrevConverter {
+	mock := &MockToGetPrevConverter{ctrl: ctrl}
+	mock.recorder = &MockToGetPrevConverterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockToGetPrevConverter[A, T, O]) EXPECT() *MockToGetPrevConverterMockRecorder[A, T, O] {
+func (m *MockToGetPrevConverter) EXPECT() *MockToGetPrevConverterMockRecorder {
 	return m.recorder
 }
 
 // ToGetPrevTagsResponse mocks base method.
-func (m *MockToGetPrevConverter[A, T, O]) ToGetPrevTagsResponse(ctx context.Context, from O) (*pb.GetPrevTagResponse, bool) {
+func (m *MockToGetPrevConverter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevOutDto) (*grpc.GetPrevTagResponse, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetPrevTagsResponse", ctx, from)
-	ret0, _ := ret[0].(*pb.GetPrevTagResponse)
+	ret0, _ := ret[0].(*grpc.GetPrevTagResponse)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // ToGetPrevTagsResponse indicates an expected call of ToGetPrevTagsResponse.
-func (mr *MockToGetPrevConverterMockRecorder[A, T, O]) ToGetPrevTagsResponse(ctx, from any) *gomock.Call {
+func (mr *MockToGetPrevConverterMockRecorder) ToGetPrevTagsResponse(ctx, from any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetPrevTagsResponse", reflect.TypeOf((*MockToGetPrevConverter[A, T, O])(nil).ToGetPrevTagsResponse), ctx, from)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToGetPrevTagsResponse", reflect.TypeOf((*MockToGetPrevConverter)(nil).ToGetPrevTagsResponse), ctx, from)
 }
