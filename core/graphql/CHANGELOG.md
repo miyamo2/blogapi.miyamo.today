@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 - 2024-12-03
+
+### ✨ New Feature
+
+- Support Marshal/Unmarshal of `synchro.Time[tz.UTC]`
+
 ## 0.2.5 - 2024-05-18
 
 ⬆️ `github.com/99designs/gqlgen` to v0.17.46
