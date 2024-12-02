@@ -21,6 +21,7 @@ import (
 type MockStatement struct {
 	ctrl     *gomock.Controller
 	recorder *MockStatementMockRecorder
+	isgomock struct{}
 }
 
 // MockStatementMockRecorder is the mock recorder for MockStatement.
@@ -77,6 +78,7 @@ func (mr *MockStatementMockRecorder) Result() *gomock.Call {
 type MockStatementResult struct {
 	ctrl     *gomock.Controller
 	recorder *MockStatementResultMockRecorder
+	isgomock struct{}
 }
 
 // MockStatementResultMockRecorder is the mock recorder for MockStatementResult.

@@ -21,6 +21,7 @@ import (
 type MockTransaction struct {
 	ctrl     *gomock.Controller
 	recorder *MockTransactionMockRecorder
+	isgomock struct{}
 }
 
 // MockTransactionMockRecorder is the mock recorder for MockTransaction.
@@ -100,6 +101,7 @@ func (mr *MockTransactionMockRecorder) SubscribeError() *gomock.Call {
 type MockTransactionManager struct {
 	ctrl     *gomock.Controller
 	recorder *MockTransactionManagerMockRecorder
+	isgomock struct{}
 }
 
 // MockTransactionManagerMockRecorder is the mock recorder for MockTransactionManager.
