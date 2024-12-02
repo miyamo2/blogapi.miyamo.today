@@ -7,6 +7,7 @@ import (
 	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"log/slog"
 	"os"
+	"os/signal"
 
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc/health"
@@ -34,9 +35,22 @@ func main() {
 	hSrv := health.NewServer()
 	hpb.RegisterHealthServer(server, hSrv)
 	hSrv.SetServingStatus(os.Getenv("SERVICE_NAME"), hpb.HealthCheckResponse_SERVING)
+
+	errChan := make(chan error, 1)
 	go func() {
 		if err := server.Serve(listener); err != nil {
-			slog.Info(err.Error())
+			errChan <- err
+			return
 		}
 	}()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	select {
+	case err := <-errChan:
+		slog.Error(err.Error())
+	case <-quit:
+		slog.Info("stopping gRPC server...")
+		server.GracefulStop()
+	}
 }
