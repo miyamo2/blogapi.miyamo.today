@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-
-	"github.com/labstack/echo/v4"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/configs/di"
-	"go.uber.org/fx"
+	"os/signal"
 
 	"github.com/joho/godotenv"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/configs/di"
 )
 
 const defaultPort = "8080"
@@ -25,26 +23,26 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
-	fx.New(
-		di.Container,
-		fx.Invoke(
-			func(lc fx.Lifecycle, e *echo.Echo) {
-				lc.Append(fx.Hook{
-					OnStart: func(ctx context.Context) error {
-						go func() {
-							slog.Info(e.Start(fmt.Sprintf(":%s", port)).Error())
-						}()
-						return nil
-					},
-					OnStop: func(ctx context.Context) error {
-						err := e.Shutdown(ctx)
-						if err != nil {
-							panic(err)
-						}
-						slog.InfoContext(ctx, "Stopped Echo server")
-						return nil
-					},
-				})
-			}),
-	).Run()
+
+	dep := di.GetDependencies()
+	e := dep.Echo
+
+	errChan := make(chan error, 1)
+	go func() {
+		slog.Info("start graphql server.", slog.String("port", port))
+		if err := e.Start(fmt.Sprintf(":%s", port)); err != nil {
+			errChan <- err
+			return
+		}
+	}()
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	select {
+	case err := <-errChan:
+		slog.Error(err.Error())
+	case <-quit:
+		slog.Info("stopping graphql server...")
+		e.Shutdown(context.Background())
+	}
 }

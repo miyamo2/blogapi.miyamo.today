@@ -6,19 +6,19 @@ import (
 
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
+	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/tag/client/pb"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 // Tag is a use-case of getting a tag by id.
 type Tag struct {
 	// tSvcClt is a client of article service.
-	tSvcClt pb.TagServiceClient
+	tSvcClt grpc.TagServiceClient
 }
 
 // Execute gets a tag by id.
@@ -36,7 +36,7 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 		slog.Group("parameters", slog.Any("in", in)))
 	response, err := u.tSvcClt.GetTagById(
 		newrelic.NewContext(ctx, nrtx),
-		&pb.GetTagByIdRequest{
+		&grpc.GetTagByIdRequest{
 			Id: in.Id(),
 		})
 	if err != nil {
@@ -74,7 +74,7 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 }
 
 // NewTag is a constructor of Tag.
-func NewTag(tSvcClt pb.TagServiceClient) *Tag {
+func NewTag(tSvcClt grpc.TagServiceClient) *Tag {
 	return &Tag{
 		tSvcClt: tSvcClt,
 	}

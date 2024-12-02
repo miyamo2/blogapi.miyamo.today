@@ -10,3 +10,6 @@
 [submodule "tag-service/.proto"]
 	path = tag-service/.proto
 	url = https://github.com/miyamo2/proto.miyamo.today
+[submodule "federator/.proto"]
+	path = federator/.proto
+	url = https://github.com/miyamo2/proto.miyamo.today

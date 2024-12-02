@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	"log/slog"
 
 	"github.com/miyamo2/altnrslog"
@@ -11,14 +12,13 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/protogen/article/client/pb"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 // Article is a use-case of getting an article by id.
 type Article struct {
 	// aSvcClt is a client of article service.
-	aSvcClt pb.ArticleServiceClient
+	aSvcClt grpc.ArticleServiceClient
 }
 
 // Execute gets an article by id.
@@ -36,7 +36,7 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 		slog.Group("parameters", slog.Any("in", in)))
 	response, err := u.aSvcClt.GetArticleById(
 		newrelic.NewContext(ctx, nrtx),
-		&pb.GetArticleByIdRequest{
+		&grpc.GetArticleByIdRequest{
 			Id: in.Id(),
 		})
 	if err != nil {
@@ -74,7 +74,7 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 }
 
 // NewArticle is a constructor of Article.
-func NewArticle(aSvcClt pb.ArticleServiceClient) *Article {
+func NewArticle(aSvcClt grpc.ArticleServiceClient) *Article {
 	return &Article{
 		aSvcClt: aSvcClt,
 	}

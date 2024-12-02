@@ -5,6 +5,7 @@
 //
 //	mockgen -source=tag.go -destination=../../../../../mock/if-adapter/controller/graphql/resolver/usecase/mock_tag.go -package=usecase
 //
+
 // Package usecase is a generated GoMock package.
 package usecase
 
@@ -12,82 +13,84 @@ import (
 	context "context"
 	reflect "reflect"
 
-	dto "github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase/dto"
+	dto "github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTag is a mock of Tag interface.
-type MockTag[I dto.TagInDto, A dto.Article, TA dto.TagArticle[A], O dto.TagOutDto[A, TA]] struct {
+type MockTag struct {
 	ctrl     *gomock.Controller
-	recorder *MockTagMockRecorder[I, A, TA, O]
+	recorder *MockTagMockRecorder
+	isgomock struct{}
 }
 
 // MockTagMockRecorder is the mock recorder for MockTag.
-type MockTagMockRecorder[I dto.TagInDto, A dto.Article, TA dto.TagArticle[A], O dto.TagOutDto[A, TA]] struct {
-	mock *MockTag[I, A, TA, O]
+type MockTagMockRecorder struct {
+	mock *MockTag
 }
 
 // NewMockTag creates a new mock instance.
-func NewMockTag[I dto.TagInDto, A dto.Article, TA dto.TagArticle[A], O dto.TagOutDto[A, TA]](ctrl *gomock.Controller) *MockTag[I, A, TA, O] {
-	mock := &MockTag[I, A, TA, O]{ctrl: ctrl}
-	mock.recorder = &MockTagMockRecorder[I, A, TA, O]{mock}
+func NewMockTag(ctrl *gomock.Controller) *MockTag {
+	mock := &MockTag{ctrl: ctrl}
+	mock.recorder = &MockTagMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockTag[I, A, TA, O]) EXPECT() *MockTagMockRecorder[I, A, TA, O] {
+func (m *MockTag) EXPECT() *MockTagMockRecorder {
 	return m.recorder
 }
 
 // Execute mocks base method.
-func (m *MockTag[I, A, TA, O]) Execute(ctx context.Context, in I) (O, error) {
+func (m *MockTag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx, in)
-	ret0, _ := ret[0].(O)
+	ret0, _ := ret[0].(dto.TagOutDto)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockTagMockRecorder[I, A, TA, O]) Execute(ctx, in any) *gomock.Call {
+func (mr *MockTagMockRecorder) Execute(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockTag[I, A, TA, O])(nil).Execute), ctx, in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockTag)(nil).Execute), ctx, in)
 }
 
 // MockTags is a mock of Tags interface.
-type MockTags[I dto.TagsInDto, A dto.Article, TA dto.TagArticle[A], O dto.TagsOutDto[A, TA]] struct {
+type MockTags struct {
 	ctrl     *gomock.Controller
-	recorder *MockTagsMockRecorder[I, A, TA, O]
+	recorder *MockTagsMockRecorder
+	isgomock struct{}
 }
 
 // MockTagsMockRecorder is the mock recorder for MockTags.
-type MockTagsMockRecorder[I dto.TagsInDto, A dto.Article, TA dto.TagArticle[A], O dto.TagsOutDto[A, TA]] struct {
-	mock *MockTags[I, A, TA, O]
+type MockTagsMockRecorder struct {
+	mock *MockTags
 }
 
 // NewMockTags creates a new mock instance.
-func NewMockTags[I dto.TagsInDto, A dto.Article, TA dto.TagArticle[A], O dto.TagsOutDto[A, TA]](ctrl *gomock.Controller) *MockTags[I, A, TA, O] {
-	mock := &MockTags[I, A, TA, O]{ctrl: ctrl}
-	mock.recorder = &MockTagsMockRecorder[I, A, TA, O]{mock}
+func NewMockTags(ctrl *gomock.Controller) *MockTags {
+	mock := &MockTags{ctrl: ctrl}
+	mock.recorder = &MockTagsMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockTags[I, A, TA, O]) EXPECT() *MockTagsMockRecorder[I, A, TA, O] {
+func (m *MockTags) EXPECT() *MockTagsMockRecorder {
 	return m.recorder
 }
 
 // Execute mocks base method.
-func (m *MockTags[I, A, TA, O]) Execute(ctx context.Context, in I) (O, error) {
+func (m *MockTags) Execute(ctx context.Context, in dto.TagsInDto) (dto.TagsOutDto, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Execute", ctx, in)
-	ret0, _ := ret[0].(O)
+	ret0, _ := ret[0].(dto.TagsOutDto)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Execute indicates an expected call of Execute.
-func (mr *MockTagsMockRecorder[I, A, TA, O]) Execute(ctx, in any) *gomock.Call {
+func (mr *MockTagsMockRecorder) Execute(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockTags[I, A, TA, O])(nil).Execute), ctx, in)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockTags)(nil).Execute), ctx, in)
 }

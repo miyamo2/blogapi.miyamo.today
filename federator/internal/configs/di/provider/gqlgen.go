@@ -3,54 +3,66 @@ package provider
 import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/google/wire"
 	"github.com/miyamo2/blogapi.miyamo.today/core/graphql/middleware"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converter"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/fw/gqlgen"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"go.uber.org/fx"
 )
 
-var Gqlgen = fx.Options(
-	fx.Provide(func(
-		article usecase.Article[dto.ArticleInDto, dto.Tag, dto.ArticleTag, dto.ArticleOutDto],
-		articles usecase.Articles[dto.ArticlesInDto, dto.Tag, dto.ArticleTag, dto.ArticlesOutDto],
-		tag usecase.Tag[dto.TagInDto, dto.Article, dto.TagArticle, dto.TagOutDto],
-		tags usecase.Tags[dto.TagsInDto, dto.Article, dto.TagArticle, dto.TagsOutDto],
-	) *resolver.Usecases {
-		return resolver.NewUsecases(
-			resolver.WithArticlesUsecase(articles),
-			resolver.WithArticleUsecase(article),
-			resolver.WithTagUsecase(tag),
-			resolver.WithTagsUsecase(tags))
-	}),
-	fx.Provide(func(
-		article converter.ArticleConverter[dto.Tag, dto.ArticleTag, dto.ArticleOutDto],
-		articles converter.ArticlesConverter[dto.Tag, dto.ArticleTag, dto.ArticlesOutDto],
-		tag converter.TagConverter[dto.Article, dto.TagArticle, dto.TagOutDto],
-		tags converter.TagsConverter[dto.Article, dto.TagArticle, dto.TagsOutDto],
-	) *resolver.Converters {
-		return resolver.NewConverters(
-			resolver.WithArticleConverter(article),
-			resolver.WithArticlesConverter(articles),
-			resolver.WithTagConverter(tag),
-			resolver.WithTagsConverter(tags))
-	}),
-	fx.Provide(resolver.NewResolver),
-	fx.Provide(func(rslvr *resolver.Resolver) gqlgen.Config {
-		return gqlgen.Config{
-			Resolvers: rslvr,
-		}
-	}),
-	fx.Provide(gqlgen.NewExecutableSchema),
-	fx.Provide(func(schema graphql.ExecutableSchema, nr *newrelic.Application) *handler.Server {
-		srv := handler.NewDefaultServer(schema)
-		srv.AroundOperations(middleware.StartNewRelicTransaction(nr))
-		srv.AroundOperations(middleware.SetBlogAPIContextToContext)
-		srv.AroundRootFields(middleware.StartNewRelicSegment)
-		srv.AroundOperations(middleware.SetLoggerToContext(nr))
-		return srv
-	}),
+func Usecases(
+	article usecase.Article,
+	articles usecase.Articles,
+	tag usecase.Tag,
+	tags usecase.Tags,
+) *resolver.Usecases {
+	return resolver.NewUsecases(
+		resolver.WithArticlesUsecase(articles),
+		resolver.WithArticleUsecase(article),
+		resolver.WithTagUsecase(tag),
+		resolver.WithTagsUsecase(tags))
+}
+
+func Converters(
+	article converter.ArticleConverter,
+	articles converter.ArticlesConverter,
+	tag converter.TagConverter,
+	tags converter.TagsConverter,
+) *resolver.Converters {
+	return resolver.NewConverters(
+		resolver.WithArticleConverter(article),
+		resolver.WithArticlesConverter(articles),
+		resolver.WithTagConverter(tag),
+		resolver.WithTagsConverter(tags))
+}
+
+func GqlgenConfig(rslvr *resolver.Resolver) *gqlgen.Config {
+	return &gqlgen.Config{
+		Resolvers: rslvr,
+	}
+}
+
+func GqlgenExecutableSchema(config *gqlgen.Config) *graphql.ExecutableSchema {
+	xschema := gqlgen.NewExecutableSchema(*config)
+	return &xschema
+}
+
+func GqlgenServer(schema *graphql.ExecutableSchema, nr *newrelic.Application) *handler.Server {
+	srv := handler.NewDefaultServer(*schema)
+	srv.AroundOperations(middleware.StartNewRelicTransaction(nr))
+	srv.AroundOperations(middleware.SetBlogAPIContextToContext)
+	srv.AroundRootFields(middleware.StartNewRelicSegment)
+	srv.AroundOperations(middleware.SetLoggerToContext(nr))
+	return srv
+}
+
+var GqlgenSet = wire.NewSet(
+	Usecases,
+	Converters,
+	resolver.NewResolver,
+	GqlgenConfig,
+	GqlgenExecutableSchema,
+	GqlgenServer,
 )
