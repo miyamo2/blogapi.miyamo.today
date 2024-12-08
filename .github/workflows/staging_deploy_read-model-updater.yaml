@@ -40,7 +40,6 @@ jobs:
             --parameter-overrides \
             NewRelicAppName=miyamo-today-api-read-model-updater-dev \
             NewRelicLicenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            BlogPublishEndpoint=dummy \
+            BlogPublishEndpoint=${{ secrets.BLOG_PUBLISH_ENDPOINT }} \
             GitHubToken=${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }} \
             --no-fail-on-empty-changeset
-
