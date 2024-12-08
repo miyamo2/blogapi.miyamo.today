@@ -30,10 +30,10 @@ Parameters:
   NewRelicLicenseKey:
     NoEcho: true
     Type: String
-  BLOG_PUBLISH_ENDPOINT:
+  BlogPublishEndpoint:
     NoEcho: true
     Type: String
-  GITHUB_TOKEN:
+  GitHubToken:
     NoEcho: true
     Type: String
 Resources:
@@ -65,7 +65,7 @@ Resources:
           COCKROACHDB_DSN_TAG: !Ref CockroachDBDsnForTag
           NEW_RELIC_CONFIG_APP_NAME: !Ref NewRelicAppName
           NEW_RELIC_CONFIG_LICENSE: !Ref NewRelicLicenseKey
-          BLOG_PUBLISH_ENDPOINT: !Ref BLOG_PUBLISH_ENDPOINT
-          GITHUB_TOKEN: !Ref GITHUB_TOKEN
+          BLOG_PUBLISH_ENDPOINT: !Ref BlogPublishEndpoint
+          GITHUB_TOKEN: !Ref GitHubToken
     Metadata:
       BuildMethod: go1.x
