@@ -36,6 +36,7 @@ Parameters:
   GitHubToken:
     NoEcho: true
     Type: String
+
 Resources:
   BloggingEventSubscriber:
     Type: AWS::Serverless::Function
@@ -69,10 +70,37 @@ Resources:
           BLOG_PUBLISH_ENDPOINT: !Ref BlogPublishEndpoint
           GITHUB_TOKEN: !Ref GitHubToken
       Timeout: 900
+      Policies:
+        - Statement:
+          - Sid: DynamoDBStreamPolicy
+            Effect: Allow
+            Action:
+              - dynamodb:DescribeStream
+              - dynamodb:GetShardIterator
+              - dynamodb:GetRecords
+              - dynamodb:ListStreams
+            Resource: "*"
+          - Sid: DynamoDBPolicy
+            Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Scan
+              - dynamodb:Query
+            Resource: "*"
+          - Sid: CloudWatchLogsPolicy
+            Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: arn:aws:logs:*:*:*
     Metadata:
       BuildMethod: go1.x
+
   BloggingEventSubscriberLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/lambda/${BloggingEventSubscriber}
       RetentionInDays: 30
+
+
