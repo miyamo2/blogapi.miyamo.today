@@ -26,9 +26,9 @@ type bloggingEvent struct {
 	Title       *string
 	Content     *string
 	Thumbnail   *string
-	Tags        sqldav.TypedList[string]
-	AttacheTags sqldav.TypedList[string]
-	DetachTags  sqldav.TypedList[string]
+	Tags        sqldav.Set[string]
+	AttacheTags sqldav.Set[string]
+	DetachTags  sqldav.Set[string]
 	Invisible   *bool
 }
 
