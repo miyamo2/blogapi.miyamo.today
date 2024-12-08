@@ -32,6 +32,12 @@ jobs:
         with:
           go-version: ">=1.23"
 
+      - name: Build
+        working-directory: ./read-model-updater
+        run: |
+          GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o bootstrap /cmd/main.go
+          zip bootstrap.zip bootstrap
+
       - name: Deploy
         working-directory: ./read-model-updater/.deploy
         run: |

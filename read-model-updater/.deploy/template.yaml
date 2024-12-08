@@ -42,7 +42,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub BloggingEvent-Subscriber-${Env}
-      CodeUri: ../cmd/main.go
+      CodeUri: ../bootstrap.zip
       Handler: bootstrap
       Runtime: provided.al2
       Architectures:
