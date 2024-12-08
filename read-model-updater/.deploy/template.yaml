@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - stage
+      - prod
+  BloggingEventsTableName:
+    Type: AWS::SSM::Parameter::Value<String>
+    NoEcho: true
+    Default: /miyamo-today/cicd/dev/dynamodb/blogging-events/name
+  BloggingEventsStream:
+    Type: AWS::SSM::Parameter::Value<String>
+    NoEcho: true
+    Default: /miyamo-today/cicd/dev/dynamodb/blogging-events/stream
+  CockroachDBDsnForArticle:
+    Type: AWS::SSM::Parameter::Value<String>
+    NoEcho: true
+    Default: /miyamo-today/cicd/dev/cockroachdb/dsn/article
+  CockroachDBDsnForTag:
+    Type: AWS::SSM::Parameter::Value<String>
+    NoEcho: true
+    Default: /miyamo-today/cicd/dev/cockroachdb/dsn/tag
+  NewRelicAppName:
+    Type: String
+  NewRelicLicenseKey:
+    NoEcho: true
+    Type: String
+  BLOG_PUBLISH_ENDPOINT:
+    NoEcho: true
+    Type: String
+  GITHUB_TOKEN:
+    NoEcho: true
+    Type: String
+Resources:
+  ArticleEventSubscriber:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ArticleEvent-Subscriber-${Env}
+      CodeUri: ../cmd/main.go
+      Handler: bootstrap
+      Runtime: provided.al2
+      Architectures:
+        - x86_64
+      Events:
+        TryArticleEvent:
+          Type: DynamoDB
+          Properties:
+            BatchSize: 100
+            BisectBatchOnFunctionError: true
+            MaximumRetryAttempts: 3
+            StartingPosition: TRIM_HORIZON
+            Stream: !Ref BloggingEventsStream
+            FilterCriteria:
+              Filters:
+                - Pattern: '{ "eventName" : { "S" : [ "INSERT" ] } }'
+      Environment:
+        Variables:
+          ArticleEventsTableName: !Ref BloggingEventsTableName
+          COCKROACHDB_DSN_ARTICLE: !Ref CockroachDBDsnForArticle
+          COCKROACHDB_DSN_TAG: !Ref CockroachDBDsnForTag
+          NEW_RELIC_CONFIG_APP_NAME: !Ref NewRelicAppName
+          NEW_RELIC_CONFIG_LICENSE: !Ref NewRelicLicenseKey
+          BLOG_PUBLISH_ENDPOINT: !Ref BLOG_PUBLISH_ENDPOINT
+          GITHUB_TOKEN: !Ref GITHUB_TOKEN
+    Metadata:
+      BuildMethod: go1.x

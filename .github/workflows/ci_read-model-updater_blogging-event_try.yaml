@@ -1,0 +1,71 @@
+name: ci_read-model-updater_blogging-event_try
+
+on:
+  push:
+    branches:
+      - "feat/**"
+      - "refactor/**"
+      - "bugfix/**"
+      - "hotfix/**"
+    paths:
+      - "read-model-updater/**"
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "read-model-updater/**"
+  workflow_call:
+
+permissions: write-all
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goversion: [">=1.23"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Git Config
+        run: |
+          git config --global url."https://${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.goversion }}
+
+      - name: Go Build
+        run: |
+          go mod tidy
+          go build -o ./bin/cmd ./cmd/main.go
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - name: Setup staticcheck
+        working-directory: ${{ matrix.module }}
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+
+      - name: staticcheck with reviewdog
+        working-directory: ${{ matrix.module }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          staticcheck ./... | reviewdog -f=staticcheck -reporter=github-pr-check -level warning
+
+      - name: Set up aws cli
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+
+      - name: Validate SAM template
+        working-directory: ${{ matrix.module }}
+        run: |
+          sam validate

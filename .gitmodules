@@ -13,3 +13,6 @@
 [submodule "federator/.proto"]
 	path = federator/.proto
 	url = https://github.com/miyamo2/proto.miyamo.today
+[submodule "blogging-event-service/.proto"]
+	path = blogging-event-service/.proto
+	url = https://github.com/miyamo2/proto.miyamo.today
