@@ -19,6 +19,10 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 )
 
+import (
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
+)
+
 // Injectors from wire.go:
 
 func getDependecies() *dependencies {
