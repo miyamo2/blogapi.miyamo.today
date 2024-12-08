@@ -37,17 +37,17 @@ Parameters:
     NoEcho: true
     Type: String
 Resources:
-  ArticleEventSubscriber:
+  BloggingEventSubscriber:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub ArticleEvent-Subscriber-${Env}
+      FunctionName: !Sub BloggingEvent-Subscriber-${Env}
       CodeUri: ../cmd/main.go
       Handler: bootstrap
       Runtime: provided.al2
       Architectures:
         - x86_64
       Events:
-        TryArticleEvent:
+        BloggingEvent:
           Type: DynamoDB
           Properties:
             BatchSize: 100
@@ -71,3 +71,8 @@ Resources:
       Timeout: 900
     Metadata:
       BuildMethod: go1.x
+  BloggingEventSubscriberLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${BloggingEventSubscriber}
+      RetentionInDays: 30
