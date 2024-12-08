@@ -58,7 +58,7 @@ Resources:
             Stream: !Ref BloggingEventsStream
             FilterCriteria:
               Filters:
-                - Pattern: '{ "eventName" : { "S" : [ "INSERT" ] } }'
+                - Pattern: '{ "eventName" : "INSERT" }'
       Environment:
         Variables:
           ENV: !Ref Env
