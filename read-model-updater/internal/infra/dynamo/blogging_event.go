@@ -33,7 +33,7 @@ type bloggingEvent struct {
 }
 
 func (b bloggingEvent) TableName() string {
-	return fmt.Sprintf("blogging_events-_%s", os.Getenv("ENV"))
+	return os.Getenv("BLOGGING_EVENTS_TABLE_NAME")
 }
 
 type BloggingEventQueryService struct{}

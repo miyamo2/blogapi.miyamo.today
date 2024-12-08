@@ -61,7 +61,7 @@ Resources:
       Environment:
         Variables:
           ENV: !Ref Env
-          ArticleEventsTableName: !Ref BloggingEventsTableName
+          BLOGGING_EVENTS_TABLE_NAME: !Ref BloggingEventsTableName
           COCKROACHDB_DSN_ARTICLE: !Ref CockroachDBDsnForArticle
           COCKROACHDB_DSN_TAG: !Ref CockroachDBDsnForTag
           NEW_RELIC_CONFIG_APP_NAME: !Ref NewRelicAppName
