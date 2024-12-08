@@ -3,6 +3,8 @@ package dynamo
 import (
 	"context"
 	"fmt"
+	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/domain/model"
@@ -12,6 +14,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"gorm.io/plugin/dbresolver"
+	"log/slog"
 	"os"
 	"slices"
 )
@@ -44,11 +47,17 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
 		nrtx := newrelic.FromContext(ctx)
 		defer nrtx.StartSegment("BloggingEventQueryService#AllEventsWithArticleID").End()
+		logger, err := altnrslog.FromContext(ctx)
+		if err != nil {
+			logger = slog.Default()
+		}
+		logger.Info("START")
 		tx = tx.Clauses(dbresolver.Use(DBName)).WithContext(ctx)
 
 		rows := make([]bloggingEvent, 0)
 		err = tx.Model(bloggingEvent{}).Where("article_id = ?", articleId).Scan(&rows).Error
 		if err != nil {
+			err = errors.WithStack(err)
 			return err
 		}
 
@@ -61,6 +70,7 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 		defer func() {
 			if rec := recover(); rec != nil {
 				err = fmt.Errorf("recovered: %w", rec)
+				err = errors.WithStack(err)
 			}
 		}()
 
@@ -69,6 +79,7 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 			result = append(result, model.NewBloggingEvent(r.EventID, r.ArticleID, r.Title, r.Content, r.Thumbnail, r.AttacheTags, r.DetachTags, r.Invisible))
 		}
 		out.Set(result)
+		logger.Info("END", slog.Int("result count", len(result)))
 		return nil
 	}, out)
 }

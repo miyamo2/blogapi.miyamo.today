@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
+	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/domain/model"
@@ -11,6 +12,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
+	"log/slog"
 )
 
 const ArticleDBName = "article"
@@ -53,6 +55,12 @@ func (s *ArticleCommandService) ExecuteArticleCommand(ctx context.Context, in mo
 	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
 		nrtx := newrelic.FromContext(ctx)
 		defer nrtx.StartSegment("ArticleCommandService#ExecuteArticleCommand#Execute").End()
+		logger, err := altnrslog.FromContext(ctx)
+		if err != nil {
+			logger = slog.Default()
+		}
+		logger.Info("START")
+
 		tx = tx.WithContext(ctx)
 		now := synchro.Now[tz.UTC]()
 
@@ -94,6 +102,7 @@ func (s *ArticleCommandService) ExecuteArticleCommand(ctx context.Context, in mo
 			}
 			tx.Clauses(clause.OnConflict{DoNothing: true}).Create(t)
 		}
+		logger.Info("END")
 		return nil
 	}, nil)
 }

@@ -25,12 +25,14 @@ func (h *SyncHandler) Invoke(ctx context.Context, stream events.DynamoDBEvent) e
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 	}
+	logger.Info("START")
 
 	dtoSeq := h.syncUsecaseConverter.ToSyncUsecaseInDtoSeq(ctx, stream.Records)
 	err = h.syncUsecase.SyncBlogSnapshotWithEvents(ctx, dtoSeq)
 	if err != nil {
 		return err
 	}
+	logger.Info("END")
 	return nil
 }
 

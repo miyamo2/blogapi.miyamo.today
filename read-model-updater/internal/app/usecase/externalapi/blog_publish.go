@@ -1,5 +1,7 @@
 package externalapi
 
+import "context"
+
 type BlogPublisher interface {
-	Publish() error
+	Publish(ctx context.Context) error
 }

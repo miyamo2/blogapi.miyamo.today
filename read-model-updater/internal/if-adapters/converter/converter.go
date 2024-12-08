@@ -27,7 +27,6 @@ func (c *Converter) ToSyncUsecaseInDtoSeq(ctx context.Context, records []events.
 		for i, record := range records {
 			dto, err := toDto(record.Change.NewImage)
 			if err != nil {
-				err = errors.WithStack(err)
 				nrtx.NoticeError(nrpkgerrors.Wrap(err))
 				continue
 			}
@@ -45,10 +44,12 @@ func toDto(in map[string]events.DynamoDBAttributeValue) (usecase.SyncUsecaseInDt
 		var av dynamodb.AttributeValue
 		bytes, err := v.MarshalJSON()
 		if err != nil {
+			err = errors.WithStack(err)
 			return usecase.SyncUsecaseInDto{}, err
 		}
 
 		if err := json.Unmarshal(bytes, &av); err != nil {
+			err = errors.WithStack(err)
 			return usecase.SyncUsecaseInDto{}, err
 		}
 
@@ -56,6 +57,7 @@ func toDto(in map[string]events.DynamoDBAttributeValue) (usecase.SyncUsecaseInDt
 	}
 
 	if err := dynamodbattribute.UnmarshalMap(attributevalueMap, &image); err != nil {
+		err = errors.WithStack(err)
 		return usecase.SyncUsecaseInDto{}, err
 	}
 	return usecase.NewSyncUsecaseInDto(

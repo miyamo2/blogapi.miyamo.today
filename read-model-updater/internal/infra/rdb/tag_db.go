@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
+	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/domain/model"
@@ -11,6 +12,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
+	"log/slog"
 )
 
 const TagDBName = "tag"
@@ -52,6 +54,13 @@ func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.Arti
 	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
 		nrtx := newrelic.FromContext(ctx)
 		defer nrtx.StartSegment("ArticleCommandService#ExecuteTagCommand#Execute").End()
+
+		logger, err := altnrslog.FromContext(ctx)
+		if err != nil {
+			logger = slog.Default()
+		}
+		logger.Info("START")
+
 		tx = tx.WithContext(ctx)
 		now := synchro.Now[tz.UTC]()
 
@@ -89,8 +98,8 @@ func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.Arti
 					ids = append(ids, ti.ID())
 				}
 				return ids
-			}).
-			Delete(&tagArticle{})
+			}).Delete(&tagArticle{})
+		logger.Info("END")
 		return nil
 	}, nil)
 }

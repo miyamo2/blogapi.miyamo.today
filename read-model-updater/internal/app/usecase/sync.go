@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
@@ -10,6 +12,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"iter"
+	"log/slog"
 )
 
 // Sync is an usecese of sync
@@ -22,52 +25,66 @@ type Sync struct {
 }
 
 // SyncBlogSnapshotWithEvents synchronized blog snapshot with event
-func (t *Sync) SyncBlogSnapshotWithEvents(ctx context.Context, in iter.Seq2[int, SyncUsecaseInDto]) error {
+func (u *Sync) SyncBlogSnapshotWithEvents(ctx context.Context, in iter.Seq2[int, SyncUsecaseInDto]) error {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Sync#SyncBlogSnapshotWithEvents").End()
 	for _, dto := range in {
-		if err := t.executePerEvent(ctx, dto); err != nil {
+		if err := u.executePerEvent(ctx, dto); err != nil {
 			return err
 		}
+	}
+	if err := u.blogAPIPublisher.Publish(ctx); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (t *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error {
+func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Sync#executePerEvent").End()
 
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = slog.Default()
+	}
+	logger.Info("START", slog.Any("dto", dto))
+	defer logger.Info("END")
+
 	bloggingEvents := db.NewMultipleStatementResult[model.BloggingEvent]()
-	if err := t.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleId(), bloggingEvents).Execute(ctx); err != nil {
+	if err := u.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleId(), bloggingEvents).Execute(ctx); err != nil {
 		return err
 	}
 
 	articleCommand := model.ArticleCommandFromBloggingEvents(bloggingEvents.StrictGet())
 	if articleCommand == nil {
+		logger.Warn("nil article command")
 		return nil
 	}
 
-	articleTx, err := t.transactionManager.GetAndStart(ctx, db.GetAndStartWithDBSource(rdb.ArticleDBName))
+	articleTx, err := u.transactionManager.GetAndStart(ctx, db.GetAndStartWithDBSource(rdb.ArticleDBName))
 	if err != nil {
+		err = errors.WithStack(err)
 		return err
 	}
 	articleErrSub := articleTx.SubscribeError()
 
-	tagTx, err := t.transactionManager.GetAndStart(ctx, db.GetAndStartWithDBSource(rdb.TagDBName))
+	tagTx, err := u.transactionManager.GetAndStart(ctx, db.GetAndStartWithDBSource(rdb.TagDBName))
 	if err != nil {
+		err = errors.WithStack(err)
 		return err
 	}
 	tagErrSub := tagTx.SubscribeError()
 
+	done := make(chan struct{})
 	errCh := make(chan error)
 	go func() {
-		err = articleTx.ExecuteStatement(ctx, t.articleCommandService.ExecuteArticleCommand(ctx, *articleCommand))
+		err = articleTx.ExecuteStatement(ctx, u.articleCommandService.ExecuteArticleCommand(ctx, *articleCommand))
 		if err != nil {
 			errCh <- err
 			return
 		}
 
-		err = tagTx.ExecuteStatement(ctx, t.tagCommandService.ExecuteTagCommand(ctx, *articleCommand))
+		err = tagTx.ExecuteStatement(ctx, u.tagCommandService.ExecuteTagCommand(ctx, *articleCommand))
 		if err != nil {
 			errCh <- err
 			return
@@ -81,6 +98,7 @@ func (t *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 			errCh <- err
 			return
 		}
+		done <- struct{}{}
 		return
 	}()
 	select {
@@ -100,7 +118,7 @@ func (t *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 		articleTx.Rollback(ctx)
 		tagTx.Rollback(ctx)
 		return err
-	default:
+	case <-done:
 	}
 	return nil
 }

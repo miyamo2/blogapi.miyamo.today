@@ -2,7 +2,12 @@ package githubactions
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"github.com/cockroachdb/errors"
+	"github.com/miyamo2/altnrslog"
+	"github.com/newrelic/go-agent/v3/newrelic"
+	"log/slog"
 	"net/http"
 )
 
@@ -18,7 +23,16 @@ type BlogPublisher struct {
 	client   Client
 }
 
-func (b *BlogPublisher) Publish() error {
+func (b *BlogPublisher) Publish(ctx context.Context) error {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("BlogPublisher#Publish").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		logger = slog.Default()
+	}
+	logger.Info("START")
+	defer logger.Info("END")
+
 	req, err := http.NewRequest(http.MethodPost, b.endpoint, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
 		return err
@@ -26,9 +40,17 @@ func (b *BlogPublisher) Publish() error {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", b.token))
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
-	if _, err = b.client.Do(req); err != nil {
+	seg := newrelic.StartExternalSegment(nrtx, req)
+
+	res, err := b.client.Do(req)
+	if err != nil {
+		err = errors.WithStack(err)
 		return err
 	}
+
+	seg.Response = res
+	seg.End()
+
 	return nil
 }
 
