@@ -47,7 +47,7 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 		tx = tx.Clauses(dbresolver.Use(DBName)).WithContext(ctx)
 
 		rows := make([]bloggingEvent, 0)
-		err = tx.Where("article_id = ?", articleId).Scan(&rows).Error
+		err = tx.Model(bloggingEvent{}).Where("article_id = ?", articleId).Scan(&rows).Error
 		if err != nil {
 			return err
 		}
