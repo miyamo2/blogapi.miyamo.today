@@ -86,6 +86,10 @@ Resources:
               - dynamodb:GetItem
               - dynamodb:Scan
               - dynamodb:Query
+              - dynamodb:PartiQLInsert
+              - dynamodb:PartiQLUpdate
+              - dynamodb:PartiQLDelete
+              - dynamodb:PartiQLSelect
             Resource: "*"
           - Sid: CloudWatchLogsPolicy
             Effect: Allow
