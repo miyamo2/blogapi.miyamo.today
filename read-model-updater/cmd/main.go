@@ -44,5 +44,5 @@ func main() {
 	}
 	gw.Initialize(dep.gormDB)
 	nraws.AppendMiddlewares(&dep.awsConfig.APIOptions, nil)
-	nrlambda.Start(dep.synHandler, dep.newrelicApp)
+	nrlambda.Start(dep.synHandler.Invoke, dep.newrelicApp)
 }
