@@ -2,10 +2,10 @@ package lambda
 
 import (
 	"context"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/if-adapters/model"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
@@ -17,7 +17,7 @@ type SyncHandler struct {
 }
 
 // Invoke invokes the Sync usecase.
-func (h *SyncHandler) Invoke(ctx context.Context, stream model.EventStream) error {
+func (h *SyncHandler) Invoke(ctx context.Context, stream events.DynamoDBEvent) error {
 	nrtx := newrelic.FromContext(ctx)
 	logger := log.New(log.WithAltNRSlogTransactionalHandler(nrtx.Application(), nrtx))
 	ctx, err := altnrslog.StoreToContext(ctx, logger)

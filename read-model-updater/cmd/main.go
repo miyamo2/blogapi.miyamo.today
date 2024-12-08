@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/if-adapters/model"
 	nraws "github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2"
 	"github.com/newrelic/go-agent/v3/integrations/nrlambda"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -13,7 +13,7 @@ import (
 
 // SyncHandler handles blogging event
 type SyncHandler interface {
-	Invoke(ctx context.Context, stream model.EventStream) error
+	Invoke(ctx context.Context, stream events.DynamoDBEvent) error
 }
 
 type dependencies struct {
