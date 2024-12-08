@@ -60,6 +60,7 @@ Resources:
                 - Pattern: '{ "eventName" : { "S" : [ "INSERT" ] } }'
       Environment:
         Variables:
+          ENV: !Ref Env
           ArticleEventsTableName: !Ref BloggingEventsTableName
           COCKROACHDB_DSN_ARTICLE: !Ref CockroachDBDsnForArticle
           COCKROACHDB_DSN_TAG: !Ref CockroachDBDsnForTag
