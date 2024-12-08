@@ -25,8 +25,8 @@ func (c *Converter) ToSyncUsecaseInDtoSeq(ctx context.Context, records []model.R
 				continue
 			}
 			if !yield(i, usecase.NewSyncUsecaseInDto(
-				image.EventId,
-				image.ArticleId,
+				image.EventID,
+				image.ArticleID,
 				image.Title,
 				image.Content,
 				image.Thumbnail,

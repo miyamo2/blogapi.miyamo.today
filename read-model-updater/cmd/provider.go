@@ -15,6 +15,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/godynamo"
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
