@@ -59,7 +59,7 @@ func (s *ArticleCommandService) ExecuteArticleCommand(ctx context.Context, in mo
 		if err != nil {
 			logger = slog.Default()
 		}
-		logger.Info("START")
+		logger.InfoContext(ctx, "START")
 
 		tx = tx.WithContext(ctx)
 		now := synchro.Now[tz.UTC]()
@@ -102,7 +102,7 @@ func (s *ArticleCommandService) ExecuteArticleCommand(ctx context.Context, in mo
 			}
 			tx.Clauses(clause.OnConflict{DoNothing: true}).Create(t)
 		}
-		logger.Info("END")
+		logger.InfoContext(ctx, "END")
 		return nil
 	}, nil)
 }

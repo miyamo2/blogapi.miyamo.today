@@ -47,8 +47,8 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	if err != nil {
 		logger = slog.Default()
 	}
-	logger.Info("START", slog.Any("dto", dto))
-	defer logger.Info("END")
+	logger.InfoContext(ctx, "START", slog.Any("dto", dto))
+	defer logger.InfoContext(ctx, "END")
 
 	bloggingEvents := db.NewMultipleStatementResult[model.BloggingEvent]()
 	if err := u.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleId(), bloggingEvents).Execute(ctx); err != nil {
@@ -57,7 +57,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 
 	articleCommand := model.ArticleCommandFromBloggingEvents(bloggingEvents.StrictGet())
 	if articleCommand == nil {
-		logger.Warn("nil article command")
+		logger.WarnContext(ctx, "nil article command")
 		return nil
 	}
 
