@@ -77,7 +77,7 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 
 		result := make([]model.BloggingEvent, 0)
 		for _, r := range rows {
-			result = append(result, model.NewBloggingEvent(r.EventID, r.ArticleID, r.Title, r.Content, r.Thumbnail, r.AttacheTags, r.DetachTags, r.Invisible))
+			result = append(result, model.NewBloggingEvent(r.EventID, r.ArticleID, r.Title, r.Content, r.Thumbnail, r.Tags, r.AttacheTags, r.DetachTags, r.Invisible))
 		}
 		out.Set(result)
 		logger.Info("END", slog.Int("result count", len(result)))

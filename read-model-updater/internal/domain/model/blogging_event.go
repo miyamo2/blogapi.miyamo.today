@@ -6,6 +6,7 @@ type BloggingEvent struct {
 	title       *string
 	content     *string
 	thumbnail   *string
+	tags        []string
 	attacheTags []string
 	detachTags  []string
 	invisible   *bool
@@ -41,6 +42,10 @@ func (b BloggingEvent) AttacheTags() []string {
 	return b.attacheTags
 }
 
+func (b BloggingEvent) Tags() []string {
+	return b.tags
+}
+
 func (b BloggingEvent) DetachTags() []string {
 	return b.detachTags
 }
@@ -49,13 +54,14 @@ func (b BloggingEvent) Invisible() *bool {
 	return b.invisible
 }
 
-func NewBloggingEvent(eventID, articleID string, title, content, thumbnail *string, attacheTag, detacheTag []string, invisible *bool) BloggingEvent {
+func NewBloggingEvent(eventID, articleID string, title, content, thumbnail *string, tags, attacheTag, detacheTag []string, invisible *bool) BloggingEvent {
 	return BloggingEvent{
 		eventID:     eventID,
 		articleID:   articleID,
 		title:       title,
 		content:     content,
 		thumbnail:   thumbnail,
+		tags:        tags,
 		attacheTags: attacheTag,
 		detachTags:  detacheTag,
 		invisible:   invisible,

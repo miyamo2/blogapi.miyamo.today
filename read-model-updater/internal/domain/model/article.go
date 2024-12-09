@@ -80,7 +80,7 @@ func ArticleCommandFromBloggingEvents(events []BloggingEvent) *ArticleCommand {
 		if e.thumbnail != nil {
 			result.thumbnail = *e.thumbnail
 		}
-		tagNames = slices.DeleteFunc(append(tagNames, e.AttacheTags()...), func(v string) bool {
+		tagNames = slices.DeleteFunc(append(tagNames, append(e.Tags(), e.AttacheTags()...)...), func(v string) bool {
 			return slices.Contains(e.DetachTags(), v)
 		})
 	}
