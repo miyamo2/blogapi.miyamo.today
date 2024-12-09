@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "read-model-updater/**"
   workflow_dispatch:
 
 permissions: write-all
