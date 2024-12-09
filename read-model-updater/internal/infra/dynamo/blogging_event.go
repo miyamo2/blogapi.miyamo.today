@@ -8,6 +8,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/domain/model"
+	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/sqldav"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
@@ -56,7 +57,9 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 		tx = tx.WithContext(ctx)
 
 		rows := make([]bloggingEvent, 0)
-		err = tx.Model(bloggingEvent{}).Where("article_id = ?", articleId).Scan(&rows).Error
+		err = tx.Clauses(
+			dynmgrm.SecondaryIndex("article_id_event_id-index", dynmgrm.SecondaryIndexOf(bloggingEvent{}.TableName()))).
+			Where("article_id = ?", articleId).Scan(&rows).Error
 		if err != nil {
 			err = errors.WithStack(err)
 			return err
