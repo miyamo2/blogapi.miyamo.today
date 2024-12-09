@@ -48,4 +48,5 @@ jobs:
             NewRelicLicenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
             BlogPublishEndpoint=${{ secrets.BLOG_PUBLISH_ENDPOINT }} \
             GitHubToken=${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }} \
+            NewRelicAccountId=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
             --no-fail-on-empty-changeset

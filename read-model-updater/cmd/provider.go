@@ -15,6 +15,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/godynamo"
+	"github.com/newrelic/go-agent/v3/integrations/nrlambda"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/driver/postgres"
@@ -36,9 +37,7 @@ func provideAWSConfig() *aws.Config {
 
 func provideNewRelicApp() *newrelic.Application {
 	app, err := newrelic.NewApplication(
-		newrelic.ConfigAppName(os.Getenv("NEW_RELIC_CONFIG_APP_NAME")),
-		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_CONFIG_LICENSE")),
-		newrelic.ConfigAppLogForwardingEnabled(true),
+		nrlambda.ConfigOption(),
 	)
 	if err != nil {
 		panic(err)
