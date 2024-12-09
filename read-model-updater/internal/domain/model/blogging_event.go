@@ -1,15 +1,15 @@
 package model
 
 type BloggingEvent struct {
-	eventID     string
-	articleID   string
-	title       *string
-	content     *string
-	thumbnail   *string
-	tags        []string
-	attacheTags []string
-	detachTags  []string
-	invisible   *bool
+	eventID    string
+	articleID  string
+	title      *string
+	content    *string
+	thumbnail  *string
+	tags       []string
+	attachTags []string
+	detachTags []string
+	invisible  *bool
 }
 
 // IsQueryModel is a marker method for the QueryModel.
@@ -38,8 +38,8 @@ func (b BloggingEvent) Thumbnail() *string {
 	return b.thumbnail
 }
 
-func (b BloggingEvent) AttacheTags() []string {
-	return b.attacheTags
+func (b BloggingEvent) AttachTags() []string {
+	return b.attachTags
 }
 
 func (b BloggingEvent) Tags() []string {
@@ -54,16 +54,16 @@ func (b BloggingEvent) Invisible() *bool {
 	return b.invisible
 }
 
-func NewBloggingEvent(eventID, articleID string, title, content, thumbnail *string, tags, attacheTag, detacheTag []string, invisible *bool) BloggingEvent {
+func NewBloggingEvent(eventID, articleID string, title, content, thumbnail *string, tags, attachTag, detacheTag []string, invisible *bool) BloggingEvent {
 	return BloggingEvent{
-		eventID:     eventID,
-		articleID:   articleID,
-		title:       title,
-		content:     content,
-		thumbnail:   thumbnail,
-		tags:        tags,
-		attacheTags: attacheTag,
-		detachTags:  detacheTag,
-		invisible:   invisible,
+		eventID:    eventID,
+		articleID:  articleID,
+		title:      title,
+		content:    content,
+		thumbnail:  thumbnail,
+		tags:       tags,
+		attachTags: attachTag,
+		detachTags: detacheTag,
+		invisible:  invisible,
 	}
 }

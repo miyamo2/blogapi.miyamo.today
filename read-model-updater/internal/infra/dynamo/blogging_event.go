@@ -25,15 +25,15 @@ type DB struct {
 var _ schema.Tabler = (*bloggingEvent)(nil)
 
 type bloggingEvent struct {
-	EventID     string `gorm:"primaryKey"`
-	ArticleID   string `gorm:"primaryKey"`
-	Title       *string
-	Content     *string
-	Thumbnail   *string
-	Tags        sqldav.Set[string]
-	AttacheTags sqldav.Set[string]
-	DetachTags  sqldav.Set[string]
-	Invisible   *bool
+	EventID    string `gorm:"primaryKey"`
+	ArticleID  string `gorm:"primaryKey"`
+	Title      *string
+	Content    *string
+	Thumbnail  *string
+	Tags       sqldav.Set[string]
+	AttachTags sqldav.Set[string]
+	DetachTags sqldav.Set[string]
+	Invisible  *bool
 }
 
 func (b bloggingEvent) TableName() string {
@@ -77,7 +77,7 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 
 		result := make([]model.BloggingEvent, 0)
 		for _, r := range rows {
-			result = append(result, model.NewBloggingEvent(r.EventID, r.ArticleID, r.Title, r.Content, r.Thumbnail, r.Tags, r.AttacheTags, r.DetachTags, r.Invisible))
+			result = append(result, model.NewBloggingEvent(r.EventID, r.ArticleID, r.Title, r.Content, r.Thumbnail, r.Tags, r.AttachTags, r.DetachTags, r.Invisible))
 		}
 		out.Set(result)
 		logger.Info("END", slog.Int("result count", len(result)))

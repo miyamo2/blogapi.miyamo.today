@@ -25,12 +25,12 @@ type DynamoDB struct {
 }
 
 type Image struct {
-	EventID     string   `json:"event_id" dynamodbav:"event_id"`
-	ArticleID   string   `json:"article_id" dynamodbav:"article_id"`
-	Title       *string  `json:"title" dynamodbav:"title"`
-	Content     *string  `json:"content" dynamodbav:"content"`
-	Thumbnail   *string  `json:"thumbnail" dynamodbav:"thumbnail"`
-	AttacheTags []string `json:"attache_tags"  dynamodbav:"attache_tags"`
-	DetachTags  []string `json:"detach_tags"  dynamodbav:"detach_tags"`
-	Invisible   *bool    `json:"invisible" dynamodbav:"invisible"`
+	EventID    string   `json:"event_id" dynamodbav:"event_id"`
+	ArticleID  string   `json:"article_id" dynamodbav:"article_id"`
+	Title      *string  `json:"title" dynamodbav:"title"`
+	Content    *string  `json:"content" dynamodbav:"content"`
+	Thumbnail  *string  `json:"thumbnail" dynamodbav:"thumbnail"`
+	AttachTags []string `json:"attach_tags"  dynamodbav:"attach_tags"`
+	DetachTags []string `json:"detach_tags"  dynamodbav:"detach_tags"`
+	Invisible  *bool    `json:"invisible" dynamodbav:"invisible"`
 }

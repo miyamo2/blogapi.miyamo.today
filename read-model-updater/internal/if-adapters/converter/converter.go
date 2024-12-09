@@ -66,7 +66,7 @@ func toDto(in map[string]events.DynamoDBAttributeValue) (usecase.SyncUsecaseInDt
 		image.Title,
 		image.Content,
 		image.Thumbnail,
-		image.AttacheTags,
+		image.AttachTags,
 		image.DetachTags,
 		image.Invisible,
 	), nil

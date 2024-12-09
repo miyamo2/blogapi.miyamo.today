@@ -40,8 +40,8 @@ func (d SyncUsecaseInDto) Thumbnail() *string {
 	return d.thumbnail
 }
 
-// AttacheTags returns the tags to attach.
-func (d SyncUsecaseInDto) AttacheTags() []string {
+// AttachTags returns the tags to attach.
+func (d SyncUsecaseInDto) AttachTags() []string {
 	return d.attachTags
 }
 
