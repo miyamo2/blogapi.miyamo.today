@@ -13,7 +13,7 @@ require (
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/miyamo2/blogapi.miyamo.today/core v0.21.1
 	github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.0
-	github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.2.5
+	github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.3.0
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.2
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4
@@ -55,5 +55,5 @@ require (
 	golang.org/x/net v0.31.0 // indirect
 	golang.org/x/sys v0.27.0 // indirect
 	golang.org/x/text v0.20.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241118233622-e639e219e697 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect
 )
