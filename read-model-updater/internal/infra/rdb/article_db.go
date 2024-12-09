@@ -82,14 +82,15 @@ func (s *ArticleCommandService) ExecuteArticleCommand(ctx context.Context, in mo
 			}),
 		}).Create(a)
 
+		articleIDToBeDeleted := func() []string {
+			var ids []string
+			for _, ti := range in.Tags() {
+				ids = append(ids, ti.ID())
+			}
+			return ids
+		}()
 		tx.Where("article_id = ?", in.ID()).
-			Where("id NOT IN (?)", func() []string {
-				var ids []string
-				for _, ti := range in.Tags() {
-					ids = append(ids, ti.ID())
-				}
-				return ids
-			}).
+			Where("id NOT IN (?)", articleIDToBeDeleted).
 			Delete(&articleTag{})
 
 		for _, ti := range in.Tags() {

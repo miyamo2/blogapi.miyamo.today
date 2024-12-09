@@ -91,14 +91,15 @@ func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.Arti
 			}).Create(a)
 		}
 
+		tagIDToBeDeleted := func() []string {
+			var ids []string
+			for _, ti := range in.Tags() {
+				ids = append(ids, ti.ID())
+			}
+			return ids
+		}()
 		tx.Where("id = ?", in.ID()).
-			Where("tag_id NOT IN (?)", func() []string {
-				var ids []string
-				for _, ti := range in.Tags() {
-					ids = append(ids, ti.ID())
-				}
-				return ids
-			}).Delete(&tagArticle{})
+			Where("tag_id NOT IN (?)", tagIDToBeDeleted).Delete(&tagArticle{})
 		logger.Info("END")
 		return nil
 	}, nil)
