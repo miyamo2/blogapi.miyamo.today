@@ -77,7 +77,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	tagTx := u.rdbGorm.Session(&gorm.Session{
 		PrepareStmt:            false,
 		SkipDefaultTransaction: true,
-	}).Clauses(dbresolver.Use(rdb.ArticleDBName)).Begin()
+	}).Clauses(dbresolver.Use(rdb.TagDBName)).Begin()
 
 	done := make(chan struct{})
 	errCh := make(chan error)
