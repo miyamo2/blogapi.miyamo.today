@@ -49,7 +49,7 @@ Resources:
       Handler: bootstrap
       Runtime: provided.al2
       Layers:
-        - arn:aws:lambda:ap-northeast-1:451483290750:layer:NewRelicLambdaExtensionARM64:27
+        - arn:aws:lambda:ap-northeast-1:451483290750:layer:NewRelicLambdaExtension:46
       Architectures:
         - x86_64
       Events:
@@ -77,6 +77,7 @@ Resources:
           NEW_RELIC_LAMBDA_HANDLER: bootstrap
           NEW_RELIC_ACCOUNT_ID: !Ref NewRelicAccountId
           NEW_RELIC_EXTENSION_SEND_FUNCTION_LOGS: true
+          NEW_RELIC_LICENSE_KEY: !Ref NewRelicLicenseKey
       Timeout: 900
       Policies:
         - Statement:
