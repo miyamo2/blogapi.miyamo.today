@@ -83,6 +83,7 @@ func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.Arti
 			}
 
 			tx.Clauses(clause.OnConflict{
+				Columns: []clause.Column{{Name: "id"}, {Name: "tag_id"}},
 				DoUpdates: clause.Assignments(map[string]interface{}{
 					"title":      a.Title,
 					"thumbnail":  a.Thumbnail,
