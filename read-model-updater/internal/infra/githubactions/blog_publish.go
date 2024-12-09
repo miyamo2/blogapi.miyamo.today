@@ -7,11 +7,12 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/oklog/ulid/v2"
 	"log/slog"
 	"net/http"
 )
 
-const payload = `{"event_type":"sync-read-model", "client_payload": {}}`
+const payload = `{"event_type":"sync-read-model", "client_payload": { event_id: %s }}`
 
 type Client interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -33,7 +34,7 @@ func (b *BlogPublisher) Publish(ctx context.Context) error {
 	logger.Info("START")
 	defer logger.Info("END")
 
-	req, err := http.NewRequest(http.MethodPost, b.endpoint, bytes.NewBuffer([]byte(payload)))
+	req, err := http.NewRequest(http.MethodPost, b.endpoint, bytes.NewBuffer([]byte(fmt.Sprintf(payload, ulid.Make().String()))))
 	if err != nil {
 		return err
 	}
