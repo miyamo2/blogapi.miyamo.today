@@ -13,13 +13,14 @@ import (
 	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"gorm.io/plugin/dbresolver"
 	"log/slog"
 	"os"
 	"slices"
 )
 
-const DBName = "dynamodb"
+type DB struct {
+	*gorm.DB
+}
 
 var _ schema.Tabler = (*bloggingEvent)(nil)
 
@@ -52,7 +53,7 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 			logger = slog.Default()
 		}
 		logger.Info("START")
-		tx = tx.Clauses(dbresolver.Use(DBName)).WithContext(ctx)
+		tx = tx.WithContext(ctx)
 
 		rows := make([]bloggingEvent, 0)
 		err = tx.Model(bloggingEvent{}).Where("article_id = ?", articleId).Scan(&rows).Error

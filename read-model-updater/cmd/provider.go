@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
@@ -49,7 +48,37 @@ func provideNewRelicApp() *newrelic.Application {
 	return app
 }
 
-func provideGORMDB(awsConfig *aws.Config) *gorm.DB {
+func provideRDBGORM() *rdb.DB {
+	articleDB, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN_ARTICLE"))
+	if err != nil {
+		panic(err)
+	}
+	articleDialector := postgres.New(postgres.Config{Conn: articleDB})
+
+	// default connection
+	gormDB, err := gorm.Open(articleDialector)
+	if err != nil {
+		panic(err)
+	}
+
+	tagDB, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN_TAG"))
+	if err != nil {
+		panic(err)
+	}
+	tagDialector := postgres.New(postgres.Config{Conn: tagDB})
+	gormDB.Use(
+		dbresolver.
+			Register(dbresolver.Config{
+				Sources: []gorm.Dialector{articleDialector}, TraceResolverMode: true,
+			}, rdb.ArticleDBName).
+			Register(dbresolver.Config{
+				Sources: []gorm.Dialector{tagDialector}, TraceResolverMode: true,
+			}, rdb.TagDBName),
+	)
+	return &rdb.DB{DB: gormDB}
+}
+
+func provideDynamoDBGORM(awsConfig *aws.Config) *dynamo.DB {
 	godynamo.RegisterAWSConfig(*awsConfig)
 
 	dynamoDialector := dynmgrm.New()
@@ -59,26 +88,7 @@ func provideGORMDB(awsConfig *aws.Config) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-
-	articleDB, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN_ARTICLE"))
-	if err != nil {
-		panic(err)
-	}
-	articleDialector := postgres.New(postgres.Config{Conn: articleDB})
-
-	tagDB, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN_TAG"))
-	if err != nil {
-		panic(err)
-	}
-	tagDialector := postgres.New(postgres.Config{Conn: tagDB})
-
-	gormDB.Use(
-		dbresolver.
-			Register(dbresolver.Config{Sources: []gorm.Dialector{dynamoDialector}}, dynamo.DBName).
-			Register(dbresolver.Config{Sources: []gorm.Dialector{articleDialector}}, rdb.ArticleDBName).
-			Register(dbresolver.Config{Sources: []gorm.Dialector{tagDialector}}, rdb.TagDBName),
-	)
-	return gormDB
+	return &dynamo.DB{DB: gormDB}
 }
 
 func provideBlogPublisher() *githubactions.BlogPublisher {
@@ -88,13 +98,16 @@ func provideBlogPublisher() *githubactions.BlogPublisher {
 }
 
 func provideSynUsecaseSet(
+	rdbGorm *rdb.DB,
+	dynamodbGorm *dynamo.DB,
 	bloggingEventQueryService query.BloggingEventService,
 	articleCommandService command.ArticleService,
 	tagCommandService command.TagService,
 	blogAPIPublisher externalapi.BlogPublisher,
 ) *usecase.Sync {
 	return usecase.NewSync(
-		gw.Manager(),
+		rdbGorm,
+		dynamodbGorm,
 		bloggingEventQueryService,
 		articleCommandService,
 		tagCommandService,

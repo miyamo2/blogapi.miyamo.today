@@ -19,7 +19,9 @@ var awsConfigSet = wire.NewSet(provideAWSConfig)
 
 var newRelicSet = wire.NewSet(provideNewRelicApp)
 
-var gormSet = wire.NewSet(provideGORMDB)
+var rdbSet = wire.NewSet(provideRDBGORM)
+
+var dynamodbSet = wire.NewSet(provideDynamoDBGORM)
 
 var queryServiceSet = wire.NewSet(
 	dynamo.NewBloggingEventQueryService,
@@ -58,7 +60,8 @@ var dependenciesSet = wire.NewSet(newDependencies)
 func getDependecies() *dependencies {
 	wire.Build(
 		awsConfigSet,
-		gormSet,
+		dynamodbSet,
+		rdbSet,
 		newRelicSet,
 		queryServiceSet,
 		commandServiceSet,

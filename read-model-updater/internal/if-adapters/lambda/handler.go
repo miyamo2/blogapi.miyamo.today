@@ -8,6 +8,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"log/slog"
 )
 
 // SyncHandler is a handler for the Sync usecase.
@@ -24,6 +25,7 @@ func (h *SyncHandler) Invoke(ctx context.Context, stream events.DynamoDBEvent) e
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger.Warn("altnrslog not stored")
 	}
 	logger.Info("START")
 
@@ -31,6 +33,7 @@ func (h *SyncHandler) Invoke(ctx context.Context, stream events.DynamoDBEvent) e
 	err = h.syncUsecase.SyncBlogSnapshotWithEvents(ctx, dtoSeq)
 	if err != nil {
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger.Error("failed to sync", slog.Any("error", err))
 		return err
 	}
 	logger.Info("END")

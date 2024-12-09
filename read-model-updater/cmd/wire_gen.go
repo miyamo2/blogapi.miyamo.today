@@ -28,15 +28,16 @@ import (
 func getDependecies() *dependencies {
 	config := provideAWSConfig()
 	application := provideNewRelicApp()
-	db := provideGORMDB(config)
 	converterConverter := converter.NewConverter()
+	db := provideRDBGORM()
+	dynamoDB := provideDynamoDBGORM(config)
 	bloggingEventQueryService := dynamo.NewBloggingEventQueryService()
 	articleCommandService := rdb.NewArticleCommandService()
 	tagCommandService := rdb.NewTagCommandService()
 	blogPublisher := provideBlogPublisher()
-	sync := provideSynUsecaseSet(bloggingEventQueryService, articleCommandService, tagCommandService, blogPublisher)
+	sync := provideSynUsecaseSet(db, dynamoDB, bloggingEventQueryService, articleCommandService, tagCommandService, blogPublisher)
 	syncHandler := lambda.NewSyncHandler(converterConverter, sync)
-	mainDependencies := newDependencies(config, application, db, syncHandler)
+	mainDependencies := newDependencies(config, application, syncHandler)
 	return mainDependencies
 }
 
@@ -46,7 +47,9 @@ var awsConfigSet = wire.NewSet(provideAWSConfig)
 
 var newRelicSet = wire.NewSet(provideNewRelicApp)
 
-var gormSet = wire.NewSet(provideGORMDB)
+var rdbSet = wire.NewSet(provideRDBGORM)
+
+var dynamodbSet = wire.NewSet(provideDynamoDBGORM)
 
 var queryServiceSet = wire.NewSet(dynamo.NewBloggingEventQueryService, wire.Bind(new(query.BloggingEventService), new(*dynamo.BloggingEventQueryService)))
 

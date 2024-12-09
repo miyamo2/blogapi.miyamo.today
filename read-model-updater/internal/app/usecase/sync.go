@@ -2,22 +2,26 @@ package usecase
 
 import (
 	"context"
-	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/query"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/domain/model"
+	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"gorm.io/gorm"
+	"gorm.io/plugin/dbresolver"
 	"iter"
 	"log/slog"
 )
 
 // Sync is an usecese of sync
 type Sync struct {
-	transactionManager        db.TransactionManager
+	rdbGorm                   *rdb.DB
+	dynamodbGorm              *dynamo.DB
 	bloggingEventQueryService query.BloggingEventService
 	articleCommandService     command.ArticleService
 	tagCommandService         command.TagService
@@ -51,7 +55,11 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	defer logger.Info("END")
 
 	bloggingEvents := db.NewMultipleStatementResult[model.BloggingEvent]()
-	if err := u.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleId(), bloggingEvents).Execute(ctx); err != nil {
+	if err := u.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleId(), bloggingEvents).
+		Execute(ctx, gw.WithTransaction(u.dynamodbGorm.Session(&gorm.Session{
+			PrepareStmt:            false,
+			SkipDefaultTransaction: true,
+		}))); err != nil {
 		return err
 	}
 
@@ -61,40 +69,36 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 		return nil
 	}
 
-	articleTx, err := u.transactionManager.GetAndStart(ctx, db.GetAndStartWithDBSource(rdb.ArticleDBName))
-	if err != nil {
-		err = errors.WithStack(err)
-		return err
-	}
-	articleErrSub := articleTx.SubscribeError()
+	articleTx := u.rdbGorm.Session(&gorm.Session{
+		PrepareStmt:            false,
+		SkipDefaultTransaction: true,
+	}).Clauses(dbresolver.Use(rdb.ArticleDBName)).Begin()
 
-	tagTx, err := u.transactionManager.GetAndStart(ctx, db.GetAndStartWithDBSource(rdb.TagDBName))
-	if err != nil {
-		err = errors.WithStack(err)
-		return err
-	}
-	tagErrSub := tagTx.SubscribeError()
+	tagTx := u.rdbGorm.Session(&gorm.Session{
+		PrepareStmt:            false,
+		SkipDefaultTransaction: true,
+	}).Clauses(dbresolver.Use(rdb.ArticleDBName)).Begin()
 
 	done := make(chan struct{})
 	errCh := make(chan error)
 	go func() {
-		err = articleTx.ExecuteStatement(ctx, u.articleCommandService.ExecuteArticleCommand(ctx, *articleCommand))
+		err = u.articleCommandService.ExecuteArticleCommand(ctx, *articleCommand).Execute(ctx, gw.WithTransaction(articleTx))
 		if err != nil {
 			errCh <- err
 			return
 		}
 
-		err = tagTx.ExecuteStatement(ctx, u.tagCommandService.ExecuteTagCommand(ctx, *articleCommand))
+		err = u.tagCommandService.ExecuteTagCommand(ctx, *articleCommand).Execute(ctx, gw.WithTransaction(tagTx))
 		if err != nil {
 			errCh <- err
 			return
 		}
 
-		if err := articleTx.Commit(ctx); err != nil {
+		if err := articleTx.Commit().Error; err != nil {
 			errCh <- err
 			return
 		}
-		if err := tagTx.Commit(ctx); err != nil {
+		if err := tagTx.Commit().Error; err != nil {
 			errCh <- err
 			return
 		}
@@ -103,20 +107,12 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	}()
 	select {
 	case <-ctx.Done():
-		articleTx.Rollback(ctx)
-		tagTx.Rollback(ctx)
+		articleTx.Rollback()
+		tagTx.Rollback()
 		return ctx.Err()
-	case err := <-articleErrSub:
-		articleTx.Rollback(ctx)
-		tagTx.Rollback(ctx)
-		return err
-	case err := <-tagErrSub:
-		articleTx.Rollback(ctx)
-		tagTx.Rollback(ctx)
-		return err
 	case err := <-errCh:
-		articleTx.Rollback(ctx)
-		tagTx.Rollback(ctx)
+		articleTx.Rollback()
+		tagTx.Rollback()
 		return err
 	case <-done:
 	}
@@ -125,14 +121,16 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 
 // NewSync returns new Sync
 func NewSync(
-	transactionManager db.TransactionManager,
+	rdbGorm *rdb.DB,
+	dynamodbGorm *dynamo.DB,
 	bloggingEventQueryService query.BloggingEventService,
 	articleCommandService command.ArticleService,
 	tagCommandService command.TagService,
 	blogAPIPublisher externalapi.BlogPublisher,
 ) *Sync {
 	return &Sync{
-		transactionManager:        transactionManager,
+		rdbGorm:                   rdbGorm,
+		dynamodbGorm:              dynamodbGorm,
 		articleCommandService:     articleCommandService,
 		bloggingEventQueryService: bloggingEventQueryService,
 		tagCommandService:         tagCommandService,
