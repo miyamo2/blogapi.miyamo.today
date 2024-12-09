@@ -46,7 +46,7 @@ func (t *Transaction) process(ctx context.Context, dbSource string) {
 		return
 	}
 	if dbSource != "" {
-		conn.Clauses(dbresolver.Use(dbSource))
+		conn = conn.Clauses(dbresolver.Use(dbSource))
 	}
 	tx := conn.Begin()
 TX:
