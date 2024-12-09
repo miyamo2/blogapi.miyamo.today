@@ -30,8 +30,8 @@ func (b *BlogPublisher) Publish(ctx context.Context) error {
 	if err != nil {
 		logger = slog.Default()
 	}
-	logger.InfoContext(ctx, "START")
-	defer logger.InfoContext(ctx, "END")
+	logger.Info("START")
+	defer logger.Info("END")
 
 	req, err := http.NewRequest(http.MethodPost, b.endpoint, bytes.NewBuffer([]byte(payload)))
 	if err != nil {

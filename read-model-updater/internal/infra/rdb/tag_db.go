@@ -59,7 +59,7 @@ func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.Arti
 		if err != nil {
 			logger = slog.Default()
 		}
-		logger.InfoContext(ctx, "START")
+		logger.Info("START")
 
 		tx = tx.WithContext(ctx)
 		now := synchro.Now[tz.UTC]()
@@ -99,7 +99,7 @@ func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.Arti
 				}
 				return ids
 			}).Delete(&tagArticle{})
-		logger.InfoContext(ctx, "END")
+		logger.Info("END")
 		return nil
 	}, nil)
 }

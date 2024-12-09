@@ -51,7 +51,7 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 		if err != nil {
 			logger = slog.Default()
 		}
-		logger.InfoContext(ctx, "START")
+		logger.Info("START")
 		tx = tx.Clauses(dbresolver.Use(DBName)).WithContext(ctx)
 
 		rows := make([]bloggingEvent, 0)
@@ -79,7 +79,7 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 			result = append(result, model.NewBloggingEvent(r.EventID, r.ArticleID, r.Title, r.Content, r.Thumbnail, r.AttacheTags, r.DetachTags, r.Invisible))
 		}
 		out.Set(result)
-		logger.InfoContext(ctx, "END", slog.Int("result count", len(result)))
+		logger.Info("END", slog.Int("result count", len(result)))
 		return nil
 	}, out)
 }

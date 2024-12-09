@@ -25,7 +25,7 @@ func (h *SyncHandler) Invoke(ctx context.Context, stream events.DynamoDBEvent) e
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 	}
-	logger.InfoContext(ctx, "START")
+	logger.Info("START")
 
 	dtoSeq := h.syncUsecaseConverter.ToSyncUsecaseInDtoSeq(ctx, stream.Records)
 	err = h.syncUsecase.SyncBlogSnapshotWithEvents(ctx, dtoSeq)
@@ -33,7 +33,7 @@ func (h *SyncHandler) Invoke(ctx context.Context, stream events.DynamoDBEvent) e
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return err
 	}
-	logger.InfoContext(ctx, "END")
+	logger.Info("END")
 	return nil
 }
 
