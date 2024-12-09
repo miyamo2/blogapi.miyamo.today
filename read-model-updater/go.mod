@@ -10,10 +10,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.28.6
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.38.0
 	github.com/cockroachdb/errors v1.11.3
-	github.com/goccy/go-json v0.9.11
+	github.com/goccy/go-json v0.10.3
 	github.com/google/wire v0.6.0
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.21.1
+	github.com/miyamo2/blogapi.miyamo.today/core v0.21.2
 	github.com/miyamo2/dynmgrm v0.10.0
 	github.com/miyamo2/godynamo v1.4.0
 	github.com/miyamo2/sqldav v0.2.1
@@ -61,9 +61,9 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.3 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgtype v1.14.0 // indirect
+	github.com/jackc/pgtype v1.14.4 // indirect
 	github.com/jackc/pgx v3.6.2+incompatible // indirect
-	github.com/jackc/pgx/v4 v4.18.2 // indirect
+	github.com/jackc/pgx/v4 v4.18.3 // indirect
 	github.com/jackc/pgx/v5 v5.7.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
