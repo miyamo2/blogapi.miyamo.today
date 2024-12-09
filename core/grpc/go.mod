@@ -7,7 +7,7 @@ require (
 	github.com/miyamo2/blogapi.miyamo.today/core v0.21.1
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/oklog/ulid/v2 v2.1.0
-	google.golang.org/grpc v1.68.0
+	google.golang.org/grpc v1.68.1
 )
 
 require (
