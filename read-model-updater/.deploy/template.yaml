@@ -79,6 +79,7 @@ Resources:
           NEW_RELIC_TRUSTED_ACCOUNT_KEY: !Ref NewRelicAccountId
           NEW_RELIC_EXTENSION_SEND_FUNCTION_LOGS: true
           NEW_RELIC_LICENSE_KEY: !Ref NewRelicLicenseKey
+          NEW_RELIC_EXTENSION_LOG_LEVEL: INFO
       Timeout: 900
       Policies:
         - Statement:

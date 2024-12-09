@@ -37,6 +37,7 @@ func provideAWSConfig() *aws.Config {
 func provideNewRelicApp() *newrelic.Application {
 	app, err := newrelic.NewApplication(
 		nrlambda.ConfigOption(),
+		newrelic.ConfigAppName(os.Getenv("NEW_RELIC_CONFIG_APP_NAME")),
 	)
 	if err != nil {
 		panic(err)
