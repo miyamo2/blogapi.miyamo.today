@@ -102,6 +102,8 @@ func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.Arti
 		tx.Where("id = ?", in.ID()).
 			Where("tag_id NOT IN (?)", tagIDToBeDeleted).Delete(&tagArticle{})
 		logger.Info("END")
+
+		tx.Where("NOT EXISTS (SELECT 1 FROM articles WHERE articles.tag_id = tags.id)").Delete(&tag{})
 		return nil
 	}, nil)
 }
