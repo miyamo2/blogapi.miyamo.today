@@ -57,8 +57,8 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 		tx = tx.WithContext(ctx)
 
 		rows := make([]bloggingEvent, 0)
-		err = tx.Clauses(
-			dynmgrm.SecondaryIndex("article_id_event_id-index", dynmgrm.SecondaryIndexOf(bloggingEvent{}.TableName()))).
+		err = tx.Table(bloggingEvent{}.TableName()).Clauses(
+			dynmgrm.SecondaryIndex("article_id_event_id-Index")).
 			Where("article_id = ?", articleId).Scan(&rows).Error
 		if err != nil {
 			err = errors.WithStack(err)
