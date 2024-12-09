@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.21.2 - 2024-12-09
+
+🚑️ Fix Transaction Handling
+
 ## 0.21.1 - 2024-09-12
 
 ### ⬆️ Update dependencies
