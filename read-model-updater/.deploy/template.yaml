@@ -74,9 +74,9 @@ Resources:
           NEW_RELIC_CONFIG_LICENSE: !Ref NewRelicLicenseKey
           BLOG_PUBLISH_ENDPOINT: !Ref BlogPublishEndpoint
           GITHUB_TOKEN: !Ref GitHubToken
-          NEW_RELIC_LAMBDA_HANDLER: bootstrap
           NEW_RELIC_ACCOUNT_ID: !Ref NewRelicAccountId
           NEW_RELIC_TRUSTED_ACCOUNT_KEY: !Ref NewRelicAccountId
+          NEW_RELIC_PRIMARY_APPLICATION_ID: !Ref NewRelicAccountId
           NEW_RELIC_EXTENSION_SEND_FUNCTION_LOGS: true
           NEW_RELIC_LICENSE_KEY: !Ref NewRelicLicenseKey
           NEW_RELIC_EXTENSION_LOG_LEVEL: INFO

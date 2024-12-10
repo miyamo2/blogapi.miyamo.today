@@ -1,4 +1,4 @@
-package main
+package di
 
 import (
 	"context"
@@ -37,7 +37,9 @@ func provideAWSConfig() *aws.Config {
 func provideNewRelicApp() *newrelic.Application {
 	app, err := newrelic.NewApplication(
 		nrlambda.ConfigOption(),
+		newrelic.ConfigAppLogForwardingEnabled(true),
 		newrelic.ConfigAppName(os.Getenv("NEW_RELIC_CONFIG_APP_NAME")),
+		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_CONFIG_LICENSE")),
 	)
 	if err != nil {
 		panic(err)

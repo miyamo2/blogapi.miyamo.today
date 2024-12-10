@@ -4,7 +4,7 @@
 //go:build !wireinject
 // +build !wireinject
 
-package main
+package di
 
 import (
 	"github.com/google/wire"
@@ -25,7 +25,7 @@ import (
 
 // Injectors from wire.go:
 
-func getDependecies() *dependencies {
+func GetDependecies() *Dependencies {
 	config := provideAWSConfig()
 	application := provideNewRelicApp()
 	converterConverter := converter.NewConverter()
@@ -37,8 +37,8 @@ func getDependecies() *dependencies {
 	blogPublisher := provideBlogPublisher()
 	sync := provideSynUsecaseSet(db, dynamoDB, bloggingEventQueryService, articleCommandService, tagCommandService, blogPublisher)
 	syncHandler := lambda.NewSyncHandler(converterConverter, sync)
-	mainDependencies := newDependencies(config, application, syncHandler)
-	return mainDependencies
+	dependencies := newDependencies(config, application, syncHandler)
+	return dependencies
 }
 
 // wire.go:
@@ -65,6 +65,6 @@ var usecaseSet = wire.NewSet(
 
 var converterSet = wire.NewSet(converter.NewConverter, wire.Bind(new(lambda.ToSyncUsecaseInDtoConverter), new(*converter.Converter)))
 
-var handlerSet = wire.NewSet(lambda.NewSyncHandler, wire.Bind(new(SyncHandler), new(*lambda.SyncHandler)))
+var handlerSet = wire.NewSet(lambda.NewSyncHandler)
 
 var dependenciesSet = wire.NewSet(newDependencies)

@@ -1,6 +1,6 @@
 //go:build wireinject
 
-package main
+package di
 
 import (
 	"github.com/google/wire"
@@ -52,12 +52,11 @@ var converterSet = wire.NewSet(
 
 var handlerSet = wire.NewSet(
 	lambda.NewSyncHandler,
-	wire.Bind(new(SyncHandler), new(*lambda.SyncHandler)),
 )
 
 var dependenciesSet = wire.NewSet(newDependencies)
 
-func getDependecies() *dependencies {
+func GetDependecies() *Dependencies {
 	wire.Build(
 		awsConfigSet,
 		dynamodbSet,
