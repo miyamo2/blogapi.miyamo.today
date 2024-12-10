@@ -60,43 +60,37 @@ func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.Arti
 		tx = tx.WithContext(ctx)
 		now := synchro.Now[tz.UTC]()
 
+		var (
+			tags         []tag
+			tagArticles  []tagArticle
+			existsTagIDs []string
+		)
 		for _, ti := range in.Tags() {
-			t := tag{
+			tags = append(tags, tag{
 				ID:        ti.ID(),
 				Name:      ti.Name(),
 				CreatedAt: now,
 				UpdatedAt: now,
-			}
-			tx.Clauses(clause.OnConflict{DoNothing: true}).Create(t)
-
-			a := &tagArticle{
+			})
+			existsTagIDs = append(existsTagIDs, ti.ID())
+			tagArticles = append(tagArticles, tagArticle{
 				ID:        in.ID(),
 				TagID:     ti.ID(),
 				Title:     in.Title(),
 				Thumbnail: in.Thumbnail(),
 				CreatedAt: now,
 				UpdatedAt: now,
-			}
-
-			tx.Clauses(clause.OnConflict{
-				Columns: []clause.Column{{Name: "id"}, {Name: "tag_id"}},
-				DoUpdates: clause.Assignments(map[string]interface{}{
-					"title":      a.Title,
-					"thumbnail":  a.Thumbnail,
-					"updated_at": now,
-				}),
-			}).Create(a)
+			})
 		}
+		tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&tags)
 
-		tagIDToBeDeleted := func() []string {
-			var ids []string
-			for _, ti := range in.Tags() {
-				ids = append(ids, ti.ID())
-			}
-			return ids
-		}()
+		tx.Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}, {Name: "tag_id"}},
+			DoUpdates: clause.AssignmentColumns([]string{"title", "thumbnail", "updated_at"}),
+		}).Create(&tagArticles)
+
 		tx.Where("id = ?", in.ID()).
-			Where("tag_id NOT IN (?)", tagIDToBeDeleted).Delete(&tagArticle{})
+			Where("tag_id NOT IN (?)", existsTagIDs).Delete(&tagArticle{})
 		logger.Info("[RMU] END")
 
 		tx.Where("NOT EXISTS (SELECT 1 FROM articles WHERE articles.tag_id = tags.id)").Delete(&tag{})

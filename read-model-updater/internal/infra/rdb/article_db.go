@@ -79,7 +79,7 @@ func (s *ArticleCommandService) ExecuteArticleCommand(ctx context.Context, in mo
 			}),
 		}).Create(a)
 
-		articleIDToBeDeleted := func() []string {
+		existsTagIDs := func() []string {
 			var ids []string
 			for _, ti := range in.Tags() {
 				ids = append(ids, ti.ID())
@@ -87,19 +87,20 @@ func (s *ArticleCommandService) ExecuteArticleCommand(ctx context.Context, in mo
 			return ids
 		}()
 		tx.Where("article_id = ?", in.ID()).
-			Where("id NOT IN (?)", articleIDToBeDeleted).
+			Where("id NOT IN (?)", existsTagIDs).
 			Delete(&articleTag{})
 
+		var articleTags []*articleTag
 		for _, ti := range in.Tags() {
-			t := &articleTag{
+			articleTags = append(articleTags, &articleTag{
 				ID:        ti.ID(),
 				ArticleID: in.ID(),
 				Name:      ti.Name(),
 				CreatedAt: now,
 				UpdatedAt: now,
-			}
-			tx.Clauses(clause.OnConflict{DoNothing: true}).Create(t)
+			})
 		}
+		tx.Clauses(clause.OnConflict{DoNothing: true}).Create(articleTags)
 		logger.Info("[RMU] END")
 		return nil
 	}, nil)
