@@ -30,7 +30,7 @@ func (b *BlogPublisher) Publish(ctx context.Context) error {
 	logger.Info("[RMU] START")
 	defer logger.Info("[RMU] END")
 
-	req, err := http.NewRequest(http.MethodPost, b.endpoint, bytes.NewBuffer([]byte(fmt.Sprintf(payload, ulid.Make().String()))))
+	req, err := http.NewRequest(http.MethodPost, b.endpoint, bytes.NewBuffer([]byte(fmt.Sprintf(payload, ulid.Make()))))
 	if err != nil {
 		return err
 	}
