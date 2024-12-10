@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-const payload = `{"event_type":"sync-read-model", "client_payload": { "event_id"": %s }}`
+const payload = `{"event_type":"sync-read-model", "client_payload": { "event_id"": "%s" }}`
 
 type Client interface {
 	Do(req *http.Request) (*http.Response, error)
