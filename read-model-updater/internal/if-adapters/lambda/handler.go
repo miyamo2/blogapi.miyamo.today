@@ -27,7 +27,7 @@ func (h *SyncHandler) Invoke(ctx context.Context, stream events.DynamoDBEvent) e
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger.Warn("altnrslog not stored")
 	}
-	logger.Info("START")
+	logger.Info("[RMU] START")
 
 	dtoSeq := h.syncUsecaseConverter.ToSyncUsecaseInDtoSeq(ctx, stream.Records)
 	err = h.syncUsecase.SyncBlogSnapshotWithEvents(ctx, dtoSeq)
@@ -36,7 +36,7 @@ func (h *SyncHandler) Invoke(ctx context.Context, stream events.DynamoDBEvent) e
 		logger.Error("failed to sync", slog.Any("error", err))
 		return err
 	}
-	logger.Info("END")
+	logger.Info("[RMU] END")
 	return nil
 }
 

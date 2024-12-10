@@ -31,8 +31,8 @@ func (b *BlogPublisher) Publish(ctx context.Context) error {
 	if err != nil {
 		logger = slog.Default()
 	}
-	logger.Info("START")
-	defer logger.Info("END")
+	logger.Info("[RMU] START")
+	defer logger.Info("[RMU] END")
 
 	req, err := http.NewRequest(http.MethodPost, b.endpoint, bytes.NewBuffer([]byte(fmt.Sprintf(payload, ulid.Make().String()))))
 	if err != nil {

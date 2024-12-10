@@ -51,8 +51,8 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	if err != nil {
 		logger = slog.Default()
 	}
-	logger.Info("START", slog.Any("dto", dto))
-	defer logger.Info("END")
+	logger.Info("[RMU] START", slog.Any("dto", dto))
+	defer logger.Info("[RMU] END")
 
 	bloggingEvents := db.NewMultipleStatementResult[model.BloggingEvent]()
 	if err := u.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleId(), bloggingEvents).
