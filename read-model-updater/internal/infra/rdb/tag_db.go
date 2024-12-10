@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
-	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/domain/model"
@@ -55,10 +54,7 @@ func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.Arti
 		nrtx := newrelic.FromContext(ctx)
 		defer nrtx.StartSegment("ArticleCommandService#ExecuteTagCommand#Execute").End()
 
-		logger, err := altnrslog.FromContext(ctx)
-		if err != nil {
-			logger = slog.Default()
-		}
+		logger := slog.Default()
 		logger.Info("[RMU] START")
 
 		tx = tx.WithContext(ctx)

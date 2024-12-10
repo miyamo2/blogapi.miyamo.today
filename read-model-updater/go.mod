@@ -12,7 +12,6 @@ require (
 	github.com/cockroachdb/errors v1.11.3
 	github.com/goccy/go-json v0.10.3
 	github.com/google/wire v0.6.0
-	github.com/miyamo2/altnrslog v0.4.2
 	github.com/miyamo2/blogapi.miyamo.today/core v0.21.2
 	github.com/miyamo2/dynmgrm v0.10.0
 	github.com/miyamo2/godynamo v1.4.0
@@ -71,6 +70,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/miyamo2/altnrslog v0.4.2 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
@@ -47,10 +46,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Sync#executePerEvent").End()
 
-	logger, err := altnrslog.FromContext(ctx)
-	if err != nil {
-		logger = slog.Default()
-	}
+	logger := slog.Default()
 	logger.Info("[RMU] START", slog.Any("dto", dto))
 	defer logger.Info("[RMU] END")
 
@@ -82,7 +78,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	done := make(chan struct{})
 	errCh := make(chan error)
 	go func() {
-		err = u.articleCommandService.ExecuteArticleCommand(ctx, *articleCommand).Execute(ctx, gw.WithTransaction(articleTx))
+		err := u.articleCommandService.ExecuteArticleCommand(ctx, *articleCommand).Execute(ctx, gw.WithTransaction(articleTx))
 		if err != nil {
 			errCh <- err
 			return

@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
 	"log/slog"
@@ -27,10 +26,7 @@ type BlogPublisher struct {
 func (b *BlogPublisher) Publish(ctx context.Context) error {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("BlogPublisher#Publish").End()
-	logger, err := altnrslog.FromContext(ctx)
-	if err != nil {
-		logger = slog.Default()
-	}
+	logger := slog.Default()
 	logger.Info("[RMU] START")
 	defer logger.Info("[RMU] END")
 
