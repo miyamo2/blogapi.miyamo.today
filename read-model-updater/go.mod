@@ -14,7 +14,7 @@ require (
 	github.com/google/wire v0.6.0
 	github.com/miyamo2/blogapi.miyamo.today/core v0.21.2
 	github.com/miyamo2/dynmgrm v0.10.0
-	github.com/miyamo2/pqxd v0.5.0
+	github.com/miyamo2/godynamo v1.4.0
 	github.com/miyamo2/sqldav v0.2.1
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2 v1.2.3
@@ -71,13 +71,10 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/miyamo2/altnrslog v0.4.2 // indirect
-	github.com/miyamo2/godynamo v1.4.0 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
-	go.uber.org/mock v0.5.0 // indirect
 	golang.org/x/crypto v0.30.0 // indirect
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
