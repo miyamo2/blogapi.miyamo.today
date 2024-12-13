@@ -13,7 +13,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 	"github.com/miyamo2/dynmgrm"
-	"github.com/miyamo2/godynamo"
+	"github.com/miyamo2/pqxd"
 	"github.com/newrelic/go-agent/v3/integrations/nrlambda"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -82,9 +82,12 @@ func provideRDBGORM() *rdb.DB {
 }
 
 func provideDynamoDBGORM(awsConfig *aws.Config) *dynamo.DB {
-	godynamo.RegisterAWSConfig(*awsConfig)
-
-	dynamoDialector := dynmgrm.New()
+	db := sql.OpenDB(pqxd.NewConnector(*awsConfig))
+	err := db.Ping()
+	if err != nil {
+		panic(err)
+	}
+	dynamoDialector := dynmgrm.New(dynmgrm.WithConnection(db))
 
 	// default connection
 	gormDB, err := gorm.Open(dynamoDialector)
