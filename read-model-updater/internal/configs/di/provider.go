@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
 	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
@@ -28,9 +27,7 @@ import (
 
 func provideAWSConfig() *aws.Config {
 	ctx := context.Background()
-	awsConfig, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion(os.Getenv("AWS_REGION")),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), "")))
+	awsConfig, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		panic(err)
 	}
