@@ -101,6 +101,7 @@ Resources:
               - dynamodb:PartiQLUpdate
               - dynamodb:PartiQLDelete
               - dynamodb:PartiQLSelect
+              - dynamodb:DescribeEndpoints
             Resource: "*"
           - Sid: CloudWatchLogsPolicy
             Effect: Allow
