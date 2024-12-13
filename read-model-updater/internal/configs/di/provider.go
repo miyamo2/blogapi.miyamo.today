@@ -83,6 +83,10 @@ func provideRDBGORM() *rdb.DB {
 
 func provideDynamoDBGORM(awsConfig *aws.Config) *dynamo.DB {
 	db := sql.OpenDB(pqxd.NewConnector(*awsConfig))
+	err := db.Ping()
+	if err != nil {
+		panic(err)
+	}
 	dynamoDialector := dynmgrm.New(dynmgrm.WithConnection(db))
 
 	// default connection
