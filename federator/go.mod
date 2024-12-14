@@ -3,7 +3,7 @@ module github.com/miyamo2/blogapi.miyamo.today/federator
 go 1.23
 
 require (
-	github.com/99designs/gqlgen v0.17.57
+	github.com/99designs/gqlgen v0.17.60
 	github.com/cockroachdb/errors v1.11.3
 	github.com/goccy/go-json v0.10.3
 	github.com/google/go-cmp v0.6.0
