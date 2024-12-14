@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.22.0 - 2024-12-14
+
+### ✨ New Features
+
+- Added utility functions for the tcp connection.
+
 ## 0.21.2 - 2024-12-09
 
 🚑️ Fix Transaction Handling
