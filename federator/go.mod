@@ -11,9 +11,9 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.2
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.21.1
+	github.com/miyamo2/blogapi.miyamo.today/core v0.22.0
 	github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.1
-	github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.3.0
+	github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.3.1
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.2
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4
@@ -29,7 +29,7 @@ require (
 	github.com/agnivade/levenshtein v1.2.0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
-	github.com/getsentry/sentry-go v0.29.1 // indirect
+	github.com/getsentry/sentry-go v0.30.0 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -55,5 +55,5 @@ require (
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20241209162323-e6fa225c2576 // indirect
 )
