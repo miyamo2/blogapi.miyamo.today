@@ -67,6 +67,6 @@ jobs:
           aws-region: ap-northeast-1
 
       - name: Validate SAM template
-        working-directory: ./read-model-updater
+        working-directory: ./read-model-updater/.deploy
         run: |
           sam validate
