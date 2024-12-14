@@ -17,7 +17,7 @@ RUN go mod download
 
 RUN go build -ldflags="-s -w" -trimpath -o ./bin/federator ./cmd/main.go
 
-FROM alpine:3.20
+FROM alpine:3.21
 
 WORKDIR /app
 
