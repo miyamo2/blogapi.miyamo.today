@@ -6,6 +6,7 @@ import (
 	"github.com/Code-Hex/synchro/tz"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	"log/slog"
+	"net/url"
 	"time"
 
 	"github.com/miyamo2/altnrslog"
@@ -79,11 +80,21 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 				slog.Any("error", err)))
 		return dto.ArticleOutDto{}, err
 	}
+	thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+	if err != nil {
+		err = errors.WithStack(err)
+		lgr.WarnContext(ctx, "END",
+			slog.String("duration", dw.SDuration()),
+			slog.Group("return",
+				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("error", err)))
+		return dto.ArticleOutDto{}, err
+	}
 	a := dto.NewArticleTag(
 		pa.Id,
 		pa.Title,
 		pa.Body,
-		pa.ThumbnailUrl,
+		*thumbnailURL,
 		createdAt,
 		updatedAt,
 		ts)

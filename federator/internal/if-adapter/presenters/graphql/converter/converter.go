@@ -91,7 +91,7 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 		ID:           from.Id(),
 		Title:        from.Title(),
 		Content:      from.Body(),
-		ThumbnailURL: from.ThumbnailUrl(),
+		ThumbnailURL: gqlscalar.URL(from.ThumbnailUrl()),
 		CreatedAt:    gqlscalar.UTC(from.CreatedAt()),
 		UpdatedAt:    gqlscalar.UTC(from.UpdatedAt()),
 		Tags:         &tcnn,
@@ -223,7 +223,7 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 			Node: &model.TagArticleNode{
 				ID:           article.Id(),
 				Title:        article.Title(),
-				ThumbnailURL: article.ThumbnailUrl(),
+				ThumbnailURL: gqlscalar.URL(article.ThumbnailUrl()),
 				CreatedAt:    gqlscalar.UTC(article.CreatedAt()),
 				UpdatedAt:    gqlscalar.UTC(article.UpdatedAt()),
 			},

@@ -4,6 +4,7 @@ import (
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"github.com/cockroachdb/errors"
+	"net/url"
 )
 
 var (
@@ -141,7 +142,7 @@ type Article struct {
 	id           string
 	title        string
 	body         string
-	thumbnailUrl string
+	thumbnailUrl url.URL
 	createdAt    synchro.Time[tz.UTC]
 	updatedAt    synchro.Time[tz.UTC]
 }
@@ -160,7 +161,7 @@ func (a Article) Title() string {
 }
 
 // ThumbnailUrl returns thumbnail url.
-func (a Article) ThumbnailUrl() string {
+func (a Article) ThumbnailUrl() url.URL {
 	return a.thumbnailUrl
 }
 
@@ -174,7 +175,7 @@ func (a Article) UpdatedAt() synchro.Time[tz.UTC] {
 	return a.updatedAt
 }
 
-func NewArticle(id, title, body, thumbnailUrl string, createdAt, updatedAt synchro.Time[tz.UTC]) Article {
+func NewArticle(id, title, body string, thumbnailUrl url.URL, createdAt, updatedAt synchro.Time[tz.UTC]) Article {
 	return Article{
 		id:           id,
 		title:        title,
@@ -223,7 +224,7 @@ func (a ArticleTag) Tags() []Tag {
 	return a.tags
 }
 
-func NewArticleTag(id, title, body, thumbnailUrl string, createdAt, updatedAt synchro.Time[tz.UTC], tags []Tag) ArticleTag {
+func NewArticleTag(id, title, body string, thumbnailUrl url.URL, createdAt, updatedAt synchro.Time[tz.UTC], tags []Tag) ArticleTag {
 	return ArticleTag{
 		Article: NewArticle(id, title, body, thumbnailUrl, createdAt, updatedAt),
 		tags:    tags,

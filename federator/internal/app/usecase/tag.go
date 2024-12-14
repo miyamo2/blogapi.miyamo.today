@@ -5,6 +5,7 @@ import (
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"log/slog"
+	"net/url"
 	"time"
 
 	"github.com/miyamo2/altnrslog"
@@ -76,11 +77,23 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 					slog.Any("error", err)))
 			return dto.TagOutDto{}, err
 		}
+
+		thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+		if err != nil {
+			err = errors.WithStack(err)
+			lgr.WarnContext(ctx, "END",
+				slog.String("duration", dw.SDuration()),
+				slog.Group("return",
+					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("error", err)))
+			return dto.TagOutDto{}, err
+		}
+
 		atcls = append(atcls, dto.NewArticle(
 			pa.Id,
 			pa.Title,
 			"",
-			pa.ThumbnailUrl,
+			*thumbnailURL,
 			createdAt,
 			updatedAt))
 	}

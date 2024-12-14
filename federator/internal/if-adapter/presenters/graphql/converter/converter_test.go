@@ -9,6 +9,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"testing"
 )
 
@@ -41,7 +42,7 @@ func TestConverter_ToArticle(t *testing.T) {
 						"Article1",
 						"happy_path/single_tag",
 						"## happy_path/single_tag",
-						"example.test",
+						utils.MustURLParse("example.com/example.png"),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
@@ -54,7 +55,7 @@ func TestConverter_ToArticle(t *testing.T) {
 					ID:           "Article1",
 					Title:        "happy_path/single_tag",
 					Content:      "## happy_path/single_tag",
-					ThumbnailURL: "example.test",
+					ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
@@ -86,7 +87,7 @@ func TestConverter_ToArticle(t *testing.T) {
 						"Article1",
 						"happy_path/multi_tag",
 						"## happy_path/multi_tag",
-						"example.test",
+						utils.MustURLParse("example.com/example.png"),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
@@ -99,7 +100,7 @@ func TestConverter_ToArticle(t *testing.T) {
 					ID:           "Article1",
 					Title:        "happy_path/multi_tag",
 					Content:      "## happy_path/multi_tag",
-					ThumbnailURL: "example.test",
+					ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
@@ -138,7 +139,7 @@ func TestConverter_ToArticle(t *testing.T) {
 						"Article1",
 						"happy_path/no_tag",
 						"## happy_path/no_tag",
-						"example.test",
+						utils.MustURLParse("example.com/example.png"),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{}),
@@ -149,7 +150,7 @@ func TestConverter_ToArticle(t *testing.T) {
 					ID:           "Article1",
 					Title:        "happy_path/no_tag",
 					Content:      "## happy_path/no_tag",
-					ThumbnailURL: "example.test",
+					ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
@@ -201,7 +202,7 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					"Article1",
 					"happy_path/single_tag",
 					"## happy_path/single_tag",
-					"example.test",
+					utils.MustURLParse("example.com/example.png"),
 					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					[]dto.Tag{
@@ -213,7 +214,7 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					ID:           "Article1",
 					Title:        "happy_path/single_tag",
 					Content:      "## happy_path/single_tag",
-					ThumbnailURL: "example.test",
+					ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
@@ -243,7 +244,7 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					"Article1",
 					"happy_path/multi_tag",
 					"## happy_path/multi_tag",
-					"example.test",
+					utils.MustURLParse("example.com/example.png"),
 					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					[]dto.Tag{
@@ -256,7 +257,7 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					ID:           "Article1",
 					Title:        "happy_path/multi_tag",
 					Content:      "## happy_path/multi_tag",
-					ThumbnailURL: "example.test",
+					ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
@@ -293,7 +294,7 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					"Article1",
 					"happy_path/no_tag",
 					"## happy_path/no_tag",
-					"example.test",
+					utils.MustURLParse("example.com/example.png"),
 					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					[]dto.Tag{}),
@@ -303,7 +304,7 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					ID:           "Article1",
 					Title:        "happy_path/no_tag",
 					Content:      "## happy_path/no_tag",
-					ThumbnailURL: "example.test",
+					ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
@@ -364,7 +365,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/single_article/single_tag",
 							"## happy_path/single_article/single_tag",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -384,7 +385,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/single_article/single_tag",
 								Content:      "## happy_path/single_article/single_tag",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -424,7 +425,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/single_article/multi_tag",
 							"## happy_path/single_article/multi_tag",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -443,7 +444,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/single_article/multi_tag",
 								Content:      "## happy_path/single_article/multi_tag",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -490,7 +491,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/multi_article/single_tag",
 							"## happy_path/multi_article/single_tag",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -500,7 +501,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article2",
 							"happy_path/multi_article/single_tag",
 							"## happy_path/multi_article/single_tag",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -518,7 +519,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/multi_article/single_tag",
 								Content:      "## happy_path/multi_article/single_tag",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -545,7 +546,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article2",
 								Title:        "happy_path/multi_article/single_tag",
 								Content:      "## happy_path/multi_article/single_tag",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -585,7 +586,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/multi_article/multi_tag",
 							"## happy_path/multi_article/multi_tag",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -596,7 +597,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article2",
 							"happy_path/multi_article/multi_tag",
 							"## happy_path/multi_article/multi_tag",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -615,7 +616,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/multi_article/multi_tag",
 								Content:      "## happy_path/multi_article/multi_tag",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -649,7 +650,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article2",
 								Title:        "happy_path/multi_article/multi_tag",
 								Content:      "## happy_path/multi_article/multi_tag",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -696,7 +697,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/single_article/single_tag/with_next_paging",
 							"## happy_path/single_article/single_tag/with_next_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -717,7 +718,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/single_article/single_tag/with_next_paging",
 								Content:      "## happy_path/single_article/single_tag/with_next_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -758,7 +759,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/single_article/multi_tag/with_next_paging",
 							"## happy_path/single_article/multi_tag/with_next_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -778,7 +779,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/single_article/multi_tag/with_next_paging",
 								Content:      "## happy_path/single_article/multi_tag/with_next_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -826,7 +827,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/multi_article/single_tag/with_next_paging",
 							"## happy_path/multi_article/single_tag/with_next_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -836,7 +837,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article2",
 							"happy_path/multi_article/single_tag/with_next_paging",
 							"## happy_path/multi_article/single_tag/with_next_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -855,7 +856,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/multi_article/single_tag/with_next_paging",
 								Content:      "## happy_path/multi_article/single_tag/with_next_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -882,7 +883,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article2",
 								Title:        "happy_path/multi_article/single_tag/with_next_paging",
 								Content:      "## happy_path/multi_article/single_tag/with_next_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -923,7 +924,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/multi_article/multi_tag/with_next_paging",
 							"## happy_path/multi_article/multi_tag/with_next_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -934,7 +935,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article2",
 							"happy_path/multi_article/multi_tag/with_next_paging",
 							"## happy_path/multi_article/multi_tag/with_next_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -954,7 +955,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/multi_article/multi_tag/with_next_paging",
 								Content:      "## happy_path/multi_article/multi_tag/with_next_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -988,7 +989,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article2",
 								Title:        "happy_path/multi_article/multi_tag/with_next_paging",
 								Content:      "## happy_path/multi_article/multi_tag/with_next_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -1036,7 +1037,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/single_article/single_tag/with_prev_paging",
 							"## happy_path/single_article/single_tag/with_prev_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -1057,7 +1058,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/single_article/single_tag/with_prev_paging",
 								Content:      "## happy_path/single_article/single_tag/with_prev_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -1098,7 +1099,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/single_article/multi_tag/with_prev_paging",
 							"## happy_path/single_article/multi_tag/with_prev_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -1118,7 +1119,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/single_article/multi_tag/with_prev_paging",
 								Content:      "## happy_path/single_article/multi_tag/with_prev_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -1166,7 +1167,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/multi_article/single_tag/with_prev_paging",
 							"## happy_path/multi_article/single_tag/with_prev_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -1176,7 +1177,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article2",
 							"happy_path/multi_article/single_tag/with_prev_paging",
 							"## happy_path/multi_article/single_tag/with_prev_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -1195,7 +1196,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/multi_article/single_tag/with_prev_paging",
 								Content:      "## happy_path/multi_article/single_tag/with_prev_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -1222,7 +1223,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article2",
 								Title:        "happy_path/multi_article/single_tag/with_prev_paging",
 								Content:      "## happy_path/multi_article/single_tag/with_prev_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -1263,7 +1264,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article1",
 							"happy_path/multi_article/multi_tag/with_prev_paging",
 							"## happy_path/multi_article/multi_tag/with_prev_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -1274,7 +1275,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							"Article2",
 							"happy_path/multi_article/multi_tag/with_prev_paging",
 							"## happy_path/multi_article/multi_tag/with_prev_paging",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
@@ -1294,7 +1295,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "happy_path/multi_article/multi_tag/with_prev_paging",
 								Content:      "## happy_path/multi_article/multi_tag/with_prev_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -1328,7 +1329,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								ID:           "Article2",
 								Title:        "happy_path/multi_article/multi_tag/with_prev_paging",
 								Content:      "## happy_path/multi_article/multi_tag/with_prev_paging",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -1427,7 +1428,7 @@ func TestConverter_ToTag(t *testing.T) {
 								"Article1",
 								"Article1",
 								"",
-								"example.test",
+								utils.MustURLParse("example.com/example.png"),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))})),
 			},
@@ -1442,7 +1443,7 @@ func TestConverter_ToTag(t *testing.T) {
 								Node: &model.TagArticleNode{
 									ID:           "Article1",
 									Title:        "Article1",
-									ThumbnailURL: "example.test",
+									ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
@@ -1470,14 +1471,14 @@ func TestConverter_ToTag(t *testing.T) {
 								"Article1",
 								"Article1",
 								"",
-								"example.test",
+								utils.MustURLParse("example.com/example.png"),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							dto.NewArticle(
 								"Article2",
 								"Article2",
 								"",
-								"example.test",
+								utils.MustURLParse("example.com/example.png"),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))})),
 			},
@@ -1492,7 +1493,7 @@ func TestConverter_ToTag(t *testing.T) {
 								Node: &model.TagArticleNode{
 									ID:           "Article1",
 									Title:        "Article1",
-									ThumbnailURL: "example.test",
+									ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
@@ -1502,7 +1503,7 @@ func TestConverter_ToTag(t *testing.T) {
 								Node: &model.TagArticleNode{
 									ID:           "Article2",
 									Title:        "Article2",
-									ThumbnailURL: "example.test",
+									ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
@@ -1585,7 +1586,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 							"Article1",
 							"Article1",
 							"## Article1",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						),
@@ -1602,7 +1603,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 								Node: &model.TagArticleNode{
 									ID:           "Article1",
 									Title:        "Article1",
-									ThumbnailURL: "example.test",
+									ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
@@ -1629,7 +1630,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 							"Article1",
 							"Article1",
 							"## Article1",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						),
@@ -1637,7 +1638,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 							"Article2",
 							"Article2",
 							"## Article2",
-							"example.test",
+							utils.MustURLParse("example.com/example.png"),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						),
@@ -1654,7 +1655,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 								Node: &model.TagArticleNode{
 									ID:           "Article1",
 									Title:        "Article1",
-									ThumbnailURL: "example.test",
+									ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
@@ -1664,7 +1665,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 								Node: &model.TagArticleNode{
 									ID:           "Article2",
 									Title:        "Article2",
-									ThumbnailURL: "example.test",
+									ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
@@ -1751,7 +1752,7 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
@@ -1772,7 +1773,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -1809,14 +1810,14 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
@@ -1837,7 +1838,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -1847,7 +1848,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -1884,7 +1885,7 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 						dto.NewTagArticle(
@@ -1895,7 +1896,7 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					}),
@@ -1915,7 +1916,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -1941,7 +1942,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -1978,14 +1979,14 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 						dto.NewTagArticle(
@@ -1996,14 +1997,14 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					}),
@@ -2023,7 +2024,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2033,7 +2034,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2059,7 +2060,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2069,7 +2070,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2106,7 +2107,7 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					},
@@ -2127,7 +2128,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2165,14 +2166,14 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 						dto.NewTagArticle(
@@ -2183,14 +2184,14 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					},
@@ -2211,7 +2212,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2221,7 +2222,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2247,7 +2248,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2257,7 +2258,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2295,14 +2296,14 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 						dto.NewTagArticle(
@@ -2313,14 +2314,14 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
-									"example.test",
+									utils.MustURLParse("example.com/example.png"),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					},
@@ -2341,7 +2342,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2351,7 +2352,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2377,7 +2378,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -2387,7 +2388,7 @@ func TestConverter_ToTags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article2",
 												Title:        "Article2",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},

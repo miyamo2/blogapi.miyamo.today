@@ -138,8 +138,3 @@ func (r *queryResolver) Article(ctx context.Context, id string) (*model.ArticleN
 //  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //    it when you're done.
 //  - You have helper methods in this file. Move them out to keep these resolver files clean.
-
-var (
-	ErrFailedToConvertToArticleNode       = errors.New("failed to convert to article node")
-	ErrFailedToConvertToArticleConnection = errors.New("failed to convert to article connection")
-)

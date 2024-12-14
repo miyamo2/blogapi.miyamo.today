@@ -11,6 +11,7 @@ import (
 	mconverter "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/presenter/converter"
 	musecase "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/usecase"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"go.uber.org/mock/gomock"
 	"testing"
 )
@@ -65,7 +66,7 @@ func Test_queryResolver_Tag(t *testing.T) {
 								"Article1",
 								"Article1",
 								"",
-								"example.test",
+								utils.MustURLParse("example.com/example.png"),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						})),
@@ -143,7 +144,7 @@ func Test_queryResolver_Tag(t *testing.T) {
 								"Article1",
 								"Article1",
 								"",
-								"example.test",
+								utils.MustURLParse("example.com/example.png"),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						})),
@@ -245,7 +246,7 @@ func Test_queryResolver_Tags(t *testing.T) {
 								"Article1",
 								"Article1",
 								"",
-								"example.test",
+								utils.MustURLParse("example.com/example.png"),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						}),
@@ -273,7 +274,7 @@ func Test_queryResolver_Tags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
@@ -313,7 +314,7 @@ func Test_queryResolver_Tags(t *testing.T) {
 											Node: &model.TagArticleNode{
 												ID:           "Article1",
 												Title:        "Article1",
-												ThumbnailURL: "example.test",
+												ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},

@@ -26,7 +26,7 @@ type ArticleNode struct {
 	ID           string                `json:"id"`
 	Title        string                `json:"title"`
 	Content      string                `json:"content"`
-	ThumbnailURL string                `json:"thumbnailUrl"`
+	ThumbnailURL gqlscalar.URL         `json:"thumbnailUrl"`
 	CreatedAt    gqlscalar.UTC         `json:"createdAt"`
 	UpdatedAt    gqlscalar.UTC         `json:"updatedAt"`
 	Tags         *ArticleTagConnection `json:"tags"`
@@ -98,7 +98,7 @@ type TagArticleEdge struct {
 type TagArticleNode struct {
 	ID           string        `json:"id"`
 	Title        string        `json:"title"`
-	ThumbnailURL string        `json:"thumbnailUrl"`
+	ThumbnailURL gqlscalar.URL `json:"thumbnailUrl"`
 	CreatedAt    gqlscalar.UTC `json:"createdAt"`
 	UpdatedAt    gqlscalar.UTC `json:"updatedAt"`
 }

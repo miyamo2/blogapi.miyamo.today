@@ -5,6 +5,7 @@ import (
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"testing"
 
 	"github.com/cockroachdb/errors"
@@ -66,7 +67,7 @@ func Test_queryResolver_Article(t *testing.T) {
 						"Article1",
 						"Article1",
 						"## Article1",
-						"example.test",
+						utils.MustURLParse("example.com/example.png"),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
@@ -85,7 +86,7 @@ func Test_queryResolver_Article(t *testing.T) {
 					ID:           "Article1",
 					Title:        "Article1",
 					Content:      "## Article1",
-					ThumbnailURL: "example.test",
+					ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 				},
@@ -100,7 +101,7 @@ func Test_queryResolver_Article(t *testing.T) {
 					ID:           "Article1",
 					Title:        "Article1",
 					Content:      "## Article1",
-					ThumbnailURL: "example.test",
+					ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 				},
@@ -151,7 +152,7 @@ func Test_queryResolver_Article(t *testing.T) {
 						"Article1",
 						"Article1",
 						"## Article1",
-						"example.test",
+						utils.MustURLParse("example.com/example.png"),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{},
@@ -250,7 +251,7 @@ func Test_queryResolver_Articles(t *testing.T) {
 						"Article1",
 						"Article1",
 						"## Article1",
-						"example.test",
+						utils.MustURLParse("example.com/example.png"),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
@@ -274,7 +275,7 @@ func Test_queryResolver_Articles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "Article1",
 								Content:      "## Article1",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
@@ -320,7 +321,7 @@ func Test_queryResolver_Articles(t *testing.T) {
 								ID:           "Article1",
 								Title:        "Article1",
 								Content:      "## Article1",
-								ThumbnailURL: "example.test",
+								ThumbnailURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
 								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{

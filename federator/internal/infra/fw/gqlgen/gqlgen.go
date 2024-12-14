@@ -687,7 +687,7 @@ var sources = []*ast.Source{
   id: ID!
   title: String!
   content: Markdown!
-  thumbnailUrl: String!
+  thumbnailUrl: URL!
   createdAt: DateTime!
   updatedAt: DateTime!
   tags(
@@ -798,7 +798,7 @@ type CreateArticlePayload {
 type TagArticleNode implements Node @derivedTypes {
   id: ID!
   title: String!
-  thumbnailUrl: String!
+  thumbnailUrl: URL!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -1967,9 +1967,9 @@ func (ec *executionContext) _ArticleNode_thumbnailUrl(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(gqlscalar.URL)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNURL2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐURL(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ArticleNode_thumbnailUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1979,7 +1979,7 @@ func (ec *executionContext) fieldContext_ArticleNode_thumbnailUrl(_ context.Cont
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type URL does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3630,9 +3630,9 @@ func (ec *executionContext) _TagArticleNode_thumbnailUrl(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(gqlscalar.URL)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNURL2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐURL(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TagArticleNode_thumbnailUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3642,7 +3642,7 @@ func (ec *executionContext) fieldContext_TagArticleNode_thumbnailUrl(_ context.C
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type URL does not have child fields")
 		},
 	}
 	return fc, nil

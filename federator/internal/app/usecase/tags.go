@@ -5,6 +5,7 @@ import (
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"log/slog"
+	"net/url"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -117,11 +118,22 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 				return dto.TagsOutDto{}, err
 			}
 
+			thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+			if err != nil {
+				err = errors.WithStack(err)
+				lgr.WarnContext(ctx, "END",
+					slog.String("duration", dw.SDuration()),
+					slog.Group("return",
+						slog.Any("*dto.ArticleOutDto", nil),
+						slog.Any("error", err)))
+				return dto.TagsOutDto{}, err
+			}
+
 			das = append(das, dto.NewArticle(
 				pa.Id,
 				pa.Title,
 				"",
-				pa.ThumbnailUrl,
+				*thumbnailURL,
 				createdAt,
 				updatedAt))
 		}
@@ -193,11 +205,23 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
+
+			thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+			if err != nil {
+				err = errors.WithStack(err)
+				lgr.WarnContext(ctx, "END",
+					slog.String("duration", dw.SDuration()),
+					slog.Group("return",
+						slog.Any("*dto.ArticleOutDto", nil),
+						slog.Any("error", err)))
+				return dto.TagsOutDto{}, err
+			}
+
 			das = append(das, dto.NewArticle(
 				pa.Id,
 				pa.Title,
 				"",
-				pa.ThumbnailUrl,
+				*thumbnailURL,
 				createdAt,
 				updatedAt))
 		}
@@ -264,11 +288,23 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDto, error) {
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
+
+			thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+			if err != nil {
+				err = errors.WithStack(err)
+				lgr.WarnContext(ctx, "END",
+					slog.String("duration", dw.SDuration()),
+					slog.Group("return",
+						slog.Any("*dto.ArticleOutDto", nil),
+						slog.Any("error", err)))
+				return dto.TagsOutDto{}, err
+			}
+
 			das = append(das, dto.NewArticle(
 				pa.Id,
 				pa.Title,
 				"",
-				pa.ThumbnailUrl,
+				*thumbnailURL,
 				createdAt,
 				updatedAt))
 		}

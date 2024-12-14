@@ -6,6 +6,7 @@ import (
 	"github.com/Code-Hex/synchro/tz"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
 	mgrpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/infra/grpc/tag"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"reflect"
 	"testing"
 
@@ -55,7 +56,7 @@ func TestTag_Execute(t *testing.T) {
 								{
 									Id:           "Article1",
 									Title:        "Article1",
-									ThumbnailUrl: "example.test",
+									ThumbnailUrl: "example.com/example.png",
 									CreatedAt:    "2020-01-01T00:00:00.000000Z",
 									UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 								},
@@ -79,7 +80,7 @@ func TestTag_Execute(t *testing.T) {
 								"Article1",
 								"Article1",
 								"",
-								"example.test",
+								utils.MustURLParse("example.com/example.png"),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							),
@@ -101,14 +102,14 @@ func TestTag_Execute(t *testing.T) {
 								{
 									Id:           "Article1",
 									Title:        "Article1",
-									ThumbnailUrl: "example.test",
+									ThumbnailUrl: "example.com/example.png",
 									CreatedAt:    "2020-01-01T00:00:00.000000Z",
 									UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 								},
 								{
 									Id:           "Article2",
 									Title:        "Article2",
-									ThumbnailUrl: "example.test",
+									ThumbnailUrl: "example.com/example.png",
 									CreatedAt:    "2020-01-01T00:00:00.000000Z",
 									UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 								},
@@ -132,7 +133,7 @@ func TestTag_Execute(t *testing.T) {
 								"Article1",
 								"Article1",
 								"",
-								"example.test",
+								utils.MustURLParse("example.com/example.png"),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							),
@@ -140,7 +141,7 @@ func TestTag_Execute(t *testing.T) {
 								"Article2",
 								"Article2",
 								"",
-								"example.test",
+								utils.MustURLParse("example.com/example.png"),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							),

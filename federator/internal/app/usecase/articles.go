@@ -6,6 +6,7 @@ import (
 	"github.com/Code-Hex/synchro/tz"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	"log/slog"
+	"net/url"
 	"time"
 
 	"github.com/miyamo2/altnrslog"
@@ -121,11 +122,22 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 			return dto.ArticlesOutDto{}, err
 		}
 
+		thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+		if err != nil {
+			err = errors.WithStack(err)
+			lgr.WarnContext(ctx, "END",
+				slog.String("duration", dw.SDuration()),
+				slog.Group("return",
+					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("error", err)))
+			return dto.ArticlesOutDto{}, err
+		}
+
 		das = append(das, dto.NewArticleTag(
 			pa.Id,
 			pa.Title,
 			pa.Body,
-			pa.ThumbnailUrl,
+			*thumbnailURL,
 			createdAt,
 			updatedAt,
 			ts))
@@ -191,6 +203,17 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 			return dto.ArticlesOutDto{}, err
 		}
 
+		thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+		if err != nil {
+			err = errors.WithStack(err)
+			lgr.WarnContext(ctx, "END",
+				slog.String("duration", dw.SDuration()),
+				slog.Group("return",
+					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("error", err)))
+			return dto.ArticlesOutDto{}, err
+		}
+
 		pts := pa.GetTags()
 		ts := make([]dto.Tag, 0, len(pts))
 		for _, pt := range pa.Tags {
@@ -202,7 +225,7 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 			pa.Id,
 			pa.Title,
 			pa.Body,
-			pa.ThumbnailUrl,
+			*thumbnailURL,
 			createdAt,
 			updatedAt,
 			ts))
@@ -264,6 +287,18 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 					slog.Any("error", err)))
 			return dto.ArticlesOutDto{}, err
 		}
+
+		thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+		if err != nil {
+			err = errors.WithStack(err)
+			lgr.WarnContext(ctx, "END",
+				slog.String("duration", dw.SDuration()),
+				slog.Group("return",
+					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("error", err)))
+			return dto.ArticlesOutDto{}, err
+		}
+
 		pts := pa.GetTags()
 		ts := make([]dto.Tag, 0, len(pts))
 		for _, pt := range pa.Tags {
@@ -275,7 +310,7 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 			pa.Id,
 			pa.Title,
 			pa.Body,
-			pa.ThumbnailUrl,
+			*thumbnailURL,
 			createdAt,
 			updatedAt,
 			ts))
