@@ -10,6 +10,8 @@ coverage:
         flags: [article-service]
       tag-service:
         flags: [tag-service]
+      blogging-event-service:
+        flags: [blogging-event-service]
       federator:
         flags: [federator]
 
@@ -29,6 +31,10 @@ flags:
   tag-service:
     paths:
       - tag-service/
+    carryforward: true
+  blogging-event-service:
+    paths:
+      - blogging-event-service/
     carryforward: true
   federator:
     paths:

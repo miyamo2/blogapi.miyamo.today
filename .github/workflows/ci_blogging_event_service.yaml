@@ -1,0 +1,77 @@
+name: ci_tag_service
+
+on:
+  push:
+    branches:
+      - "feat/**"
+      - "refactor/**"
+      - "bugfix/**"
+      - "hotfix/**"
+    paths:
+      - "blogging-event-service/**"
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "blogging-event-service/**"
+  workflow_call:
+
+permissions: write-all
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Git Config
+        run: |
+          git config --global url."https://${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "~1.23.1"
+          cache: true
+          cache-dependency-path: go.sum
+
+      - name: Go Build
+        working-directory: blogging-event-service
+        run: |
+          go mod tidy
+          go build -v ./...
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+        with:
+          reviewdog_version: latest
+
+      - name: Setup staticcheck
+        working-directory: blogging-event-service
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+
+      - name: staticcheck with reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: blogging-event-service
+        run: |
+          staticcheck ./... | reviewdog -f=staticcheck -reporter=github-pr-check -level warning
+
+      - name: Go Test
+        working-directory: blogging-event-service
+        run: |
+          TARGET=$(go list ./... | grep -v "mock" | grep -v "configs" | grep -v "infra/grpc")
+          go test $TARGET -v -coverprofile=coverage.out
+          exit ${PIPESTATUS[0]}
+
+      - name: Upload unit test coverage to Codecov
+        uses: codecov/codecov-action@v5.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ github.workspace }}
+          file: ${{ github.workspace }}/blogging-event-service/coverage
+          fail_ci_if_error: false
+          verbose: true
+          flags: blogging-event-service
