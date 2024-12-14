@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.28.6
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.38.0
 	github.com/cockroachdb/errors v1.11.3
-	github.com/goccy/go-json v0.10.3
+	github.com/goccy/go-json v0.10.4
 	github.com/google/wire v0.6.0
 	github.com/miyamo2/blogapi.miyamo.today/core v0.21.2
 	github.com/miyamo2/dynmgrm v0.10.0
