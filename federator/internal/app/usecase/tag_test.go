@@ -45,8 +45,8 @@ func TestTag_Execute(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/single_article": {
 			tagServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				tSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				tSvcClt.EXPECT().
+				tagServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetTagById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetTagByIdResponse{
 						Tag: &grpc.Tag{
@@ -64,7 +64,7 @@ func TestTag_Execute(t *testing.T) {
 						},
 					}, nil).
 					Times(1)
-				return tSvcClt
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -91,8 +91,8 @@ func TestTag_Execute(t *testing.T) {
 		},
 		"happy_path/multiple_article": {
 			tagServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				tSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				tSvcClt.EXPECT().
+				tagServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetTagById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetTagByIdResponse{
 						Tag: &grpc.Tag{
@@ -117,7 +117,7 @@ func TestTag_Execute(t *testing.T) {
 						},
 					}, nil).
 					Times(1)
-				return tSvcClt
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -152,8 +152,8 @@ func TestTag_Execute(t *testing.T) {
 		},
 		"happy_path/no_article": {
 			tagServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				tSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				tSvcClt.EXPECT().
+				tagServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetTagById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetTagByIdResponse{
 						Tag: &grpc.Tag{
@@ -162,7 +162,7 @@ func TestTag_Execute(t *testing.T) {
 						},
 					}, nil).
 					Times(1)
-				return tSvcClt
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -180,12 +180,12 @@ func TestTag_Execute(t *testing.T) {
 		},
 		"unhappy_path/grpc_returns_error": {
 			tagServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				tSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				tSvcClt.EXPECT().
+				tagServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetTagById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetTagByIdResponse{}, errTestTag).
 					Times(1)
-				return tSvcClt
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -202,8 +202,8 @@ func TestTag_Execute(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			tSvcClt := tt.tagServiceClient(ctrl)
-			u := NewTag(tSvcClt)
+			tagServiceClient := tt.tagServiceClient(ctrl)
+			u := NewTag(tagServiceClient)
 			got, err := u.Execute(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {

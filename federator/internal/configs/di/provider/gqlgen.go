@@ -50,7 +50,7 @@ func GqlgenExecutableSchema(config *gqlgen.Config) *graphql.ExecutableSchema {
 }
 
 func GqlgenServer(schema *graphql.ExecutableSchema, nr *newrelic.Application) *handler.Server {
-	srv := handler.NewDefaultServer(*schema)
+	srv := handler.New(*schema)
 	srv.AroundOperations(middleware.StartNewRelicTransaction(nr))
 	srv.AroundOperations(middleware.SetBlogAPIContextToContext)
 	srv.AroundRootFields(middleware.StartNewRelicSegment)

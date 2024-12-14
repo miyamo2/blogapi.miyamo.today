@@ -6,12 +6,10 @@ package resolver
 
 import (
 	"context"
-	"github.com/cockroachdb/errors"
 	"log/slog"
 
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
@@ -22,14 +20,14 @@ import (
 func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, after *string, before *string) (*model.ArticleConnection, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Articles").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
-		err = errors.WithStack(err)
+		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.Any("first", first),
 			slog.Any("last", last),
@@ -50,10 +48,9 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 	}
 	in, err := dto.NewArticlesInDto(opts...)
 	if err != nil {
-		err = errors.WithStack(err)
+		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("returns",
 				slog.Any("*model.ArticleConnection", nil),
 				slog.Any("error", err)))
@@ -61,80 +58,67 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 	}
 	oDto, err := r.usecases.articles.Execute(ctx, in)
 	if err != nil {
-		err = errors.WithStack(err)
+		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("returns",
 				slog.Any("*model.ArticleConnection", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
-	cnctn, ok := r.converters.articles.ToArticles(ctx, oDto)
+	connection, ok := r.converters.articles.ToArticles(ctx, oDto)
 	if !ok {
 		err := ErrFailedToConvertToArticleConnection
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("returns",
 				slog.Any("*model.ArticleConnection", nil),
 				slog.Any("error", err)))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("returns",
-			slog.Any("*model.ArticleConnection", &cnctn),
+			slog.Any("*model.ArticleConnection", &connection),
 			slog.Any("error", nil)))
-	return cnctn, nil
+	return connection, nil
 }
 
 // Article is the resolver for the article field.
 func (r *queryResolver) Article(ctx context.Context, id string) (*model.ArticleNode, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Article").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
-		err = errors.WithStack(err)
+		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.String("id", id)))
 	oDto, err := r.usecases.article.Execute(ctx, dto.NewArticleInDto(id))
 	if err != nil {
-		err = errors.WithStack(err)
+		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("returns",
 				slog.Any("*model.ArticleNode", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
-	nd, ok := r.converters.article.ToArticle(ctx, oDto)
+	node, ok := r.converters.article.ToArticle(ctx, oDto)
 	if !ok {
 		err := ErrFailedToConvertToArticleNode
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("returns",
 				slog.Any("*model.ArticleNode", nil),
 				slog.Any("error", err)))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("returns",
-			slog.Any("*model.ArticleNode", &nd),
+			slog.Any("*model.ArticleNode", &node),
 			slog.Any("error", nil)))
-	return nd, nil
+	return node, nil
 }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.

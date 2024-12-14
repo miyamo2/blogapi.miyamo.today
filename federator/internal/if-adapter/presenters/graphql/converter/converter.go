@@ -5,7 +5,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"log/slog"
@@ -26,41 +25,40 @@ type Converter struct{}
 func (c Converter) ToArticle(ctx context.Context, from dto.ArticleOutDto) (*model.ArticleNode, bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToArticle").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
-	n, err := c.articleNodeFromArticleTagDto(ctx, from.Article())
+	node, err := c.articleNodeFromArticleTagDto(ctx, from.Article())
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("returns",
 				slog.Any("*model.ArticleNode", nil),
 				slog.Any("error", err)))
 		return nil, false
 	}
-	return n, true
+	return node, true
 }
 
 // articleNodeFromArticleTagDto converts dto.ArticleTag to model.ArticleNode.
 func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.ArticleTag) (*model.ArticleNode, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("articleNodeFromArticleTagDto").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
 	tegs := make([]*model.ArticleTagEdge, 0, len(from.Tags()))
 	for _, tag := range from.Tags() {
@@ -73,7 +71,7 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 		})
 	}
 	// TODO: check HasNextPage, HasPreviousPage
-	tpg := func() model.PageInfo {
+	tagPageInfo := func() model.PageInfo {
 		if len(tegs) == 0 {
 			return model.PageInfo{}
 		}
@@ -82,143 +80,138 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 			EndCursor:   tegs[len(tegs)-1].Cursor,
 		}
 	}()
-	tcnn := model.ArticleTagConnection{
+	tagConnection := model.ArticleTagConnection{
 		Edges:      tegs,
-		PageInfo:   &tpg,
+		PageInfo:   &tagPageInfo,
 		TotalCount: len(tegs),
 	}
-	an := model.ArticleNode{
+	articleNode := model.ArticleNode{
 		ID:           from.Id(),
 		Title:        from.Title(),
 		Content:      from.Body(),
 		ThumbnailURL: gqlscalar.URL(from.ThumbnailUrl()),
 		CreatedAt:    gqlscalar.UTC(from.CreatedAt()),
 		UpdatedAt:    gqlscalar.UTC(from.UpdatedAt()),
-		Tags:         &tcnn,
+		Tags:         &tagConnection,
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("parameters",
-			slog.Any("*model.ArticleNode", an),
+			slog.Any("*model.ArticleNode", articleNode),
 			slog.Any("error", nil)))
-	return &an, nil
+	return &articleNode, nil
 }
 
 func (c Converter) ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*model.ArticleConnection, bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToArticles").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
-	aegs := make([]*model.ArticleEdge, 0, len(from.Articles()))
+	articleEdges := make([]*model.ArticleEdge, 0, len(from.Articles()))
 	for _, article := range from.Articles() {
-		n, err := c.articleNodeFromArticleTagDto(ctx, article)
+		node, err := c.articleNodeFromArticleTagDto(ctx, article)
 		if err != nil {
 			err = errors.WithStack(err)
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			lgr.WarnContext(ctx, "END",
-				slog.String("duration", dw.SDuration()),
+			logger.WarnContext(ctx, "END",
 				slog.Group("returns",
 					slog.Any("*model.ArticleConnection", nil),
 					slog.Any("error", err)))
 			return nil, false
 		}
-		aegs = append(aegs, &model.ArticleEdge{
+		articleEdges = append(articleEdges, &model.ArticleEdge{
 			Cursor: article.Id(),
-			Node:   n,
+			Node:   node,
 		})
 	}
-	pg := func() model.PageInfo {
-		if len(aegs) == 0 {
+	pageInfo := func() model.PageInfo {
+		if len(articleEdges) == 0 {
 			return model.PageInfo{}
 		}
 		if from.ByForward() {
-			hn := from.HasNext()
+			hasNext := from.HasNext()
 			return model.PageInfo{
-				StartCursor: aegs[0].Cursor,
-				EndCursor:   aegs[len(aegs)-1].Cursor,
-				HasNextPage: &hn,
+				StartCursor: articleEdges[0].Cursor,
+				EndCursor:   articleEdges[len(articleEdges)-1].Cursor,
+				HasNextPage: &hasNext,
 			}
 		}
 		if from.ByBackward() {
-			hp := from.HasPrev()
+			hasPrevious := from.HasPrev()
 			return model.PageInfo{
-				StartCursor:     aegs[0].Cursor,
-				EndCursor:       aegs[len(aegs)-1].Cursor,
-				HasPreviousPage: &hp,
+				StartCursor:     articleEdges[0].Cursor,
+				EndCursor:       articleEdges[len(articleEdges)-1].Cursor,
+				HasPreviousPage: &hasPrevious,
 			}
 		}
 		return model.PageInfo{
-			StartCursor: aegs[0].Cursor,
-			EndCursor:   aegs[len(aegs)-1].Cursor,
+			StartCursor: articleEdges[0].Cursor,
+			EndCursor:   articleEdges[len(articleEdges)-1].Cursor,
 		}
 	}()
-	cnctn := model.ArticleConnection{
-		Edges:      aegs,
-		PageInfo:   &pg,
-		TotalCount: len(aegs),
+	connection := model.ArticleConnection{
+		Edges:      articleEdges,
+		PageInfo:   &pageInfo,
+		TotalCount: len(articleEdges),
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("returns",
-			slog.Any("*model.ArticleConnection", cnctn),
+			slog.Any("*model.ArticleConnection", connection),
 			slog.Any("bool", true)))
-	return &cnctn, true
+	return &connection, true
 }
 
 // ToTag converts dto.TagOutDto to model.TagNode.
 func (c Converter) ToTag(ctx context.Context, from dto.TagOutDto) (*model.TagNode, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToTag").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
-	n, err := c.tagNodeFromTagArticleDto(ctx, from.Tag())
+	node, err := c.tagNodeFromTagArticleDto(ctx, from.Tag())
 	if err != nil {
 		err = errors.Join(err, ErrFailedToConvertToTagNode)
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("returns",
 				slog.Any("*model.TagNode", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("returns",
-			slog.Any("*model.TagNode", n),
+			slog.Any("*model.TagNode", node),
 			slog.Any("bool", true)))
-	return n, nil
+	return node, nil
 }
 
 // tagNodeFromTagArticleDto converts dto.TagArticle to model.TagNode.
 func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArticle) (*model.TagNode, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("tagNodeFromTagArticleDto").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
-	aegs := make([]*model.TagArticleEdge, 0, len(from.Articles()))
+	articleEdges := make([]*model.TagArticleEdge, 0, len(from.Articles()))
 	for _, article := range from.Articles() {
-		aegs = append(aegs, &model.TagArticleEdge{
+		articleEdges = append(articleEdges, &model.TagArticleEdge{
 			Cursor: article.Id(),
 			Node: &model.TagArticleNode{
 				ID:           article.Id(),
@@ -229,54 +222,52 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 			},
 		})
 	}
-	pg := func() model.PageInfo {
-		if len(aegs) == 0 {
+	pageInfo := func() model.PageInfo {
+		if len(articleEdges) == 0 {
 			return model.PageInfo{}
 		}
 		// TODO: check HasNextPage, HasPreviousPage
 		return model.PageInfo{
-			StartCursor: aegs[0].Cursor,
-			EndCursor:   aegs[len(aegs)-1].Cursor,
+			StartCursor: articleEdges[0].Cursor,
+			EndCursor:   articleEdges[len(articleEdges)-1].Cursor,
 		}
 	}()
-	acnctn := model.TagArticleConnection{
-		Edges:      aegs,
-		PageInfo:   &pg,
-		TotalCount: len(aegs),
+	articleConnection := model.TagArticleConnection{
+		Edges:      articleEdges,
+		PageInfo:   &pageInfo,
+		TotalCount: len(articleEdges),
 	}
-	n := model.TagNode{
+	node := model.TagNode{
 		ID:       from.Id(),
 		Name:     from.Name(),
-		Articles: &acnctn,
+		Articles: &articleConnection,
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("parameters",
-			slog.Any("*model.TagNode", n),
+			slog.Any("*model.TagNode", node),
 			slog.Any("error", nil)))
-	return &n, nil
+	return &node, nil
 }
 
 func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagConnection, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToTags").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
 	tegs := make([]*model.TagEdge, 0, len(from.Tags()))
 	for _, tag := range from.Tags() {
-		n, err := c.tagNodeFromTagArticleDto(ctx, tag)
+		node, err := c.tagNodeFromTagArticleDto(ctx, tag)
 		if err != nil {
 			err = errors.WithStack(err)
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			lgr.WarnContext(ctx, "END",
-				slog.String("duration", dw.SDuration()),
+			logger.WarnContext(ctx, "END",
 				slog.Group("returns",
 					slog.Any("*model.TagConnection", nil),
 					slog.Any("error", err)))
@@ -284,27 +275,27 @@ func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagC
 		}
 		tegs = append(tegs, &model.TagEdge{
 			Cursor: tag.Id(),
-			Node:   n,
+			Node:   node,
 		})
 	}
-	pg := func() model.PageInfo {
+	pageInfo := func() model.PageInfo {
 		if len(tegs) == 0 {
 			return model.PageInfo{}
 		}
 		if from.ByForward() {
-			hn := from.HasNext()
+			hasNext := from.HasNext()
 			return model.PageInfo{
 				StartCursor: tegs[0].Cursor,
 				EndCursor:   tegs[len(tegs)-1].Cursor,
-				HasNextPage: &hn,
+				HasNextPage: &hasNext,
 			}
 		}
 		if from.ByBackward() {
-			hp := from.HasPrev()
+			hasPrevious := from.HasPrev()
 			return model.PageInfo{
 				StartCursor:     tegs[0].Cursor,
 				EndCursor:       tegs[len(tegs)-1].Cursor,
-				HasPreviousPage: &hp,
+				HasPreviousPage: &hasPrevious,
 			}
 		}
 		return model.PageInfo{
@@ -312,17 +303,16 @@ func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagC
 			EndCursor:   tegs[len(tegs)-1].Cursor,
 		}
 	}()
-	cnctn := model.TagConnection{
+	connection := model.TagConnection{
 		Edges:      tegs,
-		PageInfo:   &pg,
+		PageInfo:   &pageInfo,
 		TotalCount: len(tegs),
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("returns",
-			slog.Any("*model.TagConnection", cnctn),
+			slog.Any("*model.TagConnection", connection),
 			slog.Any("error", nil)))
-	return &cnctn, nil
+	return &connection, nil
 }
 
 func NewConverter() *Converter {

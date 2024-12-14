@@ -26,7 +26,6 @@ require (
 )
 
 require (
-	github.com/Songmu/flextime v0.1.0 // indirect
 	github.com/agnivade/levenshtein v1.2.0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect

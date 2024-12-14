@@ -14,96 +14,92 @@ import (
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
 // Tag is a use-case of getting a tag by id.
 type Tag struct {
-	// tSvcClt is a client of article service.
-	tSvcClt grpc.TagServiceClient
+	// tagServiceClient is a client of article service.
+	tagServiceClient grpc.TagServiceClient
 }
 
 // Execute gets a tag by id.
 func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
-	response, err := u.tSvcClt.GetTagById(
+	response, err := u.tagServiceClient.GetTagById(
 		newrelic.NewContext(ctx, nrtx),
 		&grpc.GetTagByIdRequest{
 			Id: in.Id(),
 		})
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*dto.ArticleOutDto", nil),
 				slog.Any("error", err)))
 		return dto.TagOutDto{}, err
 	}
-	pt := response.Tag
-	pas := pt.Articles
-	atcls := make([]dto.Article, 0, len(pas))
-	for _, pa := range pas {
-		createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.CreatedAt)
+	tagPB := response.Tag
+	articlePBs := tagPB.Articles
+	articleDTOs := make([]dto.Article, 0, len(articlePBs))
+	for _, article := range articlePBs {
+		createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.CreatedAt)
 		if err != nil {
 			err = errors.WithStack(err)
-			lgr.WarnContext(ctx, "END",
-				slog.String("duration", dw.SDuration()),
+			logger.WarnContext(ctx, "END",
 				slog.Group("return",
 					slog.Any("*dto.ArticleOutDto", nil),
 					slog.Any("error", err)))
 			return dto.TagOutDto{}, err
 		}
 
-		updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.UpdatedAt)
+		updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
 		if err != nil {
 			err = errors.WithStack(err)
-			lgr.WarnContext(ctx, "END",
-				slog.String("duration", dw.SDuration()),
+			logger.WarnContext(ctx, "END",
+
 				slog.Group("return",
 					slog.Any("*dto.ArticleOutDto", nil),
 					slog.Any("error", err)))
 			return dto.TagOutDto{}, err
 		}
 
-		thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+		thumbnailURL, err := url.Parse(article.ThumbnailUrl)
 		if err != nil {
 			err = errors.WithStack(err)
-			lgr.WarnContext(ctx, "END",
-				slog.String("duration", dw.SDuration()),
+			logger.WarnContext(ctx, "END",
 				slog.Group("return",
 					slog.Any("*dto.ArticleOutDto", nil),
 					slog.Any("error", err)))
 			return dto.TagOutDto{}, err
 		}
 
-		atcls = append(atcls, dto.NewArticle(
-			pa.Id,
-			pa.Title,
+		articleDTOs = append(articleDTOs, dto.NewArticle(
+			article.Id,
+			article.Title,
 			"",
 			*thumbnailURL,
 			createdAt,
 			updatedAt))
 	}
-	t := dto.NewTagArticle(
-		pt.Id,
-		pt.Name,
-		atcls)
-	out := dto.NewTagOutDto(t)
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	tagDTO := dto.NewTagArticle(
+		tagPB.Id,
+		tagPB.Name,
+		articleDTOs)
+	out := dto.NewTagOutDto(tagDTO)
+	logger.InfoContext(ctx, "END",
+
 		slog.Group("return",
 			slog.Any("*dto.TagOutDto", out),
 			slog.Any("error", nil)))
@@ -111,8 +107,8 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 }
 
 // NewTag is a constructor of Tag.
-func NewTag(tSvcClt grpc.TagServiceClient) *Tag {
+func NewTag(tagServiceClient grpc.TagServiceClient) *Tag {
 	return &Tag{
-		tSvcClt: tSvcClt,
+		tagServiceClient: tagServiceClient,
 	}
 }

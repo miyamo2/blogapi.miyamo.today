@@ -11,7 +11,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
@@ -22,22 +21,22 @@ import (
 
 // Tags is a use-case of getting tags.
 type Tags struct {
-	// tSvcClt is a client of article service.
-	tSvcClt grpc.TagServiceClient
+	// tagServiceClient is a client of article service.
+	tagServiceClient grpc.TagServiceClient
 }
 
 // Execute gets a tag by id.
 func (u *Tags) Execute(ctx context.Context, in dto.TagsInDto) (dto.TagsOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 	out, err := func() (dto.TagsOutDto, error) {
 		if in.First() != 0 {
@@ -48,15 +47,13 @@ func (u *Tags) Execute(ctx context.Context, in dto.TagsInDto) (dto.TagsOutDto, e
 		return u.execute(ctx)
 	}()
 	if err != nil {
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*dto.TagsOutDto", out),
 				slog.Any("error", err)))
 		return out, err
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDto", out),
 			slog.Any("error", err)))
@@ -67,84 +64,79 @@ func (u *Tags) Execute(ctx context.Context, in dto.TagsInDto) (dto.TagsOutDto, e
 func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDto) (dto.TagsOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("executeNextPaging").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
-	response, err := u.tSvcClt.GetNextTags(ctx, &grpc.GetNextTagsRequest{
+	response, err := u.tagServiceClient.GetNextTags(ctx, &grpc.GetNextTagsRequest{
 		First: int32(in.First()),
 		After: utils.PtrFromString(in.After()),
 	})
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*dto.TagsOutDto", nil),
 				slog.Any("error", err)))
 		return dto.TagsOutDto{}, err
 	}
-	pts := response.Tags
-	dts := make([]dto.TagArticle, 0, len(pts))
-	for _, pt := range pts {
-		pas := pt.GetArticles()
-		das := make([]dto.Article, 0, len(pas))
-		for _, pa := range pt.Articles {
-			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.CreatedAt)
+	tagPBs := response.Tags
+	tagDTOs := make([]dto.TagArticle, 0, len(tagPBs))
+	for _, tag := range tagPBs {
+		articlePBs := tag.GetArticles()
+		articleDTOs := make([]dto.Article, 0, len(articlePBs))
+		for _, article := range articlePBs {
+			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.CreatedAt)
 			if err != nil {
 				err = errors.WithStack(err)
-				lgr.WarnContext(ctx, "END",
-					slog.String("duration", dw.SDuration()),
+				logger.WarnContext(ctx, "END",
 					slog.Group("return",
 						slog.Any("*dto.ArticleOutDto", nil),
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
 
-			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.UpdatedAt)
+			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
 			if err != nil {
 				err = errors.WithStack(err)
-				lgr.WarnContext(ctx, "END",
-					slog.String("duration", dw.SDuration()),
+				logger.WarnContext(ctx, "END",
 					slog.Group("return",
 						slog.Any("*dto.ArticleOutDto", nil),
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
 
-			thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+			thumbnailURL, err := url.Parse(article.ThumbnailUrl)
 			if err != nil {
 				err = errors.WithStack(err)
-				lgr.WarnContext(ctx, "END",
-					slog.String("duration", dw.SDuration()),
+				logger.WarnContext(ctx, "END",
 					slog.Group("return",
 						slog.Any("*dto.ArticleOutDto", nil),
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
 
-			das = append(das, dto.NewArticle(
-				pa.Id,
-				pa.Title,
+			articleDTOs = append(articleDTOs, dto.NewArticle(
+				article.Id,
+				article.Title,
 				"",
 				*thumbnailURL,
 				createdAt,
 				updatedAt))
 		}
-		dts = append(dts, dto.NewTagArticle(
-			pt.Id,
-			pt.Name,
-			das))
+		tagDTOs = append(tagDTOs, dto.NewTagArticle(
+			tag.Id,
+			tag.Name,
+			articleDTOs))
 	}
-	out := dto.NewTagsOutDto(dts, dto.TagsOutDtoWithHasNext(response.StillExists))
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	out := dto.NewTagsOutDto(tagDTOs, dto.TagsOutDtoWithHasNext(response.StillExists))
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDto", out),
 			slog.Any("error", nil)))
@@ -155,84 +147,79 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDto) (dto.TagsOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("executePrevPaging").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
-	response, err := u.tSvcClt.GetPrevTags(ctx, &grpc.GetPrevTagsRequest{
+	response, err := u.tagServiceClient.GetPrevTags(ctx, &grpc.GetPrevTagsRequest{
 		Last:   int32(in.Last()),
 		Before: utils.PtrFromString(in.Before()),
 	})
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*dto.TagsOutDto", nil),
 				slog.Any("error", err)))
 		return dto.TagsOutDto{}, err
 	}
-	pts := response.Tags
-	dts := make([]dto.TagArticle, 0, len(pts))
-	for _, pt := range pts {
-		pas := pt.GetArticles()
-		das := make([]dto.Article, 0, len(pas))
-		for _, pa := range pt.Articles {
-			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.CreatedAt)
+	tagPBs := response.Tags
+	tagDTO := make([]dto.TagArticle, 0, len(tagPBs))
+	for _, tag := range tagPBs {
+		articlePBs := tag.GetArticles()
+		articleDTOs := make([]dto.Article, 0, len(articlePBs))
+		for _, article := range articlePBs {
+			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.CreatedAt)
 			if err != nil {
 				err = errors.WithStack(err)
-				lgr.WarnContext(ctx, "END",
-					slog.String("duration", dw.SDuration()),
+				logger.WarnContext(ctx, "END",
 					slog.Group("return",
 						slog.Any("*dto.ArticleOutDto", nil),
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
 
-			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.UpdatedAt)
+			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
 			if err != nil {
 				err = errors.WithStack(err)
-				lgr.WarnContext(ctx, "END",
-					slog.String("duration", dw.SDuration()),
+				logger.WarnContext(ctx, "END",
 					slog.Group("return",
 						slog.Any("*dto.ArticleOutDto", nil),
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
 
-			thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+			thumbnailURL, err := url.Parse(article.ThumbnailUrl)
 			if err != nil {
 				err = errors.WithStack(err)
-				lgr.WarnContext(ctx, "END",
-					slog.String("duration", dw.SDuration()),
+				logger.WarnContext(ctx, "END",
 					slog.Group("return",
 						slog.Any("*dto.ArticleOutDto", nil),
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
 
-			das = append(das, dto.NewArticle(
-				pa.Id,
-				pa.Title,
+			articleDTOs = append(articleDTOs, dto.NewArticle(
+				article.Id,
+				article.Title,
 				"",
 				*thumbnailURL,
 				createdAt,
 				updatedAt))
 		}
-		dts = append(dts, dto.NewTagArticle(
-			pt.Id,
-			pt.Name,
-			das))
+		tagDTO = append(tagDTO, dto.NewTagArticle(
+			tag.Id,
+			tag.Name,
+			articleDTOs))
 	}
-	out := dto.NewTagsOutDto(dts, dto.TagsOutDtoWithHasPrev(response.StillExists))
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	out := dto.NewTagsOutDto(tagDTO, dto.TagsOutDtoWithHasPrev(response.StillExists))
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDto", out),
 			slog.Any("error", nil)))
@@ -243,79 +230,74 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 func (u *Tags) execute(ctx context.Context) (dto.TagsOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("execute").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN")
-	response, err := u.tSvcClt.GetAllTags(ctx, &emptypb.Empty{})
+	logger.InfoContext(ctx, "BEGIN")
+	response, err := u.tagServiceClient.GetAllTags(ctx, &emptypb.Empty{})
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*dto.TagsOutDto", nil),
 				slog.Any("error", err)))
 		return dto.TagsOutDto{}, err
 	}
-	pts := response.Tags
-	dts := make([]dto.TagArticle, 0, len(pts))
-	for _, pt := range pts {
-		pas := pt.GetArticles()
-		das := make([]dto.Article, 0, len(pas))
-		for _, pa := range pt.Articles {
-			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.CreatedAt)
+	tagPBs := response.Tags
+	tagDTOs := make([]dto.TagArticle, 0, len(tagPBs))
+	for _, tag := range tagPBs {
+		articlePBs := tag.GetArticles()
+		articleDTOs := make([]dto.Article, 0, len(articlePBs))
+		for _, article := range tag.Articles {
+			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.CreatedAt)
 			if err != nil {
 				err = errors.WithStack(err)
-				lgr.WarnContext(ctx, "END",
-					slog.String("duration", dw.SDuration()),
+				logger.WarnContext(ctx, "END",
 					slog.Group("return",
 						slog.Any("*dto.ArticleOutDto", nil),
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
 
-			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.UpdatedAt)
+			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
 			if err != nil {
 				err = errors.WithStack(err)
-				lgr.WarnContext(ctx, "END",
-					slog.String("duration", dw.SDuration()),
+				logger.WarnContext(ctx, "END",
 					slog.Group("return",
 						slog.Any("*dto.ArticleOutDto", nil),
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
 
-			thumbnailURL, err := url.Parse(pa.ThumbnailUrl)
+			thumbnailURL, err := url.Parse(article.ThumbnailUrl)
 			if err != nil {
 				err = errors.WithStack(err)
-				lgr.WarnContext(ctx, "END",
-					slog.String("duration", dw.SDuration()),
+				logger.WarnContext(ctx, "END",
 					slog.Group("return",
 						slog.Any("*dto.ArticleOutDto", nil),
 						slog.Any("error", err)))
 				return dto.TagsOutDto{}, err
 			}
 
-			das = append(das, dto.NewArticle(
-				pa.Id,
-				pa.Title,
+			articleDTOs = append(articleDTOs, dto.NewArticle(
+				article.Id,
+				article.Title,
 				"",
 				*thumbnailURL,
 				createdAt,
 				updatedAt))
 		}
-		dts = append(dts, dto.NewTagArticle(
-			pt.Id,
-			pt.Name,
-			das))
+		tagDTOs = append(tagDTOs, dto.NewTagArticle(
+			tag.Id,
+			tag.Name,
+			articleDTOs))
 	}
-	out := dto.NewTagsOutDto(dts)
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	out := dto.NewTagsOutDto(tagDTOs)
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDto", out),
 			slog.Any("error", nil)))
@@ -323,8 +305,8 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDto, error) {
 }
 
 // NewTag is a constructor of Tag.
-func NewTags(tSvcClt grpc.TagServiceClient) *Tags {
+func NewTags(tagServiceClient grpc.TagServiceClient) *Tags {
 	return &Tags{
-		tSvcClt: tSvcClt,
+		tagServiceClient: tagServiceClient,
 	}
 }

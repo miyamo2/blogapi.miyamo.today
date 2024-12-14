@@ -45,8 +45,8 @@ func TestArticle_Execute(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/single_tag": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetArticleByIdResponse{
 						Article: &grpc.Article{
@@ -65,7 +65,7 @@ func TestArticle_Execute(t *testing.T) {
 						},
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -88,8 +88,8 @@ func TestArticle_Execute(t *testing.T) {
 		},
 		"happy_path/multiple_tags": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetArticleByIdResponse{
 						Article: &grpc.Article{
@@ -116,7 +116,7 @@ func TestArticle_Execute(t *testing.T) {
 						},
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -142,8 +142,8 @@ func TestArticle_Execute(t *testing.T) {
 		},
 		"happy_path/no_tags": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetArticleByIdResponse{
 						Article: &grpc.Article{
@@ -156,7 +156,7 @@ func TestArticle_Execute(t *testing.T) {
 						},
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -176,12 +176,12 @@ func TestArticle_Execute(t *testing.T) {
 		},
 		"unhappy_path/grpc_returns_error": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetArticleByIdResponse{}, errTestArticle).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -198,8 +198,8 @@ func TestArticle_Execute(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			aSvcClt := tt.articleServiceClient(ctrl)
-			u := NewArticle(aSvcClt)
+			articleServiceClient := tt.articleServiceClient(ctrl)
+			u := NewArticle(articleServiceClient)
 			got, err := u.Execute(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {
