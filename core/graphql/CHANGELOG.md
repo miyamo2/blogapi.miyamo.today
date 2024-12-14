@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1 - 2024-12-14
+
+Dependencies Update
+
 ## 0.3.0 - 2024-12-03
 
 ### ✨ New Feature
