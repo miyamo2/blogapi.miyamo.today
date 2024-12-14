@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	"reflect"
 	"testing"
@@ -52,8 +54,8 @@ func TestArticles_Execute(t *testing.T) {
 								Title:        "happy_path/next_paging",
 								Body:         "## happy_path/next_paging",
 								ThumbnailUrl: "example.test",
-								CreatedAt:    "2020-01-01T00:00:00Z",
-								UpdatedAt:    "2020-01-01T00:00:00Z",
+								CreatedAt:    "2020-01-01T00:00:00.000000Z",
+								UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
@@ -82,8 +84,8 @@ func TestArticles_Execute(t *testing.T) {
 							"happy_path/next_paging",
 							"## happy_path/next_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -126,8 +128,8 @@ func TestArticles_Execute(t *testing.T) {
 								Title:        "happy_path/prev_paging",
 								Body:         "## happy_path/prev_paging",
 								ThumbnailUrl: "example.test",
-								CreatedAt:    "2020-01-01T00:00:00Z",
-								UpdatedAt:    "2020-01-01T00:00:00Z",
+								CreatedAt:    "2020-01-01T00:00:00.000000Z",
+								UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
@@ -156,8 +158,8 @@ func TestArticles_Execute(t *testing.T) {
 							"happy_path/prev_paging",
 							"## happy_path/prev_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -200,8 +202,8 @@ func TestArticles_Execute(t *testing.T) {
 								Title:        "happy_path/execute",
 								Body:         "## happy_path/execute",
 								ThumbnailUrl: "example.test",
-								CreatedAt:    "2020-01-01T00:00:00Z",
-								UpdatedAt:    "2020-01-01T00:00:00Z",
+								CreatedAt:    "2020-01-01T00:00:00.000000Z",
+								UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
@@ -226,8 +228,8 @@ func TestArticles_Execute(t *testing.T) {
 							"happy_path/execute",
 							"## happy_path/execute",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -321,8 +323,8 @@ func TestArticles_executeNextPaging(t *testing.T) {
 								Title:        "happy_path/next_paging",
 								Body:         "## happy_path/next_paging",
 								ThumbnailUrl: "example.test",
-								CreatedAt:    "2020-01-01T00:00:00Z",
-								UpdatedAt:    "2020-01-01T00:00:00Z",
+								CreatedAt:    "2020-01-01T00:00:00.000000Z",
+								UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
@@ -351,8 +353,8 @@ func TestArticles_executeNextPaging(t *testing.T) {
 							"happy_path/next_paging",
 							"## happy_path/next_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -450,8 +452,8 @@ func TestArticles_executePrevPaging(t *testing.T) {
 								Title:        "happy_path/prev_paging",
 								Body:         "## happy_path/prev_paging",
 								ThumbnailUrl: "example.test",
-								CreatedAt:    "2020-01-01T00:00:00Z",
-								UpdatedAt:    "2020-01-01T00:00:00Z",
+								CreatedAt:    "2020-01-01T00:00:00.000000Z",
+								UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
@@ -480,8 +482,8 @@ func TestArticles_executePrevPaging(t *testing.T) {
 							"happy_path/prev_paging",
 							"## happy_path/prev_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -578,8 +580,8 @@ func TestArticles_execute(t *testing.T) {
 								Title:        "happy_path/all_articles",
 								Body:         "## happy_path/all_articles",
 								ThumbnailUrl: "example.test",
-								CreatedAt:    "2020-01-01T00:00:00Z",
-								UpdatedAt:    "2020-01-01T00:00:00Z",
+								CreatedAt:    "2020-01-01T00:00:00.000000Z",
+								UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 								Tags: []*grpc.Tag{
 									{
 										Id:   "Tag1",
@@ -603,8 +605,8 @@ func TestArticles_execute(t *testing.T) {
 							"happy_path/all_articles",
 							"## happy_path/all_articles",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),

@@ -2,22 +2,17 @@ package converter
 
 import (
 	"context"
-	"log/slog"
-	"time"
-
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
+	"log/slog"
 
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 	"github.com/newrelic/go-agent/v3/newrelic"
-)
-
-const (
-	timeLayout = "2006-01-02T15:04:05Z"
 )
 
 var (
@@ -92,35 +87,13 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 		PageInfo:   &tpg,
 		TotalCount: len(tegs),
 	}
-	crtd, err := time.Parse(timeLayout, from.CreatedAt())
-	if err != nil {
-		err = errors.Join(err, ErrParseTime)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
-			slog.Group("parameters",
-				slog.Any("*model.ArticleNode", nil),
-				slog.Any("error", err)))
-		return nil, err
-	}
-	updtd, err := time.Parse(timeLayout, from.UpdatedAt())
-	if err != nil {
-		err = errors.Join(err, ErrParseTime)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
-			slog.Group("parameters",
-				slog.Any("*model.ArticleNode", nil),
-				slog.Any("error", err)))
-		return nil, err
-	}
 	an := model.ArticleNode{
 		ID:           from.Id(),
 		Title:        from.Title(),
 		Content:      from.Body(),
 		ThumbnailURL: from.ThumbnailUrl(),
-		CreatedAt:    crtd,
-		UpdatedAt:    updtd,
+		CreatedAt:    gqlscalar.UTC(from.CreatedAt()),
+		UpdatedAt:    gqlscalar.UTC(from.UpdatedAt()),
 		Tags:         &tcnn,
 	}
 	lgr.InfoContext(ctx, "END",
@@ -245,36 +218,14 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 		slog.Group("parameters", slog.Any("from", from)))
 	aegs := make([]*model.TagArticleEdge, 0, len(from.Articles()))
 	for _, article := range from.Articles() {
-		crtd, err := time.Parse(timeLayout, article.CreatedAt())
-		if err != nil {
-			err = errors.Join(err, ErrParseTime)
-			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			lgr.WarnContext(ctx, "END",
-				slog.String("duration", dw.SDuration()),
-				slog.Group("parameters",
-					slog.Any("*model.ArticleNode", nil),
-					slog.Any("error", err)))
-			return nil, err
-		}
-		updtd, err := time.Parse(timeLayout, article.UpdatedAt())
-		if err != nil {
-			err = errors.Join(err, ErrParseTime)
-			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			lgr.WarnContext(ctx, "END",
-				slog.String("duration", dw.SDuration()),
-				slog.Group("parameters",
-					slog.Any("*model.ArticleNode", nil),
-					slog.Any("error", err)))
-			return nil, err
-		}
 		aegs = append(aegs, &model.TagArticleEdge{
 			Cursor: article.Id(),
 			Node: &model.TagArticleNode{
 				ID:           article.Id(),
 				Title:        article.Title(),
 				ThumbnailURL: article.ThumbnailUrl(),
-				CreatedAt:    crtd,
-				UpdatedAt:    updtd,
+				CreatedAt:    gqlscalar.UTC(article.CreatedAt()),
+				UpdatedAt:    gqlscalar.UTC(article.UpdatedAt()),
 			},
 		})
 	}

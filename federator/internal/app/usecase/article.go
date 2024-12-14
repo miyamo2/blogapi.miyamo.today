@@ -2,8 +2,11 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	"log/slog"
+	"time"
 
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
@@ -56,13 +59,33 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 			pt.Id,
 			pt.Name))
 	}
+	createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.CreatedAt)
+	if err != nil {
+		err = errors.WithStack(err)
+		lgr.WarnContext(ctx, "END",
+			slog.String("duration", dw.SDuration()),
+			slog.Group("return",
+				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("error", err)))
+		return dto.ArticleOutDto{}, err
+	}
+	updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.UpdatedAt)
+	if err != nil {
+		err = errors.WithStack(err)
+		lgr.WarnContext(ctx, "END",
+			slog.String("duration", dw.SDuration()),
+			slog.Group("return",
+				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("error", err)))
+		return dto.ArticleOutDto{}, err
+	}
 	a := dto.NewArticleTag(
 		pa.Id,
 		pa.Title,
 		pa.Body,
 		pa.ThumbnailUrl,
-		pa.CreatedAt,
-		pa.UpdatedAt,
+		createdAt,
+		updatedAt,
 		ts)
 	out := dto.NewArticleOutDto(a)
 	lgr.InfoContext(ctx, "END",

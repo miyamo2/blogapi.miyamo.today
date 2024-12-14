@@ -2,14 +2,20 @@ package converter
 
 import (
 	"context"
-	"testing"
-	"time"
-
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
+	"testing"
 )
+
+var cmpOpts = []cmp.Option{
+	cmp.AllowUnexported(gqlscalar.URL{}),
+	cmp.AllowUnexported(gqlscalar.UTC{}),
+}
 
 func TestConverter_ToArticle(t *testing.T) {
 	type args struct {
@@ -36,8 +42,8 @@ func TestConverter_ToArticle(t *testing.T) {
 						"happy_path/single_tag",
 						"## happy_path/single_tag",
 						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("Tag1", "Tag1"),
 						}),
@@ -49,8 +55,8 @@ func TestConverter_ToArticle(t *testing.T) {
 					Title:        "happy_path/single_tag",
 					Content:      "## happy_path/single_tag",
 					ThumbnailURL: "example.test",
-					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
 						Edges: []*model.ArticleTagEdge{
 							{
@@ -81,8 +87,8 @@ func TestConverter_ToArticle(t *testing.T) {
 						"happy_path/multi_tag",
 						"## happy_path/multi_tag",
 						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("Tag1", "Tag1"),
 							dto.NewTag("Tag2", "Tag2"),
@@ -94,8 +100,8 @@ func TestConverter_ToArticle(t *testing.T) {
 					Title:        "happy_path/multi_tag",
 					Content:      "## happy_path/multi_tag",
 					ThumbnailURL: "example.test",
-					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
 						Edges: []*model.ArticleTagEdge{
 							{
@@ -133,8 +139,8 @@ func TestConverter_ToArticle(t *testing.T) {
 						"happy_path/no_tag",
 						"## happy_path/no_tag",
 						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{}),
 				),
 			},
@@ -144,33 +150,14 @@ func TestConverter_ToArticle(t *testing.T) {
 					Title:        "happy_path/no_tag",
 					Content:      "## happy_path/no_tag",
 					ThumbnailURL: "example.test",
-					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
 						Edges:    []*model.ArticleTagEdge{},
 						PageInfo: &model.PageInfo{},
 					},
 				},
 				true,
-			},
-		},
-		"unhappy_path/invalidate_timestmp": {
-			sut: NewConverter,
-			args: args{
-				ctx: context.Background(),
-				from: dto.NewArticleOutDto(
-					dto.NewArticleTag(
-						"Article1",
-						"unhappy_path",
-						"## unhappy_path",
-						"example.test",
-						"123456789",
-						"123456789",
-						[]dto.Tag{})),
-			},
-			want: want{
-				nil,
-				false,
 			},
 		},
 	}
@@ -182,7 +169,7 @@ func TestConverter_ToArticle(t *testing.T) {
 				t.Errorf("ToArticle() ok = %v, want %v", ok, tt.want.ok)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}
@@ -215,8 +202,8 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					"happy_path/single_tag",
 					"## happy_path/single_tag",
 					"example.test",
-					"2020-01-01T00:00:00Z",
-					"2020-01-01T00:00:00Z",
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					[]dto.Tag{
 						dto.NewTag("Tag1", "Tag1"),
 					}),
@@ -227,8 +214,8 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					Title:        "happy_path/single_tag",
 					Content:      "## happy_path/single_tag",
 					ThumbnailURL: "example.test",
-					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
 						Edges: []*model.ArticleTagEdge{
 							{
@@ -257,8 +244,8 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					"happy_path/multi_tag",
 					"## happy_path/multi_tag",
 					"example.test",
-					"2020-01-01T00:00:00Z",
-					"2020-01-01T00:00:00Z",
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					[]dto.Tag{
 						dto.NewTag("Tag1", "Tag1"),
 						dto.NewTag("Tag2", "Tag2"),
@@ -270,8 +257,8 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					Title:        "happy_path/multi_tag",
 					Content:      "## happy_path/multi_tag",
 					ThumbnailURL: "example.test",
-					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
 						Edges: []*model.ArticleTagEdge{
 							{
@@ -307,8 +294,8 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					"happy_path/no_tag",
 					"## happy_path/no_tag",
 					"example.test",
-					"2020-01-01T00:00:00Z",
-					"2020-01-01T00:00:00Z",
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					[]dto.Tag{}),
 			},
 			want: want{
@@ -317,8 +304,8 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 					Title:        "happy_path/no_tag",
 					Content:      "## happy_path/no_tag",
 					ThumbnailURL: "example.test",
-					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					Tags: &model.ArticleTagConnection{
 						Edges:    []*model.ArticleTagEdge{},
 						PageInfo: &model.PageInfo{},
@@ -326,59 +313,16 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 				},
 			},
 		},
-		"unhappy_path/invalidate_created_at": {
-			sut: NewConverter,
-			args: args{
-				ctx: context.Background(),
-				from: dto.NewArticleTag(
-					"Article1",
-					"unhappy_path/invalidate_created_at",
-					"## unhappy_path/invalidate_created_at",
-					"example.test",
-					"123456789",
-					"2020-01-01T00:00:00Z",
-					[]dto.Tag{}),
-			},
-			want: want{
-				nil,
-				ErrParseTime,
-			},
-			wantErr: true,
-		},
-		"unhappy_path/invalidate_updated_at": {
-			sut: NewConverter,
-			args: args{
-				ctx: context.Background(),
-				from: dto.NewArticleTag(
-					"Article1",
-					"unhappy_path/invalidate_updated_at",
-					"## unhappy_path/invalidate_updated_at",
-					"example.test",
-					"2020-01-01T00:00:00Z",
-					"123456789",
-					[]dto.Tag{}),
-			},
-			want: want{
-				nil,
-				ErrParseTime,
-			},
-			wantErr: true,
-		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := tt.sut()
 			got, err := c.articleNodeFromArticleTagDto(tt.args.ctx, tt.args.from)
-			if tt.wantErr {
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("articleNodeFromArticleTagDto() error = %v, want %v", err, tt.want.err)
-					return
-				}
-			} else if err != nil {
-				t.Errorf("articleNodeFromArticleTagDto() error = %v, wantErr %v", err, tt.wantErr)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("articleNodeFromArticleTagDto() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}
@@ -421,8 +365,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/single_article/single_tag",
 							"## happy_path/single_article/single_tag",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							},
@@ -441,8 +385,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/single_article/single_tag",
 								Content:      "## happy_path/single_article/single_tag",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -481,8 +425,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/single_article/multi_tag",
 							"## happy_path/single_article/multi_tag",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 								dto.NewTag("Tag2", "Tag2"),
@@ -500,8 +444,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/single_article/multi_tag",
 								Content:      "## happy_path/single_article/multi_tag",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -547,8 +491,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/single_tag",
 							"## happy_path/multi_article/single_tag",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -557,8 +501,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/single_tag",
 							"## happy_path/multi_article/single_tag",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -575,8 +519,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/single_tag",
 								Content:      "## happy_path/multi_article/single_tag",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -602,8 +546,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/single_tag",
 								Content:      "## happy_path/multi_article/single_tag",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -642,8 +586,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/multi_tag",
 							"## happy_path/multi_article/multi_tag",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 								dto.NewTag("Tag2", "Tag2"),
@@ -653,8 +597,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/multi_tag",
 							"## happy_path/multi_article/multi_tag",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 								dto.NewTag("Tag2", "Tag2"),
@@ -672,8 +616,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/multi_tag",
 								Content:      "## happy_path/multi_article/multi_tag",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -706,8 +650,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/multi_tag",
 								Content:      "## happy_path/multi_article/multi_tag",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -753,8 +697,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/single_article/single_tag/with_next_paging",
 							"## happy_path/single_article/single_tag/with_next_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							},
@@ -774,8 +718,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/single_article/single_tag/with_next_paging",
 								Content:      "## happy_path/single_article/single_tag/with_next_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -815,8 +759,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/single_article/multi_tag/with_next_paging",
 							"## happy_path/single_article/multi_tag/with_next_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 								dto.NewTag("Tag2", "Tag2"),
@@ -835,8 +779,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/single_article/multi_tag/with_next_paging",
 								Content:      "## happy_path/single_article/multi_tag/with_next_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -883,8 +827,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/single_tag/with_next_paging",
 							"## happy_path/multi_article/single_tag/with_next_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -893,8 +837,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/single_tag/with_next_paging",
 							"## happy_path/multi_article/single_tag/with_next_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -912,8 +856,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/single_tag/with_next_paging",
 								Content:      "## happy_path/multi_article/single_tag/with_next_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -939,8 +883,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/single_tag/with_next_paging",
 								Content:      "## happy_path/multi_article/single_tag/with_next_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -980,8 +924,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/multi_tag/with_next_paging",
 							"## happy_path/multi_article/multi_tag/with_next_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 								dto.NewTag("Tag2", "Tag2"),
@@ -991,8 +935,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/multi_tag/with_next_paging",
 							"## happy_path/multi_article/multi_tag/with_next_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 								dto.NewTag("Tag2", "Tag2"),
@@ -1011,8 +955,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/multi_tag/with_next_paging",
 								Content:      "## happy_path/multi_article/multi_tag/with_next_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1045,8 +989,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/multi_tag/with_next_paging",
 								Content:      "## happy_path/multi_article/multi_tag/with_next_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1093,8 +1037,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/single_article/single_tag/with_prev_paging",
 							"## happy_path/single_article/single_tag/with_prev_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							},
@@ -1114,8 +1058,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/single_article/single_tag/with_prev_paging",
 								Content:      "## happy_path/single_article/single_tag/with_prev_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1155,8 +1099,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/single_article/multi_tag/with_prev_paging",
 							"## happy_path/single_article/multi_tag/with_prev_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 								dto.NewTag("Tag2", "Tag2"),
@@ -1175,8 +1119,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/single_article/multi_tag/with_prev_paging",
 								Content:      "## happy_path/single_article/multi_tag/with_prev_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1223,8 +1167,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/single_tag/with_prev_paging",
 							"## happy_path/multi_article/single_tag/with_prev_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -1233,8 +1177,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/single_tag/with_prev_paging",
 							"## happy_path/multi_article/single_tag/with_prev_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 							}),
@@ -1252,8 +1196,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/single_tag/with_prev_paging",
 								Content:      "## happy_path/multi_article/single_tag/with_prev_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1279,8 +1223,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/single_tag/with_prev_paging",
 								Content:      "## happy_path/multi_article/single_tag/with_prev_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1320,8 +1264,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/multi_tag/with_prev_paging",
 							"## happy_path/multi_article/multi_tag/with_prev_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 								dto.NewTag("Tag2", "Tag2"),
@@ -1331,8 +1275,8 @@ func TestConverter_ToArticles(t *testing.T) {
 							"happy_path/multi_article/multi_tag/with_prev_paging",
 							"## happy_path/multi_article/multi_tag/with_prev_paging",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							[]dto.Tag{
 								dto.NewTag("Tag1", "Tag1"),
 								dto.NewTag("Tag2", "Tag2"),
@@ -1351,8 +1295,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/multi_tag/with_prev_paging",
 								Content:      "## happy_path/multi_article/multi_tag/with_prev_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1385,8 +1329,8 @@ func TestConverter_ToArticles(t *testing.T) {
 								Title:        "happy_path/multi_article/multi_tag/with_prev_paging",
 								Content:      "## happy_path/multi_article/multi_tag/with_prev_paging",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -1437,27 +1381,6 @@ func TestConverter_ToArticles(t *testing.T) {
 				},
 			},
 		},
-		"unhappy_path/invalidate_timestmp": {
-			sut: NewConverter,
-			args: args{
-				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
-					[]dto.ArticleTag{
-						dto.NewArticleTag(
-							"Article1",
-							"unhappy_path/invalidate_timestmp",
-							"## unhappy_path/invalidate_timestmp",
-							"example.test",
-							"2020-01-01T00:00:00Z",
-							"1234567890",
-							[]dto.Tag{}),
-					}),
-			},
-			want: want{
-				nil,
-				false,
-			},
-		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -1467,7 +1390,7 @@ func TestConverter_ToArticles(t *testing.T) {
 				t.Errorf("ToArticles() ok = %v, want %v", ok, tt.want.ok)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}
@@ -1505,8 +1428,8 @@ func TestConverter_ToTag(t *testing.T) {
 								"Article1",
 								"",
 								"example.test",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z")})),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))})),
 			},
 			want: want{
 				out: &model.TagNode{
@@ -1520,8 +1443,8 @@ func TestConverter_ToTag(t *testing.T) {
 									ID:           "Article1",
 									Title:        "Article1",
 									ThumbnailURL: "example.test",
-									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
 							},
 						},
@@ -1548,15 +1471,15 @@ func TestConverter_ToTag(t *testing.T) {
 								"Article1",
 								"",
 								"example.test",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							dto.NewArticle(
 								"Article2",
 								"Article2",
 								"",
 								"example.test",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z")})),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))})),
 			},
 			want: want{
 				out: &model.TagNode{
@@ -1570,8 +1493,8 @@ func TestConverter_ToTag(t *testing.T) {
 									ID:           "Article1",
 									Title:        "Article1",
 									ThumbnailURL: "example.test",
-									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
 							},
 							{
@@ -1580,8 +1503,8 @@ func TestConverter_ToTag(t *testing.T) {
 									ID:           "Article2",
 									Title:        "Article2",
 									ThumbnailURL: "example.test",
-									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
 							},
 						},
@@ -1616,48 +1539,16 @@ func TestConverter_ToTag(t *testing.T) {
 				},
 			},
 		},
-		"unhappy_path/invalidate_timestamp": {
-			sut: NewConverter,
-			args: args{
-				ctx: context.Background(),
-				from: dto.NewTagOutDto(
-					dto.NewTagArticle(
-						"Tag1",
-						"Tag1",
-						[]dto.Article{
-							dto.NewArticle(
-								"Article1",
-								"Article1",
-								"",
-								"example.test",
-								"1234567890",
-								"2020-01-01T00:00:00Z")})),
-			},
-			want: want{
-				out: nil,
-				err: ErrFailedToConvertToTagNode,
-			},
-			wantErr: true,
-		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := tt.sut()
 			got, err := c.ToTag(tt.args.ctx, tt.args.from)
-			if tt.wantErr {
-				if tt.want.err == nil {
-					t.Errorf("ToTag() error = %v, wantErr %v", tt.want.err, tt.wantErr)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("ToTag() error = %v, want =  %v", err, tt.want.err)
-					return
-				}
-			} else if tt.want.err != nil {
-				t.Errorf("ToTag() error = %v, wantErr %v", tt.want.err, tt.wantErr)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("ToTag() error = %v, want =  %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}
@@ -1695,8 +1586,8 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 							"Article1",
 							"## Article1",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						),
 					}),
 			},
@@ -1712,8 +1603,8 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 									ID:           "Article1",
 									Title:        "Article1",
 									ThumbnailURL: "example.test",
-									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
 							},
 						},
@@ -1739,16 +1630,16 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 							"Article1",
 							"## Article1",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						),
 						dto.NewArticle(
 							"Article2",
 							"Article2",
 							"## Article2",
 							"example.test",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						),
 					}),
 			},
@@ -1764,8 +1655,8 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 									ID:           "Article1",
 									Title:        "Article1",
 									ThumbnailURL: "example.test",
-									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
 							},
 							{
@@ -1774,8 +1665,8 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 									ID:           "Article2",
 									Title:        "Article2",
 									ThumbnailURL: "example.test",
-									CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-									UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+									CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+									UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								},
 							},
 						},
@@ -1809,69 +1700,16 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 				},
 			},
 		},
-		"unhappy_path/invalidate_created_at": {
-			sut: NewConverter,
-			args: args{
-				ctx: context.Background(),
-				from: dto.NewTagArticle(
-					"Tag1",
-					"Tag1",
-					[]dto.Article{
-						dto.NewArticle(
-							"Article1",
-							"Article1",
-							"## Article1",
-							"example.test",
-							"1234567890",
-							"2020-01-01T00:00:00Z",
-						),
-					}),
-			},
-			want: want{
-				out: nil,
-				err: ErrParseTime,
-			},
-			wantErr: true,
-		},
-		"unhappy_path/invalidate_updated_at": {
-			sut: NewConverter,
-			args: args{
-				ctx: context.Background(),
-				from: dto.NewTagArticle(
-					"Tag1",
-					"Tag1",
-					[]dto.Article{
-						dto.NewArticle(
-							"Article1",
-							"Article1",
-							"## Article1",
-							"example.test",
-							"2020-01-01T00:00:00Z",
-							"1234567890",
-						),
-					}),
-			},
-			want: want{
-				out: nil,
-				err: ErrParseTime,
-			},
-			wantErr: true,
-		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := tt.sut()
 			got, err := c.tagNodeFromTagArticleDto(tt.args.ctx, tt.args.from)
-			if tt.wantErr {
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("tagNodeFromTagArticleDto() error = %v, want %v", err, tt.want.err)
-					return
-				}
-			} else if err != nil {
-				t.Errorf("tagNodeFromTagArticleDto() error = %v, wantErr %v", err, tt.wantErr)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("tagNodeFromTagArticleDto() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}
@@ -1914,8 +1752,8 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
 					}),
 			},
@@ -1935,8 +1773,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -1972,15 +1810,15 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
 					}),
 			},
@@ -2000,8 +1838,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 										{
@@ -2010,8 +1848,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article2",
 												Title:        "Article2",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2047,8 +1885,8 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z")}),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 						dto.NewTagArticle(
 							"Tag2",
 							"Tag2",
@@ -2058,8 +1896,8 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z")}),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					}),
 			},
 			want: want{
@@ -2078,8 +1916,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2104,8 +1942,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2141,15 +1979,15 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z")}),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 						dto.NewTagArticle(
 							"Tag2",
 							"Tag2",
@@ -2159,15 +1997,15 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z")}),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					}),
 			},
 			want: want{
@@ -2186,8 +2024,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 										{
@@ -2196,8 +2034,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article2",
 												Title:        "Article2",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2222,8 +2060,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 										{
@@ -2232,8 +2070,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article2",
 												Title:        "Article2",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2269,8 +2107,8 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z")}),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					},
 					dto.TagsOutDtoWithHasNext(true)),
 			},
@@ -2290,8 +2128,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2328,15 +2166,15 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z")}),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 						dto.NewTagArticle(
 							"Tag2",
 							"Tag2",
@@ -2346,15 +2184,15 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z")}),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					},
 					dto.TagsOutDtoWithHasNext(true)),
 			},
@@ -2374,8 +2212,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 										{
@@ -2384,8 +2222,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article2",
 												Title:        "Article2",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2410,8 +2248,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 										{
@@ -2420,8 +2258,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article2",
 												Title:        "Article2",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2458,15 +2296,15 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z")}),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 						dto.NewTagArticle(
 							"Tag2",
 							"Tag2",
@@ -2476,15 +2314,15 @@ func TestConverter_ToTags(t *testing.T) {
 									"Article1",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								dto.NewArticle(
 									"Article2",
 									"Article2",
 									"",
 									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z")}),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					},
 					dto.TagsOutDtoWithHasPrev(true)),
 			},
@@ -2504,8 +2342,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 										{
@@ -2514,8 +2352,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article2",
 												Title:        "Article2",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2540,8 +2378,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 										{
@@ -2550,8 +2388,8 @@ func TestConverter_ToTags(t *testing.T) {
 												ID:           "Article2",
 												Title:        "Article2",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -2572,34 +2410,6 @@ func TestConverter_ToTags(t *testing.T) {
 					TotalCount: 2,
 				},
 			},
-		},
-		"unhappy_path/invalidate_timestamp": {
-			sut: NewConverter,
-			args: args{
-				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
-					[]dto.TagArticle{
-						dto.NewTagArticle(
-							"Tag1",
-							"Tag1",
-							[]dto.Article{
-								dto.NewArticle(
-									"Article1",
-									"Article1",
-									"",
-									"example.test",
-									"123456789",
-									"2020-01-01T00:00:00Z",
-								),
-							},
-						),
-					}),
-			},
-			want: want{
-				out: nil,
-				err: ErrParseTime,
-			},
-			wantErr: true,
 		},
 		"happy_path/no_tag": {
 			sut: NewConverter,
@@ -2658,16 +2468,11 @@ func TestConverter_ToTags(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			c := tt.sut()
 			got, err := c.ToTags(tt.args.ctx, tt.args.from)
-			if tt.wantErr {
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("ToTags() error = %v, want %v", err, tt.want.err)
-					return
-				}
-			} else if err != nil {
-				t.Errorf("ToTags() error = %v, wantErr %v", err, tt.wantErr)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("ToTags() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}

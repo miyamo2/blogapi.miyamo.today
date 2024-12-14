@@ -2,8 +2,10 @@ package resolver
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 	"testing"
-	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
@@ -13,6 +15,11 @@ import (
 	musecase "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/usecase"
 	"go.uber.org/mock/gomock"
 )
+
+var cmpOpts = []cmp.Option{
+	cmp.AllowUnexported(gqlscalar.URL{}),
+	cmp.AllowUnexported(gqlscalar.UTC{}),
+}
 
 func Test_queryResolver_Article(t *testing.T) {
 	type args struct {
@@ -60,8 +67,8 @@ func Test_queryResolver_Article(t *testing.T) {
 						"Article1",
 						"## Article1",
 						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("Tag1", "Tag1"),
 						})),
@@ -79,8 +86,8 @@ func Test_queryResolver_Article(t *testing.T) {
 					Title:        "Article1",
 					Content:      "## Article1",
 					ThumbnailURL: "example.test",
-					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 				},
 				ok: true,
 			},
@@ -94,8 +101,8 @@ func Test_queryResolver_Article(t *testing.T) {
 					Title:        "Article1",
 					Content:      "## Article1",
 					ThumbnailURL: "example.test",
-					CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-					UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+					CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+					UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 				},
 				err: nil,
 			},
@@ -145,8 +152,8 @@ func Test_queryResolver_Article(t *testing.T) {
 						"Article1",
 						"## Article1",
 						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{},
 					),
 				),
@@ -183,16 +190,11 @@ func Test_queryResolver_Article(t *testing.T) {
 			tt.setupMockConverter(cnvrtr, tt.usecaseResult.out, tt.converterResult)
 			sut := tt.sut(NewResolver(NewUsecases(WithArticleUsecase(uc)), NewConverters(WithArticleConverter(cnvrtr))))
 			got, err := sut.Article(tt.args.ctx, tt.args.id)
-			if tt.wantErr {
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("Article() got = %v, want %v", err, tt.want.err)
-					return
-				}
-			} else if err != nil {
+			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Article() got = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}
@@ -249,8 +251,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 						"Article1",
 						"## Article1",
 						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("Tag1", "Tag1"),
 						}),
@@ -273,8 +275,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 								Title:        "Article1",
 								Content:      "## Article1",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -319,8 +321,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 								Title:        "Article1",
 								Content:      "## Article1",
 								ThumbnailURL: "example.test",
-								CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-								UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+								CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 								Tags: &model.ArticleTagConnection{
 									Edges: []*model.ArticleTagEdge{
 										{
@@ -647,16 +649,11 @@ func Test_queryResolver_Articles(t *testing.T) {
 			tt.setupMockConverter(cnvrtr, tt.usecaseResult.out, tt.converterResult)
 			sut := tt.sut(NewResolver(NewUsecases(WithArticlesUsecase(uc)), NewConverters(WithArticlesConverter(cnvrtr))))
 			got, err := sut.Articles(tt.args.ctx, tt.args.first, tt.args.last, tt.args.after, tt.args.before)
-			if tt.wantErr {
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("Article() got = %v, want %v", err, tt.want.err)
-					return
-				}
-			} else if err != nil {
+			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Article() got = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}

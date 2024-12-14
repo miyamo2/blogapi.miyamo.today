@@ -2,7 +2,10 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"log/slog"
+	"time"
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
@@ -92,13 +95,35 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 		pas := pt.GetArticles()
 		das := make([]dto.Article, 0, len(pas))
 		for _, pa := range pt.Articles {
+			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.CreatedAt)
+			if err != nil {
+				err = errors.WithStack(err)
+				lgr.WarnContext(ctx, "END",
+					slog.String("duration", dw.SDuration()),
+					slog.Group("return",
+						slog.Any("*dto.ArticleOutDto", nil),
+						slog.Any("error", err)))
+				return dto.TagsOutDto{}, err
+			}
+
+			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.UpdatedAt)
+			if err != nil {
+				err = errors.WithStack(err)
+				lgr.WarnContext(ctx, "END",
+					slog.String("duration", dw.SDuration()),
+					slog.Group("return",
+						slog.Any("*dto.ArticleOutDto", nil),
+						slog.Any("error", err)))
+				return dto.TagsOutDto{}, err
+			}
+
 			das = append(das, dto.NewArticle(
 				pa.Id,
 				pa.Title,
 				"",
 				pa.ThumbnailUrl,
-				pa.CreatedAt,
-				pa.UpdatedAt))
+				createdAt,
+				updatedAt))
 		}
 		dts = append(dts, dto.NewTagArticle(
 			pt.Id,
@@ -147,13 +172,34 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDto) (dto.Tag
 		pas := pt.GetArticles()
 		das := make([]dto.Article, 0, len(pas))
 		for _, pa := range pt.Articles {
+			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.CreatedAt)
+			if err != nil {
+				err = errors.WithStack(err)
+				lgr.WarnContext(ctx, "END",
+					slog.String("duration", dw.SDuration()),
+					slog.Group("return",
+						slog.Any("*dto.ArticleOutDto", nil),
+						slog.Any("error", err)))
+				return dto.TagsOutDto{}, err
+			}
+
+			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.UpdatedAt)
+			if err != nil {
+				err = errors.WithStack(err)
+				lgr.WarnContext(ctx, "END",
+					slog.String("duration", dw.SDuration()),
+					slog.Group("return",
+						slog.Any("*dto.ArticleOutDto", nil),
+						slog.Any("error", err)))
+				return dto.TagsOutDto{}, err
+			}
 			das = append(das, dto.NewArticle(
 				pa.Id,
 				pa.Title,
 				"",
 				pa.ThumbnailUrl,
-				pa.CreatedAt,
-				pa.UpdatedAt))
+				createdAt,
+				updatedAt))
 		}
 		dts = append(dts, dto.NewTagArticle(
 			pt.Id,
@@ -197,13 +243,34 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDto, error) {
 		pas := pt.GetArticles()
 		das := make([]dto.Article, 0, len(pas))
 		for _, pa := range pt.Articles {
+			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.CreatedAt)
+			if err != nil {
+				err = errors.WithStack(err)
+				lgr.WarnContext(ctx, "END",
+					slog.String("duration", dw.SDuration()),
+					slog.Group("return",
+						slog.Any("*dto.ArticleOutDto", nil),
+						slog.Any("error", err)))
+				return dto.TagsOutDto{}, err
+			}
+
+			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.UpdatedAt)
+			if err != nil {
+				err = errors.WithStack(err)
+				lgr.WarnContext(ctx, "END",
+					slog.String("duration", dw.SDuration()),
+					slog.Group("return",
+						slog.Any("*dto.ArticleOutDto", nil),
+						slog.Any("error", err)))
+				return dto.TagsOutDto{}, err
+			}
 			das = append(das, dto.NewArticle(
 				pa.Id,
 				pa.Title,
 				"",
 				pa.ThumbnailUrl,
-				pa.CreatedAt,
-				pa.UpdatedAt))
+				createdAt,
+				updatedAt))
 		}
 		dts = append(dts, dto.NewTagArticle(
 			pt.Id,

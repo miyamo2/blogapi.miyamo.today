@@ -1,6 +1,10 @@
 package dto
 
-import "github.com/cockroachdb/errors"
+import (
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
+	"github.com/cockroachdb/errors"
+)
 
 var (
 	ErrInvalidateArticlesInDto = errors.New("invalidate articles in dto")
@@ -33,9 +37,6 @@ type ArticlesInDto struct {
 	after  string
 	before string
 }
-
-// IsInDto is a marker for in dto.
-func (i ArticlesInDto) IsInDto() {}
 
 func (i ArticlesInDto) First() int {
 	return i.first
@@ -141,8 +142,8 @@ type Article struct {
 	title        string
 	body         string
 	thumbnailUrl string
-	createdAt    string
-	updatedAt    string
+	createdAt    synchro.Time[tz.UTC]
+	updatedAt    synchro.Time[tz.UTC]
 }
 
 // IsOutDto is a marker for out dto.
@@ -164,16 +165,16 @@ func (a Article) ThumbnailUrl() string {
 }
 
 // CreatedAt returns created at.
-func (a Article) CreatedAt() string {
+func (a Article) CreatedAt() synchro.Time[tz.UTC] {
 	return a.createdAt
 }
 
 // UpdatedAt returns updated at.
-func (a Article) UpdatedAt() string {
+func (a Article) UpdatedAt() synchro.Time[tz.UTC] {
 	return a.updatedAt
 }
 
-func NewArticle(id, title, body, thumbnailUrl, createdAt, updatedAt string) Article {
+func NewArticle(id, title, body, thumbnailUrl string, createdAt, updatedAt synchro.Time[tz.UTC]) Article {
 	return Article{
 		id:           id,
 		title:        title,
@@ -222,7 +223,7 @@ func (a ArticleTag) Tags() []Tag {
 	return a.tags
 }
 
-func NewArticleTag(id, title, body, thumbnailUrl, createdAt, updatedAt string, tags []Tag) ArticleTag {
+func NewArticleTag(id, title, body, thumbnailUrl string, createdAt, updatedAt synchro.Time[tz.UTC], tags []Tag) ArticleTag {
 	return ArticleTag{
 		Article: NewArticle(id, title, body, thumbnailUrl, createdAt, updatedAt),
 		tags:    tags,

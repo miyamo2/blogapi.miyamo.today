@@ -2,7 +2,10 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"log/slog"
+	"time"
 
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
@@ -52,13 +55,34 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 	pas := pt.Articles
 	atcls := make([]dto.Article, 0, len(pas))
 	for _, pa := range pas {
+		createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.CreatedAt)
+		if err != nil {
+			err = errors.WithStack(err)
+			lgr.WarnContext(ctx, "END",
+				slog.String("duration", dw.SDuration()),
+				slog.Group("return",
+					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("error", err)))
+			return dto.TagOutDto{}, err
+		}
+
+		updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, pa.UpdatedAt)
+		if err != nil {
+			err = errors.WithStack(err)
+			lgr.WarnContext(ctx, "END",
+				slog.String("duration", dw.SDuration()),
+				slog.Group("return",
+					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("error", err)))
+			return dto.TagOutDto{}, err
+		}
 		atcls = append(atcls, dto.NewArticle(
 			pa.Id,
 			pa.Title,
 			"",
 			pa.ThumbnailUrl,
-			pa.CreatedAt,
-			pa.UpdatedAt))
+			createdAt,
+			updatedAt))
 	}
 	t := dto.NewTagArticle(
 		pt.Id,

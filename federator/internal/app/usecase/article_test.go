@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	mgrpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/infra/grpc/article"
 	"reflect"
@@ -51,8 +53,8 @@ func TestArticle_Execute(t *testing.T) {
 							Title:        "happy_path/single_tag",
 							Body:         "## happy_path/single_tag",
 							ThumbnailUrl: "example.test",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    "2020-01-01T00:00:00.000000Z",
+							UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 							Tags: []*grpc.Tag{
 								{
 									Id:   "Tag1",
@@ -75,8 +77,8 @@ func TestArticle_Execute(t *testing.T) {
 						"happy_path/single_tag",
 						"## happy_path/single_tag",
 						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("Tag1", "Tag1"),
 						}),
@@ -94,8 +96,8 @@ func TestArticle_Execute(t *testing.T) {
 							Title:        "happy_path/multiple_tags",
 							Body:         "## happy_path/multiple_tags",
 							ThumbnailUrl: "example.test",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    "2020-01-01T00:00:00.000000Z",
+							UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 							Tags: []*grpc.Tag{
 								{
 									Id:   "Tag1",
@@ -126,8 +128,8 @@ func TestArticle_Execute(t *testing.T) {
 						"happy_path/multiple_tags",
 						"## happy_path/multiple_tags",
 						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("Tag1", "Tag1"),
 							dto.NewTag("Tag2", "Tag2"),
@@ -148,8 +150,8 @@ func TestArticle_Execute(t *testing.T) {
 							Title:        "happy_path/no_tags",
 							Body:         "## happy_path/no_tags",
 							ThumbnailUrl: "example.test",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    "2020-01-01T00:00:00.000000Z",
+							UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 						},
 					}, nil).
 					Times(1)
@@ -166,8 +168,8 @@ func TestArticle_Execute(t *testing.T) {
 						"happy_path/no_tags",
 						"## happy_path/no_tags",
 						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{})),
 			},
 		},

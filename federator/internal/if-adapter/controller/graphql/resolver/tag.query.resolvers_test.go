@@ -2,16 +2,17 @@ package resolver
 
 import (
 	"context"
-	"testing"
-	"time"
-
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 	mconverter "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/presenter/converter"
 	musecase "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/if-adapter/controller/graphql/resolver/usecase"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 	"go.uber.org/mock/gomock"
+	"testing"
 )
 
 func Test_queryResolver_Tag(t *testing.T) {
@@ -65,8 +66,8 @@ func Test_queryResolver_Tag(t *testing.T) {
 								"Article1",
 								"",
 								"example.test",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						})),
 				err: nil,
 			},
@@ -143,8 +144,8 @@ func Test_queryResolver_Tag(t *testing.T) {
 								"Article1",
 								"",
 								"example.test",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						})),
 				err: nil,
 			},
@@ -179,16 +180,11 @@ func Test_queryResolver_Tag(t *testing.T) {
 			tt.setupMockConverter(cnvrtr, tt.usecaseResult.out, tt.converterResult)
 			sut := tt.sut(NewResolver(NewUsecases(WithTagUsecase(uc)), NewConverters(WithTagConverter(cnvrtr))))
 			got, err := sut.Tag(tt.args.ctx, tt.args.id)
-			if tt.wantErr {
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("Tag() got = %v, want %v", err, tt.want.err)
-					return
-				}
-			} else if err != nil {
+			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Tag() got = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}
@@ -250,8 +246,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 								"Article1",
 								"",
 								"example.test",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						}),
 				}),
 				err: nil,
@@ -278,8 +274,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -318,8 +314,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 												ID:           "Article1",
 												Title:        "Article1",
 												ThumbnailURL: "example.test",
-												CreatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-												UpdatedAt:    time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+												CreatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+												UpdatedAt:    gqlscalar.UTC(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 											},
 										},
 									},
@@ -635,16 +631,11 @@ func Test_queryResolver_Tags(t *testing.T) {
 			tt.setupMockConverter(cnvrtr, tt.usecaseResult.out, tt.converterResult)
 			sut := tt.sut(NewResolver(NewUsecases(WithTagsUsecase(uc)), NewConverters(WithTagsConverter(cnvrtr))))
 			got, err := sut.Tags(tt.args.ctx, tt.args.first, tt.args.last, tt.args.after, tt.args.before)
-			if tt.wantErr {
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("Tags() got = %v, want %v", err, tt.want.err)
-					return
-				}
-			} else if err != nil {
+			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Tags() got = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.out); diff != "" {
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
 				t.Error(diff)
 				return
 			}
