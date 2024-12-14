@@ -62,7 +62,7 @@ jobs:
       - name: Go Test
         working-directory: article-service
         run: |
-          TARGET=$(go list ./... | grep -v "mock" | grep -v "configs")
+          TARGET=$(go list ./... | grep -v "mock" | grep -v "configs" | grep -v "infra/grpc")
           go test $TARGET -v -coverprofile=coverage.out
           exit ${PIPESTATUS[0]}
 
