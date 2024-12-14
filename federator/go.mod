@@ -12,7 +12,7 @@ require (
 	github.com/labstack/echo/v4 v4.13.2
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/miyamo2/blogapi.miyamo.today/core v0.21.1
-	github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.0
+	github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.1
 	github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.3.0
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.2
