@@ -14,8 +14,8 @@ func GormDialector(awsConfig *aws.Config) *gorm.Dialector {
 	if err := db.Ping(); err != nil {
 		panic(err)
 	}
-	dynamoDialector := dynmgrm.New(dynmgrm.WithConnection(db))
-	return &dynamoDialector
+	gormDialector := dynmgrm.New(dynmgrm.WithConnection(db))
+	return &gormDialector
 }
 
 var GormSet = wire.NewSet(GormDialector)
