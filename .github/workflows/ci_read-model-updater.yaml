@@ -1,4 +1,4 @@
-name: ci_read-model-updater_blogging-event_try
+name: ci_read-model-updater
 
 on:
   push:
@@ -37,6 +37,7 @@ jobs:
           go-version: ${{ matrix.goversion }}
 
       - name: Go Build
+        working-directory: ./read-model-updater
         run: |
           go mod tidy
           go build -o ./bin/cmd ./cmd/main.go
@@ -47,12 +48,12 @@ jobs:
           reviewdog_version: latest
 
       - name: Setup staticcheck
-        working-directory: ${{ matrix.module }}
+        working-directory: ./read-model-updater
         run: |
           go install honnef.co/go/tools/cmd/staticcheck@latest
 
       - name: staticcheck with reviewdog
-        working-directory: ${{ matrix.module }}
+        working-directory: ./read-model-updater
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -66,6 +67,6 @@ jobs:
           aws-region: ap-northeast-1
 
       - name: Validate SAM template
-        working-directory: ${{ matrix.module }}
+        working-directory: ./read-model-updater
         run: |
           sam validate

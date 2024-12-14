@@ -1,4 +1,4 @@
-name: staging_deploy
+name: staging_deploy_read-model-updater
 
 on:
   push:
