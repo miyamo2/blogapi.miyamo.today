@@ -32,7 +32,7 @@ func TestNewUpdateArticleTitle(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path": {
 			args: func() args {
-				in := dto.NewUpdateArticleTitleInDto("title", "article_id")
+				in := dto.NewUpdateArticleTitleInDto("article_id", "title")
 				return args{
 					ctx: context.Background(),
 					in:  &in,
