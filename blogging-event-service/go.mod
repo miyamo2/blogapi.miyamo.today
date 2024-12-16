@@ -3,7 +3,6 @@ module github.com/miyamo2/blogapi.miyamo.today/blogging-event-service
 go 1.23.0
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/aws/aws-sdk-go-v2 v1.32.6
 	github.com/aws/aws-sdk-go-v2/config v1.28.6
 	github.com/cockroachdb/errors v1.11.3
@@ -14,7 +13,7 @@ require (
 	github.com/miyamo2/blogapi.miyamo.today/core v0.22.0
 	github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.5
 	github.com/miyamo2/dynmgrm v0.10.0
-	github.com/miyamo2/pqxd v0.5.0
+	github.com/miyamo2/godynamo v1.4.0
 	github.com/miyamo2/sqldav v0.2.1
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2 v1.2.3
@@ -62,13 +61,11 @@ require (
 	github.com/k2io/hookingo v1.0.6 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/miyamo2/godynamo v1.4.0 // indirect
 	github.com/newrelic/csec-go-agent v0.6.0 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
