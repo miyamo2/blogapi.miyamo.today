@@ -8,10 +8,11 @@ import (
 
 // compatibility check
 var (
-	_ abstract.Article  = (*usecase.Article)(nil)
-	_ abstract.Articles = (*usecase.Articles)(nil)
-	_ abstract.Tag      = (*usecase.Tag)(nil)
-	_ abstract.Tags     = (*usecase.Tags)(nil)
+	_ abstract.Article       = (*usecase.Article)(nil)
+	_ abstract.Articles      = (*usecase.Articles)(nil)
+	_ abstract.Tag           = (*usecase.Tag)(nil)
+	_ abstract.Tags          = (*usecase.Tags)(nil)
+	_ abstract.CreateArticle = (*usecase.CreateArticle)(nil)
 )
 
 var UsecaseSet = wire.NewSet(
@@ -23,4 +24,6 @@ var UsecaseSet = wire.NewSet(
 	wire.Bind(new(abstract.Tag), new(*usecase.Tag)),
 	usecase.NewTags,
 	wire.Bind(new(abstract.Tags), new(*usecase.Tags)),
+	usecase.NewCreateArticle,
+	wire.Bind(new(abstract.CreateArticle), new(*usecase.CreateArticle)),
 )

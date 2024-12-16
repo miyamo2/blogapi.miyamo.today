@@ -33,7 +33,7 @@ func (r *queryResolver) Tags(ctx context.Context, first *int, last *int, after *
 			slog.Any("last", last),
 			slog.Any("after", after),
 			slog.Any("before", before)))
-	opts := make([]dto.TagsInDtoOption, 0, 4)
+	opts := make([]dto.TagsInDTOOption, 0, 4)
 	if first != nil {
 		opts = append(opts, dto.TagsInWithFirst(*first))
 	}
@@ -46,7 +46,7 @@ func (r *queryResolver) Tags(ctx context.Context, first *int, last *int, after *
 	if before != nil {
 		opts = append(opts, dto.TagsInWithBefore(*before))
 	}
-	in, err := dto.NewTagsInDto(opts...)
+	in, err := dto.NewTagsInDTO(opts...)
 	if err != nil {
 		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -56,7 +56,7 @@ func (r *queryResolver) Tags(ctx context.Context, first *int, last *int, after *
 				slog.Any("error", err)))
 		return nil, err
 	}
-	oDto, err := r.usecases.tags.Execute(ctx, in)
+	oDTO, err := r.usecases.tags.Execute(ctx, in)
 	if err != nil {
 		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -66,7 +66,7 @@ func (r *queryResolver) Tags(ctx context.Context, first *int, last *int, after *
 				slog.Any("error", err)))
 		return nil, err
 	}
-	connection, err := r.converters.tags.ToTags(ctx, oDto)
+	connection, err := r.converters.tags.ToTags(ctx, oDTO)
 	if err != nil {
 		logger.InfoContext(ctx, "END",
 			slog.Group("returns",
@@ -95,7 +95,7 @@ func (r *queryResolver) Tag(ctx context.Context, id string) (*model.TagNode, err
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.String("id", id)))
-	oDto, err := r.usecases.tag.Execute(ctx, dto.NewTagInDto(id))
+	oDTO, err := r.usecases.tag.Execute(ctx, dto.NewTagInDTO(id))
 	if err != nil {
 		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -105,7 +105,7 @@ func (r *queryResolver) Tag(ctx context.Context, id string) (*model.TagNode, err
 				slog.Any("error", err)))
 		return nil, err
 	}
-	node, err := r.converters.tag.ToTag(ctx, oDto)
+	node, err := r.converters.tag.ToTag(ctx, oDTO)
 	if err != nil {
 		logger.InfoContext(ctx, "END",
 			slog.Group("returns",

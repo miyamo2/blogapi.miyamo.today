@@ -10,7 +10,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/configs/di/provider"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/converter"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/converters"
 )
 
 // Injectors from wire.go:
@@ -22,10 +22,12 @@ func GetDependencies() *Dependencies {
 	tagServiceClient := provider.TagClient()
 	tag := usecase.NewTag(tagServiceClient)
 	tags := usecase.NewTags(tagServiceClient)
-	usecases := provider.Usecases(article, articles, tag, tags)
-	converterConverter := converter.NewConverter()
-	converters := provider.Converters(converterConverter, converterConverter, converterConverter, converterConverter)
-	resolverResolver := resolver.NewResolver(usecases, converters)
+	bloggingEventServiceClient := provider.BloggingEventClient()
+	createArticle := usecase.NewCreateArticle(bloggingEventServiceClient)
+	usecases := provider.Usecases(article, articles, tag, tags, createArticle)
+	converter := converters.NewConverter()
+	resolverConverters := provider.Converters(converter, converter, converter, converter, converter)
+	resolverResolver := resolver.NewResolver(usecases, resolverConverters)
 	config := provider.GqlgenConfig(resolverResolver)
 	executableSchema := provider.GqlgenExecutableSchema(config)
 	application := provider.NewRelic()

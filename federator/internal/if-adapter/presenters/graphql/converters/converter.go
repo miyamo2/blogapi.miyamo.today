@@ -1,4 +1,4 @@
-package converter
+package converters
 
 import (
 	"context"
@@ -15,14 +15,42 @@ import (
 )
 
 var (
-	ErrParseTime                = errors.New("failed to parse time")
 	ErrFailedToConvertToTagNode = errors.New("failed to convert to tag node")
 )
 
 type Converter struct{}
 
-// ToArticle converts dto.ArticleOutDto to model.ArticleNode.
-func (c Converter) ToArticle(ctx context.Context, from dto.ArticleOutDto) (*model.ArticleNode, bool) {
+func (c Converter) ToCreateArticle(ctx context.Context, from dto.CreateArticleOutDTO) (*model.CreateArticlePayload, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToCreateArticle").End()
+
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.Any("from", from)))
+
+	var clientMutationID *string
+	if v := from.ClientMutationID(); len(v) > 0 {
+		clientMutationID = &v
+	}
+	payload := model.CreateArticlePayload{
+		ClientMutationID: clientMutationID,
+		EventID:          from.EventID(),
+		ArticleID:        from.ArticleID(),
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("returns",
+			slog.Any("*model.CreateArticlePayload", payload),
+			slog.Any("error", nil)))
+	return &payload, nil
+}
+
+// ToArticle converts dto.ArticleOutDTO to model.ArticleNode.
+func (c Converter) ToArticle(ctx context.Context, from dto.ArticleOutDTO) (*model.ArticleNode, bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToArticle").End()
 
@@ -34,7 +62,7 @@ func (c Converter) ToArticle(ctx context.Context, from dto.ArticleOutDto) (*mode
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
-	node, err := c.articleNodeFromArticleTagDto(ctx, from.Article())
+	node, err := c.articleNodeFromArticleTagDTO(ctx, from.Article())
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -47,10 +75,10 @@ func (c Converter) ToArticle(ctx context.Context, from dto.ArticleOutDto) (*mode
 	return node, true
 }
 
-// articleNodeFromArticleTagDto converts dto.ArticleTag to model.ArticleNode.
-func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.ArticleTag) (*model.ArticleNode, error) {
+// articleNodeFromArticleTagDTO converts dto.ArticleTag to model.ArticleNode.
+func (c Converter) articleNodeFromArticleTagDTO(ctx context.Context, from dto.ArticleTag) (*model.ArticleNode, error) {
 	nrtx := newrelic.FromContext(ctx)
-	defer nrtx.StartSegment("articleNodeFromArticleTagDto").End()
+	defer nrtx.StartSegment("articleNodeFromArticleTagDTO").End()
 
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
@@ -63,9 +91,9 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 	tegs := make([]*model.ArticleTagEdge, 0, len(from.Tags()))
 	for _, tag := range from.Tags() {
 		tegs = append(tegs, &model.ArticleTagEdge{
-			Cursor: tag.Id(),
+			Cursor: tag.ID(),
 			Node: &model.ArticleTagNode{
-				ID:   tag.Id(),
+				ID:   tag.ID(),
 				Name: tag.Name(),
 			},
 		})
@@ -86,10 +114,10 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 		TotalCount: len(tegs),
 	}
 	articleNode := model.ArticleNode{
-		ID:           from.Id(),
+		ID:           from.ID(),
 		Title:        from.Title(),
 		Content:      from.Body(),
-		ThumbnailURL: gqlscalar.URL(from.ThumbnailUrl()),
+		ThumbnailURL: gqlscalar.URL(from.ThumbnailURL()),
 		CreatedAt:    gqlscalar.UTC(from.CreatedAt()),
 		UpdatedAt:    gqlscalar.UTC(from.UpdatedAt()),
 		Tags:         &tagConnection,
@@ -101,7 +129,7 @@ func (c Converter) articleNodeFromArticleTagDto(ctx context.Context, from dto.Ar
 	return &articleNode, nil
 }
 
-func (c Converter) ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*model.ArticleConnection, bool) {
+func (c Converter) ToArticles(ctx context.Context, from dto.ArticlesOutDTO) (*model.ArticleConnection, bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToArticles").End()
 
@@ -115,7 +143,7 @@ func (c Converter) ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*mo
 		slog.Group("parameters", slog.Any("from", from)))
 	articleEdges := make([]*model.ArticleEdge, 0, len(from.Articles()))
 	for _, article := range from.Articles() {
-		node, err := c.articleNodeFromArticleTagDto(ctx, article)
+		node, err := c.articleNodeFromArticleTagDTO(ctx, article)
 		if err != nil {
 			err = errors.WithStack(err)
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -126,7 +154,7 @@ func (c Converter) ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*mo
 			return nil, false
 		}
 		articleEdges = append(articleEdges, &model.ArticleEdge{
-			Cursor: article.Id(),
+			Cursor: article.ID(),
 			Node:   node,
 		})
 	}
@@ -167,8 +195,8 @@ func (c Converter) ToArticles(ctx context.Context, from dto.ArticlesOutDto) (*mo
 	return &connection, true
 }
 
-// ToTag converts dto.TagOutDto to model.TagNode.
-func (c Converter) ToTag(ctx context.Context, from dto.TagOutDto) (*model.TagNode, error) {
+// ToTag converts dto.TagOutDTO to model.TagNode.
+func (c Converter) ToTag(ctx context.Context, from dto.TagOutDTO) (*model.TagNode, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToTag").End()
 
@@ -180,7 +208,7 @@ func (c Converter) ToTag(ctx context.Context, from dto.TagOutDto) (*model.TagNod
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("from", from)))
-	node, err := c.tagNodeFromTagArticleDto(ctx, from.Tag())
+	node, err := c.tagNodeFromTagArticleDTO(ctx, from.Tag())
 	if err != nil {
 		err = errors.Join(err, ErrFailedToConvertToTagNode)
 		logger.WarnContext(ctx, "END",
@@ -196,10 +224,10 @@ func (c Converter) ToTag(ctx context.Context, from dto.TagOutDto) (*model.TagNod
 	return node, nil
 }
 
-// tagNodeFromTagArticleDto converts dto.TagArticle to model.TagNode.
-func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArticle) (*model.TagNode, error) {
+// tagNodeFromTagArticleDTO converts dto.TagArticle to model.TagNode.
+func (c Converter) tagNodeFromTagArticleDTO(ctx context.Context, from dto.TagArticle) (*model.TagNode, error) {
 	nrtx := newrelic.FromContext(ctx)
-	defer nrtx.StartSegment("tagNodeFromTagArticleDto").End()
+	defer nrtx.StartSegment("tagNodeFromTagArticleDTO").End()
 
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
@@ -212,11 +240,11 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 	articleEdges := make([]*model.TagArticleEdge, 0, len(from.Articles()))
 	for _, article := range from.Articles() {
 		articleEdges = append(articleEdges, &model.TagArticleEdge{
-			Cursor: article.Id(),
+			Cursor: article.ID(),
 			Node: &model.TagArticleNode{
-				ID:           article.Id(),
+				ID:           article.ID(),
 				Title:        article.Title(),
-				ThumbnailURL: gqlscalar.URL(article.ThumbnailUrl()),
+				ThumbnailURL: gqlscalar.URL(article.ThumbnailURL()),
 				CreatedAt:    gqlscalar.UTC(article.CreatedAt()),
 				UpdatedAt:    gqlscalar.UTC(article.UpdatedAt()),
 			},
@@ -238,7 +266,7 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 		TotalCount: len(articleEdges),
 	}
 	node := model.TagNode{
-		ID:       from.Id(),
+		ID:       from.ID(),
 		Name:     from.Name(),
 		Articles: &articleConnection,
 	}
@@ -249,7 +277,7 @@ func (c Converter) tagNodeFromTagArticleDto(ctx context.Context, from dto.TagArt
 	return &node, nil
 }
 
-func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagConnection, error) {
+func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDTO) (*model.TagConnection, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToTags").End()
 
@@ -263,7 +291,7 @@ func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagC
 		slog.Group("parameters", slog.Any("from", from)))
 	tegs := make([]*model.TagEdge, 0, len(from.Tags()))
 	for _, tag := range from.Tags() {
-		node, err := c.tagNodeFromTagArticleDto(ctx, tag)
+		node, err := c.tagNodeFromTagArticleDTO(ctx, tag)
 		if err != nil {
 			err = errors.WithStack(err)
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -274,7 +302,7 @@ func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDto) (*model.TagC
 			return nil, err
 		}
 		tegs = append(tegs, &model.TagEdge{
-			Cursor: tag.Id(),
+			Cursor: tag.ID(),
 			Node:   node,
 		})
 	}

@@ -18,14 +18,14 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
-// Article is a use-case of getting an article by id.
+// CreateArticle is a use-case of getting an article by id.
 type Article struct {
 	// articleServiceClient is a client of article service.
 	articleServiceClient grpc.ArticleServiceClient
 }
 
 // Execute gets an article by id.
-func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.ArticleOutDto, error) {
+func (u *Article) Execute(ctx context.Context, in dto.ArticleInDTO) (dto.ArticleOutDTO, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
@@ -40,15 +40,15 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 	response, err := u.articleServiceClient.GetArticleById(
 		newrelic.NewContext(ctx, nrtx),
 		&grpc.GetArticleByIdRequest{
-			Id: in.Id(),
+			Id: in.ID(),
 		})
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("*dto.ArticleOutDTO", nil),
 				slog.Any("error", err)))
-		return dto.ArticleOutDto{}, err
+		return dto.ArticleOutDTO{}, err
 	}
 	articlePB := response.Article
 	tagPBs := articlePB.GetTags()
@@ -63,27 +63,27 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("*dto.ArticleOutDTO", nil),
 				slog.Any("error", err)))
-		return dto.ArticleOutDto{}, err
+		return dto.ArticleOutDTO{}, err
 	}
 	updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, articlePB.UpdatedAt)
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("*dto.ArticleOutDTO", nil),
 				slog.Any("error", err)))
-		return dto.ArticleOutDto{}, err
+		return dto.ArticleOutDTO{}, err
 	}
 	thumbnailURL, err := url.Parse(articlePB.ThumbnailUrl)
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("*dto.ArticleOutDTO", nil),
 				slog.Any("error", err)))
-		return dto.ArticleOutDto{}, err
+		return dto.ArticleOutDTO{}, err
 	}
 	articleDTO := dto.NewArticleTag(
 		articlePB.Id,
@@ -93,15 +93,15 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDto) (dto.Article
 		createdAt,
 		updatedAt,
 		tagDTOs)
-	out := dto.NewArticleOutDto(articleDTO)
+	out := dto.NewArticleOutDTO(articleDTO)
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("*dto.ArticleOutDto", out),
+			slog.Any("*dto.ArticleOutDTO", out),
 			slog.Any("error", nil)))
 	return out, nil
 }
 
-// NewArticle is a constructor of Article.
+// NewArticle is a constructor of CreateArticle.
 func NewArticle(articleServiceClient grpc.ArticleServiceClient) *Article {
 	return &Article{
 		articleServiceClient: articleServiceClient,

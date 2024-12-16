@@ -60,6 +60,8 @@ type CreateArticleInput struct {
 }
 
 type CreateArticlePayload struct {
+	ArticleID        string  `json:"articleId"`
+	EventID          string  `json:"eventID"`
 	ClientMutationID *string `json:"clientMutationId,omitempty"`
 }
 

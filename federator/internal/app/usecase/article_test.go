@@ -19,10 +19,10 @@ import (
 func TestArticle_Execute(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  dto.ArticleInDto
+		in  dto.ArticleInDTO
 	}
 	type want struct {
-		out dto.ArticleOutDto
+		out dto.ArticleOutDTO
 		err error
 	}
 	type testCase struct {
@@ -69,10 +69,10 @@ func TestArticle_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewArticleInDto("Article1"),
+				in:  dto.NewArticleInDTO("Article1"),
 			},
 			want: want{
-				out: dto.NewArticleOutDto(
+				out: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"happy_path/single_tag",
@@ -120,10 +120,10 @@ func TestArticle_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewArticleInDto("Article1"),
+				in:  dto.NewArticleInDTO("Article1"),
 			},
 			want: want{
-				out: dto.NewArticleOutDto(
+				out: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"happy_path/multiple_tags",
@@ -160,10 +160,10 @@ func TestArticle_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewArticleInDto("Article1"),
+				in:  dto.NewArticleInDTO("Article1"),
 			},
 			want: want{
-				out: dto.NewArticleOutDto(
+				out: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"happy_path/no_tags",
@@ -185,10 +185,10 @@ func TestArticle_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewArticleInDto("Article1"),
+				in:  dto.NewArticleInDTO("Article1"),
 			},
 			want: want{
-				out: dto.ArticleOutDto{},
+				out: dto.ArticleOutDTO{},
 				err: errTestArticle,
 			},
 			wantErr: true,

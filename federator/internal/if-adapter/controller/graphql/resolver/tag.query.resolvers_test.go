@@ -26,7 +26,7 @@ func Test_queryResolver_Tag(t *testing.T) {
 		err error
 	}
 	type usecaseResult struct {
-		out dto.TagOutDto
+		out dto.TagOutDTO
 		err error
 	}
 	type converterResult struct {
@@ -34,10 +34,10 @@ func Test_queryResolver_Tag(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		sut                func(rslvr *Resolver) *queryResolver
+		sut                func(resolver *Resolver) *queryResolver
 		setupMockUsecase   func(uc *musecase.MockTag, usecaseResult usecaseResult)
 		usecaseResult      usecaseResult
-		setupMockConverter func(cnvrtr *mconverter.MockTagConverter, from dto.TagOutDto, converterResult converterResult)
+		setupMockConverter func(converter *mconverter.MockTagConverter, from dto.TagOutDTO, converterResult converterResult)
 		converterResult    converterResult
 		args               args
 		want               want
@@ -47,8 +47,8 @@ func Test_queryResolver_Tag(t *testing.T) {
 	errAtUseCase := errors.New("error at usecase")
 	tests := map[string]testCase{
 		"happy_path": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTag, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -57,7 +57,7 @@ func Test_queryResolver_Tag(t *testing.T) {
 					Times(1)
 			},
 			usecaseResult: usecaseResult{
-				out: dto.NewTagOutDto(
+				out: dto.NewTagOutDTO(
 					dto.NewTagArticle(
 						"Tag1",
 						"Tag1",
@@ -72,8 +72,8 @@ func Test_queryResolver_Tag(t *testing.T) {
 						})),
 				err: nil,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagConverter, from dto.TagOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagConverter, from dto.TagOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTag(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.err).
 					Times(1)
@@ -96,8 +96,8 @@ func Test_queryResolver_Tag(t *testing.T) {
 			},
 		},
 		"error_at_usecase": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTag, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -106,11 +106,11 @@ func Test_queryResolver_Tag(t *testing.T) {
 					Times(1)
 			},
 			usecaseResult: usecaseResult{
-				out: dto.TagOutDto{},
+				out: dto.TagOutDTO{},
 				err: errAtUseCase,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagConverter, from dto.TagOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagConverter, from dto.TagOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTag(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -125,8 +125,8 @@ func Test_queryResolver_Tag(t *testing.T) {
 			wantErr: true,
 		},
 		"error_at_converter": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTag, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -135,7 +135,7 @@ func Test_queryResolver_Tag(t *testing.T) {
 					Times(1)
 			},
 			usecaseResult: usecaseResult{
-				out: dto.NewTagOutDto(
+				out: dto.NewTagOutDTO(
 					dto.NewTagArticle(
 						"Tag1",
 						"Tag1",
@@ -150,8 +150,8 @@ func Test_queryResolver_Tag(t *testing.T) {
 						})),
 				err: nil,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagConverter, from dto.TagOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagConverter, from dto.TagOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTag(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.err).
 					Times(1)
@@ -177,9 +177,9 @@ func Test_queryResolver_Tag(t *testing.T) {
 			defer ctrl.Finish()
 			uc := musecase.NewMockTag(ctrl)
 			tt.setupMockUsecase(uc, tt.usecaseResult)
-			cnvrtr := mconverter.NewMockTagConverter(ctrl)
-			tt.setupMockConverter(cnvrtr, tt.usecaseResult.out, tt.converterResult)
-			sut := tt.sut(NewResolver(NewUsecases(WithTagUsecase(uc)), NewConverters(WithTagConverter(cnvrtr))))
+			converter := mconverter.NewMockTagConverter(ctrl)
+			tt.setupMockConverter(converter, tt.usecaseResult.out, tt.converterResult)
+			sut := tt.sut(NewResolver(NewUsecases(WithTagUsecase(uc)), NewConverters(WithTagConverter(converter))))
 			got, err := sut.Tag(tt.args.ctx, tt.args.id)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Tag() got = %v, want %v", err, tt.want.err)
@@ -206,7 +206,7 @@ func Test_queryResolver_Tags(t *testing.T) {
 		err error
 	}
 	type usecaseResult struct {
-		out dto.TagsOutDto
+		out dto.TagsOutDTO
 		err error
 	}
 	type converterResult struct {
@@ -214,10 +214,10 @@ func Test_queryResolver_Tags(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		sut                func(rslvr *Resolver) *queryResolver
+		sut                func(resolver *Resolver) *queryResolver
 		setupMockUsecase   func(uc *musecase.MockTags, usecaseResult usecaseResult)
 		usecaseResult      usecaseResult
-		setupMockConverter func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult)
+		setupMockConverter func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult)
 		converterResult    converterResult
 		args               args
 		want               want
@@ -227,8 +227,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 	errFailedToConvert := errors.New("failed to convert")
 	tests := map[string]testCase{
 		"happy_path/without_paging": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -237,7 +237,7 @@ func Test_queryResolver_Tags(t *testing.T) {
 					Times(1)
 			},
 			usecaseResult: usecaseResult{
-				out: dto.NewTagsOutDto([]dto.TagArticle{
+				out: dto.NewTagsOutDTO([]dto.TagArticle{
 					dto.NewTagArticle(
 						"Tag1",
 						"Tag1",
@@ -253,8 +253,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 				}),
 				err: nil,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.err).
 					Times(1)
@@ -338,8 +338,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 		},
 		"unhappy_path/usecase_returned_error": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -350,8 +350,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 			usecaseResult: usecaseResult{
 				err: errFailedToUsecase,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -365,8 +365,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 			wantErr: true,
 		},
 		"unhappy_path/converter_returned_error": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -375,11 +375,11 @@ func Test_queryResolver_Tags(t *testing.T) {
 					Times(1)
 			},
 			usecaseResult: usecaseResult{
-				out: dto.NewTagsOutDto([]dto.TagArticle{}),
+				out: dto.NewTagsOutDTO([]dto.TagArticle{}),
 				err: nil,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.err).
 					Times(1)
@@ -398,8 +398,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/with_first": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -407,8 +407,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 					Return(usecaseResult.out, usecaseResult.err).
 					Times(1)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.err).
 					Times(1)
@@ -422,8 +422,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 		},
 		"happy_path/with_last": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -431,8 +431,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 					Return(usecaseResult.out, usecaseResult.err).
 					Times(1)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.err).
 					Times(1)
@@ -449,8 +449,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 		},
 		"happy_path/with_first/with_after": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -458,8 +458,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 					Return(usecaseResult.out, usecaseResult.err).
 					Times(1)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.err).
 					Times(1)
@@ -474,8 +474,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 		},
 		"happy_path/with_last/with_before": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -483,8 +483,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 					Return(usecaseResult.out, usecaseResult.err).
 					Times(1)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.err).
 					Times(1)
@@ -499,8 +499,8 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 		},
 		"unhappy_path/with_first/with_last": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:   context.Background(),
@@ -509,23 +509,23 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateTagsInDto,
+				err: dto.ErrInvalidateTagsInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			wantErr: true,
 		},
 		"unhappy_path/with_first/with_before": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:    context.Background(),
@@ -534,23 +534,23 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateTagsInDto,
+				err: dto.ErrInvalidateTagsInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			wantErr: true,
 		},
 		"unhappy_path/with_last/with_after": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:   context.Background(),
@@ -559,23 +559,23 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateTagsInDto,
+				err: dto.ErrInvalidateTagsInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			wantErr: true,
 		},
 		"unhappy_path/with_before": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:    context.Background(),
@@ -583,23 +583,23 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateTagsInDto,
+				err: dto.ErrInvalidateTagsInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			wantErr: true,
 		},
 		"unhappy_path/with_after": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:   context.Background(),
@@ -607,15 +607,15 @@ func Test_queryResolver_Tags(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateTagsInDto,
+				err: dto.ErrInvalidateTagsInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockTags, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockTagsConverter, from dto.TagsOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockTagsConverter, from dto.TagsOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToTags(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -628,9 +628,9 @@ func Test_queryResolver_Tags(t *testing.T) {
 			defer ctrl.Finish()
 			uc := musecase.NewMockTags(ctrl)
 			tt.setupMockUsecase(uc, tt.usecaseResult)
-			cnvrtr := mconverter.NewMockTagsConverter(ctrl)
-			tt.setupMockConverter(cnvrtr, tt.usecaseResult.out, tt.converterResult)
-			sut := tt.sut(NewResolver(NewUsecases(WithTagsUsecase(uc)), NewConverters(WithTagsConverter(cnvrtr))))
+			converter := mconverter.NewMockTagsConverter(ctrl)
+			tt.setupMockConverter(converter, tt.usecaseResult.out, tt.converterResult)
+			sut := tt.sut(NewResolver(NewUsecases(WithTagsUsecase(uc)), NewConverters(WithTagsConverter(converter))))
 			got, err := sut.Tags(tt.args.ctx, tt.args.first, tt.args.last, tt.args.after, tt.args.before)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Tags() got = %v, want %v", err, tt.want.err)

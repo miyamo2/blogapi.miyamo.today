@@ -33,7 +33,7 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 			slog.Any("last", last),
 			slog.Any("after", after),
 			slog.Any("before", before)))
-	opts := make([]dto.ArticlesInDtoOption, 0, 4)
+	opts := make([]dto.ArticlesInDTOOption, 0, 4)
 	if first != nil {
 		opts = append(opts, dto.ArticlesInWithFirst(*first))
 	}
@@ -46,7 +46,7 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 	if before != nil {
 		opts = append(opts, dto.ArticlesInWithBefore(*before))
 	}
-	in, err := dto.NewArticlesInDto(opts...)
+	in, err := dto.NewArticlesInDTO(opts...)
 	if err != nil {
 		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -56,7 +56,7 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 				slog.Any("error", err)))
 		return nil, err
 	}
-	oDto, err := r.usecases.articles.Execute(ctx, in)
+	oDTO, err := r.usecases.articles.Execute(ctx, in)
 	if err != nil {
 		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -66,7 +66,7 @@ func (r *queryResolver) Articles(ctx context.Context, first *int, last *int, aft
 				slog.Any("error", err)))
 		return nil, err
 	}
-	connection, ok := r.converters.articles.ToArticles(ctx, oDto)
+	connection, ok := r.converters.articles.ToArticles(ctx, oDTO)
 	if !ok {
 		err := ErrFailedToConvertToArticleConnection
 		logger.InfoContext(ctx, "END",
@@ -96,7 +96,7 @@ func (r *queryResolver) Article(ctx context.Context, id string) (*model.ArticleN
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.String("id", id)))
-	oDto, err := r.usecases.article.Execute(ctx, dto.NewArticleInDto(id))
+	oDTO, err := r.usecases.article.Execute(ctx, dto.NewArticleInDTO(id))
 	if err != nil {
 		err = ErrorWithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
@@ -106,7 +106,7 @@ func (r *queryResolver) Article(ctx context.Context, id string) (*model.ArticleN
 				slog.Any("error", err)))
 		return nil, err
 	}
-	node, ok := r.converters.article.ToArticle(ctx, oDto)
+	node, ok := r.converters.article.ToArticle(ctx, oDTO)
 	if !ok {
 		err := ErrFailedToConvertToArticleNode
 		logger.InfoContext(ctx, "END",

@@ -32,7 +32,7 @@ func Test_queryResolver_Article(t *testing.T) {
 		err error
 	}
 	type usecaseResult struct {
-		out dto.ArticleOutDto
+		out dto.ArticleOutDTO
 		err error
 	}
 	type converterResult struct {
@@ -40,10 +40,10 @@ func Test_queryResolver_Article(t *testing.T) {
 		ok  bool
 	}
 	type testCase struct {
-		sut                func(rslvr *Resolver) *queryResolver
+		sut                func(resolver *Resolver) *queryResolver
 		setupMockUsecase   func(uc *musecase.MockArticle, usecaseResult usecaseResult)
 		usecaseResult      usecaseResult
-		setupMockConverter func(cnvrtr *mconverter.MockArticleConverter, from dto.ArticleOutDto, converterResult converterResult)
+		setupMockConverter func(converter *mconverter.MockArticleConverter, from dto.ArticleOutDTO, converterResult converterResult)
 		converterResult    converterResult
 		args               args
 		want               want
@@ -52,8 +52,8 @@ func Test_queryResolver_Article(t *testing.T) {
 	errFailedToUsecase := errors.New("failed to usecase")
 	tests := map[string]testCase{
 		"happy_path": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticle, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -62,7 +62,7 @@ func Test_queryResolver_Article(t *testing.T) {
 					Times(1)
 			},
 			usecaseResult: usecaseResult{
-				out: dto.NewArticleOutDto(
+				out: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"Article1",
@@ -75,8 +75,8 @@ func Test_queryResolver_Article(t *testing.T) {
 						})),
 				err: nil,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticleConverter, from dto.ArticleOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticleConverter, from dto.ArticleOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticle(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.ok).
 					Times(1)
@@ -109,8 +109,8 @@ func Test_queryResolver_Article(t *testing.T) {
 			},
 		},
 		"unhappy_path/usecase_returned_error": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticle, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -121,8 +121,8 @@ func Test_queryResolver_Article(t *testing.T) {
 			usecaseResult: usecaseResult{
 				err: errFailedToUsecase,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticleConverter, from dto.ArticleOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticleConverter, from dto.ArticleOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticle(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -137,8 +137,8 @@ func Test_queryResolver_Article(t *testing.T) {
 			wantErr: true,
 		},
 		"unhappy_path/converter_returned_error": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticle, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -147,7 +147,7 @@ func Test_queryResolver_Article(t *testing.T) {
 					Times(1)
 			},
 			usecaseResult: usecaseResult{
-				out: dto.NewArticleOutDto(
+				out: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"Article1",
@@ -160,8 +160,8 @@ func Test_queryResolver_Article(t *testing.T) {
 				),
 				err: nil,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticleConverter, from dto.ArticleOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticleConverter, from dto.ArticleOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticle(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.ok).
 					Times(1)
@@ -187,9 +187,9 @@ func Test_queryResolver_Article(t *testing.T) {
 			defer ctrl.Finish()
 			uc := musecase.NewMockArticle(ctrl)
 			tt.setupMockUsecase(uc, tt.usecaseResult)
-			cnvrtr := mconverter.NewMockArticleConverter(ctrl)
-			tt.setupMockConverter(cnvrtr, tt.usecaseResult.out, tt.converterResult)
-			sut := tt.sut(NewResolver(NewUsecases(WithArticleUsecase(uc)), NewConverters(WithArticleConverter(cnvrtr))))
+			converter := mconverter.NewMockArticleConverter(ctrl)
+			tt.setupMockConverter(converter, tt.usecaseResult.out, tt.converterResult)
+			sut := tt.sut(NewResolver(NewUsecases(WithArticleUsecase(uc)), NewConverters(WithArticleConverter(converter))))
 			got, err := sut.Article(tt.args.ctx, tt.args.id)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Article() got = %v, want %v", err, tt.want.err)
@@ -216,7 +216,7 @@ func Test_queryResolver_Articles(t *testing.T) {
 		err error
 	}
 	type usecaseResult struct {
-		out dto.ArticlesOutDto
+		out dto.ArticlesOutDTO
 		err error
 	}
 	type converterResult struct {
@@ -224,10 +224,10 @@ func Test_queryResolver_Articles(t *testing.T) {
 		ok  bool
 	}
 	type testCase struct {
-		sut                func(rslvr *Resolver) *queryResolver
+		sut                func(resolver *Resolver) *queryResolver
 		setupMockUsecase   func(uc *musecase.MockArticles, usecaseResult usecaseResult)
 		usecaseResult      usecaseResult
-		setupMockConverter func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult)
+		setupMockConverter func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult)
 		converterResult    converterResult
 		args               args
 		want               want
@@ -236,8 +236,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 	errFailedToUsecase := errors.New("failed to usecase")
 	tests := map[string]testCase{
 		"happy_path/without_paging": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -246,7 +246,7 @@ func Test_queryResolver_Articles(t *testing.T) {
 					Times(1)
 			},
 			usecaseResult: usecaseResult{
-				out: dto.NewArticlesOutDto([]dto.ArticleTag{
+				out: dto.NewArticlesOutDTO([]dto.ArticleTag{
 					dto.NewArticleTag(
 						"Article1",
 						"Article1",
@@ -260,8 +260,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 				}),
 				err: nil,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.ok).
 					Times(1)
@@ -352,8 +352,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 		},
 		"unhappy_path/usecase_returned_error": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -364,8 +364,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 			usecaseResult: usecaseResult{
 				err: errFailedToUsecase,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -379,8 +379,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 			wantErr: true,
 		},
 		"unhappy_path/converter_returned_error": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -389,11 +389,11 @@ func Test_queryResolver_Articles(t *testing.T) {
 					Times(1)
 			},
 			usecaseResult: usecaseResult{
-				out: dto.NewArticlesOutDto([]dto.ArticleTag{}),
+				out: dto.NewArticlesOutDTO([]dto.ArticleTag{}),
 				err: nil,
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.ok).
 					Times(1)
@@ -412,8 +412,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/with_first": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -421,8 +421,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 					Return(usecaseResult.out, usecaseResult.err).
 					Times(1)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.ok).
 					Times(1)
@@ -437,8 +437,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 		},
 		"happy_path/with_last": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -446,8 +446,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 					Return(usecaseResult.out, usecaseResult.err).
 					Times(1)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.ok).
 					Times(1)
@@ -465,8 +465,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 		},
 		"happy_path/with_first/with_after": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -474,8 +474,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 					Return(usecaseResult.out, usecaseResult.err).
 					Times(1)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.ok).
 					Times(1)
@@ -491,8 +491,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 		},
 		"happy_path/with_last/with_before": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
@@ -500,8 +500,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 					Return(usecaseResult.out, usecaseResult.err).
 					Times(1)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Return(converterResult.out, converterResult.ok).
 					Times(1)
@@ -517,8 +517,8 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 		},
 		"unhappy_path/with_first/with_last": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:   context.Background(),
@@ -527,23 +527,23 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateArticlesInDto,
+				err: dto.ErrInvalidateArticlesInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			wantErr: true,
 		},
 		"unhappy_path/with_first/with_before": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:    context.Background(),
@@ -552,23 +552,23 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateArticlesInDto,
+				err: dto.ErrInvalidateArticlesInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			wantErr: true,
 		},
 		"unhappy_path/with_last/with_after": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:   context.Background(),
@@ -577,23 +577,23 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateArticlesInDto,
+				err: dto.ErrInvalidateArticlesInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			wantErr: true,
 		},
 		"unhappy_path/with_before": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:    context.Background(),
@@ -601,23 +601,23 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateArticlesInDto,
+				err: dto.ErrInvalidateArticlesInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			wantErr: true,
 		},
 		"unhappy_path/with_after": {
-			sut: func(rslvr *Resolver) *queryResolver {
-				return &queryResolver{rslvr}
+			sut: func(resolver *Resolver) *queryResolver {
+				return &queryResolver{resolver}
 			},
 			args: args{
 				ctx:   context.Background(),
@@ -625,15 +625,15 @@ func Test_queryResolver_Articles(t *testing.T) {
 			},
 			want: want{
 				out: nil,
-				err: dto.ErrInvalidateArticlesInDto,
+				err: dto.ErrInvalidateArticlesInDTO,
 			},
 			setupMockUsecase: func(uc *musecase.MockArticles, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			setupMockConverter: func(cnvrtr *mconverter.MockArticlesConverter, from dto.ArticlesOutDto, converterResult converterResult) {
-				cnvrtr.EXPECT().
+			setupMockConverter: func(converter *mconverter.MockArticlesConverter, from dto.ArticlesOutDTO, converterResult converterResult) {
+				converter.EXPECT().
 					ToArticles(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -646,9 +646,9 @@ func Test_queryResolver_Articles(t *testing.T) {
 			defer ctrl.Finish()
 			uc := musecase.NewMockArticles(ctrl)
 			tt.setupMockUsecase(uc, tt.usecaseResult)
-			cnvrtr := mconverter.NewMockArticlesConverter(ctrl)
-			tt.setupMockConverter(cnvrtr, tt.usecaseResult.out, tt.converterResult)
-			sut := tt.sut(NewResolver(NewUsecases(WithArticlesUsecase(uc)), NewConverters(WithArticlesConverter(cnvrtr))))
+			converter := mconverter.NewMockArticlesConverter(ctrl)
+			tt.setupMockConverter(converter, tt.usecaseResult.out, tt.converterResult)
+			sut := tt.sut(NewResolver(NewUsecases(WithArticlesUsecase(uc)), NewConverters(WithArticlesConverter(converter))))
 			got, err := sut.Articles(tt.args.ctx, tt.args.first, tt.args.last, tt.args.after, tt.args.before)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Article() got = %v, want %v", err, tt.want.err)

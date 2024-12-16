@@ -19,10 +19,10 @@ import (
 func TestArticles_Execute(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  dto.ArticlesInDto
+		in  dto.ArticlesInDTO
 	}
 	type want struct {
-		out dto.ArticlesOutDto
+		out dto.ArticlesOutDTO
 		err error
 	}
 	type testCase struct {
@@ -72,13 +72,13 @@ func TestArticles_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.ArticlesInDto {
-					in, _ := dto.NewArticlesInDto(dto.ArticlesInWithFirst(1), dto.ArticlesInWithAfter("Article0"))
+				in: func() dto.ArticlesInDTO {
+					in, _ := dto.NewArticlesInDTO(dto.ArticlesInWithFirst(1), dto.ArticlesInWithAfter("Article0"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.NewArticlesOutDto(
+				out: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -91,7 +91,7 @@ func TestArticles_Execute(t *testing.T) {
 								dto.NewTag("Tag1", "Tag1"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasNext(true),
+					dto.ArticlesOutDTOWithHasNext(true),
 				),
 			},
 		},
@@ -106,13 +106,13 @@ func TestArticles_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.ArticlesInDto {
-					in, _ := dto.NewArticlesInDto(dto.ArticlesInWithFirst(1), dto.ArticlesInWithAfter("Article0"))
+				in: func() dto.ArticlesInDTO {
+					in, _ := dto.NewArticlesInDTO(dto.ArticlesInWithFirst(1), dto.ArticlesInWithAfter("Article0"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.ArticlesOutDto{},
+				out: dto.ArticlesOutDTO{},
 				err: errTestArticles,
 			},
 			wantErr: true,
@@ -146,13 +146,13 @@ func TestArticles_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.ArticlesInDto {
-					in, _ := dto.NewArticlesInDto(dto.ArticlesInWithLast(1), dto.ArticlesInWithBefore("Article2"))
+				in: func() dto.ArticlesInDTO {
+					in, _ := dto.NewArticlesInDTO(dto.ArticlesInWithLast(1), dto.ArticlesInWithBefore("Article2"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.NewArticlesOutDto(
+				out: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -165,7 +165,7 @@ func TestArticles_Execute(t *testing.T) {
 								dto.NewTag("Tag1", "Tag1"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasPrev(true),
+					dto.ArticlesOutDTOWithHasPrev(true),
 				),
 			},
 		},
@@ -180,13 +180,13 @@ func TestArticles_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.ArticlesInDto {
-					in, _ := dto.NewArticlesInDto(dto.ArticlesInWithLast(1), dto.ArticlesInWithBefore("Article2"))
+				in: func() dto.ArticlesInDTO {
+					in, _ := dto.NewArticlesInDTO(dto.ArticlesInWithLast(1), dto.ArticlesInWithBefore("Article2"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.ArticlesOutDto{},
+				out: dto.ArticlesOutDTO{},
 				err: errTestArticles,
 			},
 			wantErr: true,
@@ -219,10 +219,10 @@ func TestArticles_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.ArticlesInDto{},
+				in:  dto.ArticlesInDTO{},
 			},
 			want: want{
-				out: dto.NewArticlesOutDto(
+				out: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -249,10 +249,10 @@ func TestArticles_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.ArticlesInDto{},
+				in:  dto.ArticlesInDTO{},
 			},
 			want: want{
-				out: dto.ArticlesOutDto{},
+				out: dto.ArticlesOutDTO{},
 				err: errTestArticles,
 			},
 			wantErr: true,
@@ -288,10 +288,10 @@ func TestArticles_Execute(t *testing.T) {
 func TestArticles_executeNextPaging(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  dto.ArticlesInDto
+		in  dto.ArticlesInDTO
 	}
 	type want struct {
-		out dto.ArticlesOutDto
+		out dto.ArticlesOutDTO
 		err error
 	}
 	type testCase struct {
@@ -341,13 +341,13 @@ func TestArticles_executeNextPaging(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.ArticlesInDto {
-					in, _ := dto.NewArticlesInDto(dto.ArticlesInWithFirst(1), dto.ArticlesInWithAfter("Article0"))
+				in: func() dto.ArticlesInDTO {
+					in, _ := dto.NewArticlesInDTO(dto.ArticlesInWithFirst(1), dto.ArticlesInWithAfter("Article0"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.NewArticlesOutDto(
+				out: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -360,7 +360,7 @@ func TestArticles_executeNextPaging(t *testing.T) {
 								dto.NewTag("Tag1", "Tag1"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasNext(true),
+					dto.ArticlesOutDTOWithHasNext(true),
 				),
 			},
 		},
@@ -375,13 +375,13 @@ func TestArticles_executeNextPaging(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.ArticlesInDto {
-					in, _ := dto.NewArticlesInDto(dto.ArticlesInWithFirst(1), dto.ArticlesInWithAfter("Article0"))
+				in: func() dto.ArticlesInDTO {
+					in, _ := dto.NewArticlesInDTO(dto.ArticlesInWithFirst(1), dto.ArticlesInWithAfter("Article0"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.ArticlesOutDto{},
+				out: dto.ArticlesOutDTO{},
 				err: errTestArticles,
 			},
 			wantErr: true,
@@ -417,10 +417,10 @@ func TestArticles_executeNextPaging(t *testing.T) {
 func TestArticles_executePrevPaging(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  dto.ArticlesInDto
+		in  dto.ArticlesInDTO
 	}
 	type want struct {
-		out dto.ArticlesOutDto
+		out dto.ArticlesOutDTO
 		err error
 	}
 	type testCase struct {
@@ -470,13 +470,13 @@ func TestArticles_executePrevPaging(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.ArticlesInDto {
-					in, _ := dto.NewArticlesInDto(dto.ArticlesInWithLast(2), dto.ArticlesInWithBefore("Article2"))
+				in: func() dto.ArticlesInDTO {
+					in, _ := dto.NewArticlesInDTO(dto.ArticlesInWithLast(2), dto.ArticlesInWithBefore("Article2"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.NewArticlesOutDto(
+				out: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -489,7 +489,7 @@ func TestArticles_executePrevPaging(t *testing.T) {
 								dto.NewTag("Tag1", "Tag1"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasPrev(true),
+					dto.ArticlesOutDTOWithHasPrev(true),
 				),
 			},
 		},
@@ -504,13 +504,13 @@ func TestArticles_executePrevPaging(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.ArticlesInDto {
-					in, _ := dto.NewArticlesInDto(dto.ArticlesInWithLast(2), dto.ArticlesInWithBefore("Article2"))
+				in: func() dto.ArticlesInDTO {
+					in, _ := dto.NewArticlesInDTO(dto.ArticlesInWithLast(2), dto.ArticlesInWithBefore("Article2"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.ArticlesOutDto{},
+				out: dto.ArticlesOutDTO{},
 				err: errTestArticles,
 			},
 			wantErr: true,
@@ -548,7 +548,7 @@ func TestArticles_execute(t *testing.T) {
 		ctx context.Context
 	}
 	type want struct {
-		out dto.ArticlesOutDto
+		out dto.ArticlesOutDTO
 		err error
 	}
 	type testCase struct {
@@ -599,7 +599,7 @@ func TestArticles_execute(t *testing.T) {
 				ctx: mockBlogAPIContext(),
 			},
 			want: want{
-				out: dto.NewArticlesOutDto(
+				out: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -628,7 +628,7 @@ func TestArticles_execute(t *testing.T) {
 				ctx: mockBlogAPIContext(),
 			},
 			want: want{
-				out: dto.ArticlesOutDto{},
+				out: dto.ArticlesOutDTO{},
 				err: errTestArticles,
 			},
 			wantErr: true,

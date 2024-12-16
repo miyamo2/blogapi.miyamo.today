@@ -86,7 +86,9 @@ type ComplexityRoot struct {
 	}
 
 	CreateArticlePayload struct {
+		ArticleID        func(childComplexity int) int
 		ClientMutationID func(childComplexity int) int
+		EventID          func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -319,12 +321,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ArticleTagNode.Name(childComplexity), true
 
+	case "CreateArticlePayload.articleId":
+		if e.complexity.CreateArticlePayload.ArticleID == nil {
+			break
+		}
+
+		return e.complexity.CreateArticlePayload.ArticleID(childComplexity), true
+
 	case "CreateArticlePayload.clientMutationId":
 		if e.complexity.CreateArticlePayload.ClientMutationID == nil {
 			break
 		}
 
 		return e.complexity.CreateArticlePayload.ClientMutationID(childComplexity), true
+
+	case "CreateArticlePayload.eventID":
+		if e.complexity.CreateArticlePayload.EventID == nil {
+			break
+		}
+
+		return e.complexity.CreateArticlePayload.EventID(childComplexity), true
 
 	case "Mutation.createArticle":
 		if e.complexity.Mutation.CreateArticle == nil {
@@ -776,6 +792,8 @@ scalar Upload`, BuiltIn: false},
 }
 
 type CreateArticlePayload {
+  articleId: ID!
+  eventID: ID!
   clientMutationId: String
 }`, BuiltIn: false},
 	{Name: "../../../../.api/blogging_event/blogging-event.mutation.graphqls", Input: `extend type Mutation {
@@ -2466,6 +2484,94 @@ func (ec *executionContext) fieldContext_ArticleTagNode_name(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _CreateArticlePayload_articleId(ctx context.Context, field graphql.CollectedField, obj *model.CreateArticlePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateArticlePayload_articleId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ArticleID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateArticlePayload_articleId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateArticlePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateArticlePayload_eventID(ctx context.Context, field graphql.CollectedField, obj *model.CreateArticlePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateArticlePayload_eventID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateArticlePayload_eventID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateArticlePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CreateArticlePayload_clientMutationId(ctx context.Context, field graphql.CollectedField, obj *model.CreateArticlePayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CreateArticlePayload_clientMutationId(ctx, field)
 	if err != nil {
@@ -2602,6 +2708,10 @@ func (ec *executionContext) fieldContext_Mutation_createArticle(ctx context.Cont
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
+			case "articleId":
+				return ec.fieldContext_CreateArticlePayload_articleId(ctx, field)
+			case "eventID":
+				return ec.fieldContext_CreateArticlePayload_eventID(ctx, field)
 			case "clientMutationId":
 				return ec.fieldContext_CreateArticlePayload_clientMutationId(ctx, field)
 			}
@@ -6327,6 +6437,16 @@ func (ec *executionContext) _CreateArticlePayload(ctx context.Context, sel ast.S
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CreateArticlePayload")
+		case "articleId":
+			out.Values[i] = ec._CreateArticlePayload_articleId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "eventID":
+			out.Values[i] = ec._CreateArticlePayload_eventID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "clientMutationId":
 			out.Values[i] = ec._CreateArticlePayload_clientMutationId(ctx, field, obj)
 		default:

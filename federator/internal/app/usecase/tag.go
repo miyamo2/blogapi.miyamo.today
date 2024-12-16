@@ -25,7 +25,7 @@ type Tag struct {
 }
 
 // Execute gets a tag by id.
-func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, error) {
+func (u *Tag) Execute(ctx context.Context, in dto.TagInDTO) (dto.TagOutDTO, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
@@ -40,15 +40,15 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 	response, err := u.tagServiceClient.GetTagById(
 		newrelic.NewContext(ctx, nrtx),
 		&grpc.GetTagByIdRequest{
-			Id: in.Id(),
+			Id: in.ID(),
 		})
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("*dto.ArticleOutDTO", nil),
 				slog.Any("error", err)))
-		return dto.TagOutDto{}, err
+		return dto.TagOutDTO{}, err
 	}
 	tagPB := response.Tag
 	articlePBs := tagPB.Articles
@@ -59,9 +59,9 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.TagOutDto{}, err
+			return dto.TagOutDTO{}, err
 		}
 
 		updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
@@ -70,9 +70,9 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 			logger.WarnContext(ctx, "END",
 
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.TagOutDto{}, err
+			return dto.TagOutDTO{}, err
 		}
 
 		thumbnailURL, err := url.Parse(article.ThumbnailUrl)
@@ -80,9 +80,9 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.TagOutDto{}, err
+			return dto.TagOutDTO{}, err
 		}
 
 		articleDTOs = append(articleDTOs, dto.NewArticle(
@@ -97,11 +97,11 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDto) (dto.TagOutDto, erro
 		tagPB.Id,
 		tagPB.Name,
 		articleDTOs)
-	out := dto.NewTagOutDto(tagDTO)
+	out := dto.NewTagOutDTO(tagDTO)
 	logger.InfoContext(ctx, "END",
 
 		slog.Group("return",
-			slog.Any("*dto.TagOutDto", out),
+			slog.Any("*dto.TagOutDTO", out),
 			slog.Any("error", nil)))
 	return out, nil
 }

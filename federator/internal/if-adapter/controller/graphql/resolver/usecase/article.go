@@ -1,4 +1,4 @@
-//go:generate mockgen -source=article.go -destination=../../../../../mock/if-adapter/controller/graphql/resolver/usecase/mock_article.go -package=usecase
+//go:generate mockgen -source=$GOFILE -destination=../../../../../mock/if-adapter/controller/graphql/resolver/usecase/$GOFILE -package=$GOPACKAGE
 package usecase
 
 import (
@@ -9,11 +9,11 @@ import (
 // Article is a use-case of getting an article by id.
 type Article interface {
 	// Execute gets an article by id.
-	Execute(ctx context.Context, in dto.ArticleInDto) (dto.ArticleOutDto, error)
+	Execute(ctx context.Context, in dto.ArticleInDTO) (dto.ArticleOutDTO, error)
 }
 
 // Articles is a use-case of getting an articles.
 type Articles interface {
 	// Execute gets articles.
-	Execute(ctx context.Context, in dto.ArticlesInDto) (dto.ArticlesOutDto, error)
+	Execute(ctx context.Context, in dto.ArticlesInDTO) (dto.ArticlesOutDTO, error)
 }

@@ -19,10 +19,10 @@ import (
 func TestTag_Execute(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  dto.TagInDto
+		in  dto.TagInDTO
 	}
 	type want struct {
-		out dto.TagOutDto
+		out dto.TagOutDTO
 		err error
 	}
 	type testCase struct {
@@ -68,10 +68,10 @@ func TestTag_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewTagInDto("Tag1"),
+				in:  dto.NewTagInDTO("Tag1"),
 			},
 			want: want{
-				out: dto.NewTagOutDto(
+				out: dto.NewTagOutDTO(
 					dto.NewTagArticle(
 						"Tag1",
 						"Tag1",
@@ -121,10 +121,10 @@ func TestTag_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewTagInDto("Tag1"),
+				in:  dto.NewTagInDTO("Tag1"),
 			},
 			want: want{
-				out: dto.NewTagOutDto(
+				out: dto.NewTagOutDTO(
 					dto.NewTagArticle(
 						"Tag1",
 						"Tag1",
@@ -166,10 +166,10 @@ func TestTag_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewTagInDto("Tag1"),
+				in:  dto.NewTagInDTO("Tag1"),
 			},
 			want: want{
-				out: dto.NewTagOutDto(
+				out: dto.NewTagOutDTO(
 					dto.NewTagArticle(
 						"Tag1",
 						"Tag1",
@@ -189,10 +189,10 @@ func TestTag_Execute(t *testing.T) {
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewTagInDto("Tag1"),
+				in:  dto.NewTagInDTO("Tag1"),
 			},
 			want: want{
-				out: dto.TagOutDto{},
+				out: dto.TagOutDTO{},
 				err: errTestTag,
 			},
 			wantErr: true,

@@ -27,7 +27,7 @@ type Articles struct {
 }
 
 // Execute gets an article by id.
-func (u *Articles) Execute(ctx context.Context, in dto.ArticlesInDto) (dto.ArticlesOutDto, error) {
+func (u *Articles) Execute(ctx context.Context, in dto.ArticlesInDTO) (dto.ArticlesOutDTO, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
@@ -39,7 +39,7 @@ func (u *Articles) Execute(ctx context.Context, in dto.ArticlesInDto) (dto.Artic
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("articlerameters", slog.Any("in", in)))
-	out, err := func() (dto.ArticlesOutDto, error) {
+	out, err := func() (dto.ArticlesOutDTO, error) {
 		if in.First() != 0 {
 			return u.executeNextPaging(ctx, in)
 		} else if in.Last() != 0 {
@@ -50,19 +50,19 @@ func (u *Articles) Execute(ctx context.Context, in dto.ArticlesInDto) (dto.Artic
 	if err != nil {
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*dto.ArticleOutDto", out),
+				slog.Any("*dto.ArticleOutDTO", out),
 				slog.Any("error", err)))
 		return out, err
 	}
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("*dto.ArticleOutDto", out),
+			slog.Any("*dto.ArticleOutDTO", out),
 			slog.Any("error", err)))
 	return out, nil
 }
 
 // executeNextPaging
-func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) (dto.ArticlesOutDto, error) {
+func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDTO) (dto.ArticlesOutDTO, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("executeNextPaging").End()
 
@@ -82,9 +82,9 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("*dto.ArticleOutDTO", nil),
 				slog.Any("error", err)))
-		return dto.ArticlesOutDto{}, err
+		return dto.ArticlesOutDTO{}, err
 	}
 	articlePBs := response.Articles
 	articleDTOs := make([]dto.ArticleTag, 0, len(articlePBs))
@@ -101,9 +101,9 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.ArticlesOutDto{}, err
+			return dto.ArticlesOutDTO{}, err
 		}
 
 		updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
@@ -111,9 +111,9 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.ArticlesOutDto{}, err
+			return dto.ArticlesOutDTO{}, err
 		}
 
 		thumbnailURL, err := url.Parse(article.ThumbnailUrl)
@@ -121,9 +121,9 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.ArticlesOutDto{}, err
+			return dto.ArticlesOutDTO{}, err
 		}
 
 		articleDTOs = append(articleDTOs, dto.NewArticleTag(
@@ -135,16 +135,16 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDto) 
 			updatedAt,
 			tagDTOs))
 	}
-	out := dto.NewArticlesOutDto(articleDTOs, dto.ArticlesOutDtoWithHasNext(response.StillExists))
+	out := dto.NewArticlesOutDTO(articleDTOs, dto.ArticlesOutDTOWithHasNext(response.StillExists))
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("*dto.ArticleOutDto", out),
+			slog.Any("*dto.ArticleOutDTO", out),
 			slog.Any("error", nil)))
 	return out, nil
 }
 
 // executePrevPaging
-func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) (dto.ArticlesOutDto, error) {
+func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDTO) (dto.ArticlesOutDTO, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("executePrevPaging").End()
 
@@ -165,9 +165,9 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("*dto.ArticleOutDTO", nil),
 				slog.Any("error", err)))
-		return dto.ArticlesOutDto{}, err
+		return dto.ArticlesOutDTO{}, err
 	}
 	articlePBs := response.Articles
 	articleDTOs := make([]dto.ArticleTag, 0, len(articlePBs))
@@ -177,9 +177,9 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.ArticlesOutDto{}, err
+			return dto.ArticlesOutDTO{}, err
 		}
 
 		updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
@@ -187,9 +187,9 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.ArticlesOutDto{}, err
+			return dto.ArticlesOutDTO{}, err
 		}
 
 		thumbnailURL, err := url.Parse(article.ThumbnailUrl)
@@ -197,9 +197,9 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.ArticlesOutDto{}, err
+			return dto.ArticlesOutDTO{}, err
 		}
 
 		tagPBs := article.GetTags()
@@ -218,16 +218,16 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDto) 
 			updatedAt,
 			tagDTOs))
 	}
-	out := dto.NewArticlesOutDto(articleDTOs, dto.ArticlesOutDtoWithHasPrev(response.StillExists))
+	out := dto.NewArticlesOutDTO(articleDTOs, dto.ArticlesOutDTOWithHasPrev(response.StillExists))
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("*dto.ArticleOutDto", out),
+			slog.Any("*dto.ArticleOutDTO", out),
 			slog.Any("error", nil)))
 	return out, nil
 }
 
 // execute
-func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
+func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDTO, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("execute").End()
 
@@ -243,9 +243,9 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("*dto.ArticleOutDto", nil),
+				slog.Any("*dto.ArticleOutDTO", nil),
 				slog.Any("error", err)))
-		return dto.ArticlesOutDto{}, err
+		return dto.ArticlesOutDTO{}, err
 	}
 	articlePBs := response.Articles
 	articleDTOs := make([]dto.ArticleTag, 0, len(articlePBs))
@@ -256,9 +256,9 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.ArticlesOutDto{}, err
+			return dto.ArticlesOutDTO{}, err
 		}
 
 		updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
@@ -266,9 +266,9 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.ArticlesOutDto{}, err
+			return dto.ArticlesOutDTO{}, err
 		}
 
 		thumbnailURL, err := url.Parse(article.ThumbnailUrl)
@@ -276,9 +276,9 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 			err = errors.WithStack(err)
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("*dto.ArticleOutDto", nil),
+					slog.Any("*dto.ArticleOutDTO", nil),
 					slog.Any("error", err)))
-			return dto.ArticlesOutDto{}, err
+			return dto.ArticlesOutDTO{}, err
 		}
 
 		tagPBs := article.GetTags()
@@ -297,10 +297,10 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDto, error) {
 			updatedAt,
 			tagDTOs))
 	}
-	out := dto.NewArticlesOutDto(articleDTOs)
+	out := dto.NewArticlesOutDTO(articleDTOs)
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("*dto.ArticleOutDto", out),
+			slog.Any("*dto.ArticleOutDTO", out),
 			slog.Any("error", nil)))
 	return out, nil
 }

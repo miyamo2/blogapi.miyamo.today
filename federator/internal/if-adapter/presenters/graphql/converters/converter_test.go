@@ -1,4 +1,4 @@
-package converter
+package converters
 
 import (
 	"context"
@@ -21,7 +21,7 @@ var cmpOpts = []cmp.Option{
 func TestConverter_ToArticle(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		from dto.ArticleOutDto
+		from dto.ArticleOutDTO
 	}
 	type want struct {
 		out *model.ArticleNode
@@ -37,7 +37,7 @@ func TestConverter_ToArticle(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticleOutDto(
+				from: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"happy_path/single_tag",
@@ -82,7 +82,7 @@ func TestConverter_ToArticle(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticleOutDto(
+				from: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"happy_path/multi_tag",
@@ -134,7 +134,7 @@ func TestConverter_ToArticle(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticleOutDto(
+				from: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"happy_path/no_tag",
@@ -178,7 +178,7 @@ func TestConverter_ToArticle(t *testing.T) {
 	}
 }
 
-func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
+func TestConverter_articleNodeFromArticleTagDTO(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		from dto.ArticleTag
@@ -318,9 +318,9 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := tt.sut()
-			got, err := c.articleNodeFromArticleTagDto(tt.args.ctx, tt.args.from)
+			got, err := c.articleNodeFromArticleTagDTO(tt.args.ctx, tt.args.from)
 			if !errors.Is(err, tt.want.err) {
-				t.Errorf("articleNodeFromArticleTagDto() error = %v, want %v", err, tt.want.err)
+				t.Errorf("articleNodeFromArticleTagDTO() error = %v, want %v", err, tt.want.err)
 				return
 			}
 			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
@@ -334,7 +334,7 @@ func TestConverter_articleNodeFromArticleTagDto(t *testing.T) {
 func TestConverter_ToArticles(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		from dto.ArticlesOutDto
+		from dto.ArticlesOutDTO
 	}
 	type want struct {
 		out *model.ArticleConnection
@@ -359,7 +359,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -419,7 +419,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -485,7 +485,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -580,7 +580,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -691,7 +691,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -705,7 +705,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							},
 						),
 					},
-					dto.ArticlesOutDtoWithHasNext(true),
+					dto.ArticlesOutDTOWithHasNext(true),
 				),
 			},
 			want: want{
@@ -753,7 +753,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -767,7 +767,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								dto.NewTag("Tag2", "Tag2"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasNext(true),
+					dto.ArticlesOutDTOWithHasNext(true),
 				)},
 			want: want{
 				ok: true,
@@ -821,7 +821,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -844,7 +844,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								dto.NewTag("Tag1", "Tag1"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasNext(true),
+					dto.ArticlesOutDTOWithHasNext(true),
 				)},
 			want: want{
 				ok: true,
@@ -918,7 +918,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -943,7 +943,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								dto.NewTag("Tag2", "Tag2"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasNext(true)),
+					dto.ArticlesOutDTOWithHasNext(true)),
 			},
 			want: want{
 				ok: true,
@@ -1031,7 +1031,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -1045,7 +1045,7 @@ func TestConverter_ToArticles(t *testing.T) {
 							},
 						),
 					},
-					dto.ArticlesOutDtoWithHasPrev(true),
+					dto.ArticlesOutDTOWithHasPrev(true),
 				),
 			},
 			want: want{
@@ -1093,7 +1093,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -1107,7 +1107,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								dto.NewTag("Tag2", "Tag2"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasPrev(true),
+					dto.ArticlesOutDTOWithHasPrev(true),
 				)},
 			want: want{
 				ok: true,
@@ -1161,7 +1161,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -1184,7 +1184,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								dto.NewTag("Tag1", "Tag1"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasPrev(true),
+					dto.ArticlesOutDTOWithHasPrev(true),
 				)},
 			want: want{
 				ok: true,
@@ -1258,7 +1258,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewArticlesOutDto(
+				from: dto.NewArticlesOutDTO(
 					[]dto.ArticleTag{
 						dto.NewArticleTag(
 							"Article1",
@@ -1283,7 +1283,7 @@ func TestConverter_ToArticles(t *testing.T) {
 								dto.NewTag("Tag2", "Tag2"),
 							}),
 					},
-					dto.ArticlesOutDtoWithHasPrev(true)),
+					dto.ArticlesOutDTOWithHasPrev(true)),
 			},
 			want: want{
 				ok: true,
@@ -1371,7 +1371,7 @@ func TestConverter_ToArticles(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx:  context.Background(),
-				from: dto.NewArticlesOutDto([]dto.ArticleTag{}),
+				from: dto.NewArticlesOutDTO([]dto.ArticleTag{}),
 			},
 			want: want{
 				ok: true,
@@ -1402,7 +1402,7 @@ func TestConverter_ToArticles(t *testing.T) {
 func TestConverter_ToTag(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		from dto.TagOutDto
+		from dto.TagOutDTO
 	}
 	type want struct {
 		out *model.TagNode
@@ -1419,7 +1419,7 @@ func TestConverter_ToTag(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagOutDto(
+				from: dto.NewTagOutDTO(
 					dto.NewTagArticle(
 						"Tag1",
 						"Tag1",
@@ -1462,7 +1462,7 @@ func TestConverter_ToTag(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagOutDto(
+				from: dto.NewTagOutDTO(
 					dto.NewTagArticle(
 						"Tag1",
 						"Tag1",
@@ -1522,7 +1522,7 @@ func TestConverter_ToTag(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagOutDto(
+				from: dto.NewTagOutDTO(
 					dto.NewTagArticle(
 						"Tag1",
 						"Tag1",
@@ -1557,7 +1557,7 @@ func TestConverter_ToTag(t *testing.T) {
 	}
 }
 
-func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
+func TestConverter_tagNodeFromTagArticleDTO(t *testing.T) {
 	type args struct {
 		ctx  context.Context
 		from dto.TagArticle
@@ -1705,9 +1705,9 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			c := tt.sut()
-			got, err := c.tagNodeFromTagArticleDto(tt.args.ctx, tt.args.from)
+			got, err := c.tagNodeFromTagArticleDTO(tt.args.ctx, tt.args.from)
 			if !errors.Is(err, tt.want.err) {
-				t.Errorf("tagNodeFromTagArticleDto() error = %v, want %v", err, tt.want.err)
+				t.Errorf("tagNodeFromTagArticleDTO() error = %v, want %v", err, tt.want.err)
 				return
 			}
 			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
@@ -1721,7 +1721,7 @@ func TestConverter_tagNodeFromTagArticleDto(t *testing.T) {
 func TestConverter_ToTags(t *testing.T) {
 	type args struct {
 		ctx  context.Context
-		from dto.TagsOutDto
+		from dto.TagsOutDTO
 	}
 	type want struct {
 		out *model.TagConnection
@@ -1742,7 +1742,7 @@ func TestConverter_ToTags(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
+				from: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -1800,7 +1800,7 @@ func TestConverter_ToTags(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
+				from: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -1875,7 +1875,7 @@ func TestConverter_ToTags(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
+				from: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -1969,7 +1969,7 @@ func TestConverter_ToTags(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
+				from: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -2097,7 +2097,7 @@ func TestConverter_ToTags(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
+				from: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -2111,7 +2111,7 @@ func TestConverter_ToTags(t *testing.T) {
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					},
-					dto.TagsOutDtoWithHasNext(true)),
+					dto.TagsOutDTOWithHasNext(true)),
 			},
 			want: want{
 				out: &model.TagConnection{
@@ -2156,7 +2156,7 @@ func TestConverter_ToTags(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
+				from: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -2195,7 +2195,7 @@ func TestConverter_ToTags(t *testing.T) {
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					},
-					dto.TagsOutDtoWithHasNext(true)),
+					dto.TagsOutDTOWithHasNext(true)),
 			},
 			want: want{
 				out: &model.TagConnection{
@@ -2286,7 +2286,7 @@ func TestConverter_ToTags(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
+				from: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -2325,7 +2325,7 @@ func TestConverter_ToTags(t *testing.T) {
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))}),
 					},
-					dto.TagsOutDtoWithHasPrev(true)),
+					dto.TagsOutDTOWithHasPrev(true)),
 			},
 			want: want{
 				out: &model.TagConnection{
@@ -2416,7 +2416,7 @@ func TestConverter_ToTags(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
+				from: dto.NewTagsOutDTO(
 					[]dto.TagArticle{}),
 			},
 			want: want{
@@ -2431,7 +2431,7 @@ func TestConverter_ToTags(t *testing.T) {
 			sut: NewConverter,
 			args: args{
 				ctx: context.Background(),
-				from: dto.NewTagsOutDto(
+				from: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -2471,6 +2471,55 @@ func TestConverter_ToTags(t *testing.T) {
 			got, err := c.ToTags(tt.args.ctx, tt.args.from)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("ToTags() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
+				t.Error(diff)
+				return
+			}
+		})
+	}
+}
+
+func TestConverter_ToCreateArticle(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		from dto.CreateArticleOutDTO
+	}
+	type want struct {
+		out *model.CreateArticlePayload
+		err error
+	}
+	type testCase struct {
+		sut  func() *Converter
+		args args
+		want want
+	}
+	tests := map[string]testCase{
+		"happy_path": {
+			sut: NewConverter,
+			args: args{
+				ctx:  context.Background(),
+				from: dto.NewCreateArticleOutDTO("event_id", "article_id", "client_mutation_id"),
+			},
+			want: want{
+				out: &model.CreateArticlePayload{
+					EventID:   "event_id",
+					ArticleID: "article_id",
+					ClientMutationID: func() *string {
+						v := "client_mutation_id"
+						return &v
+					}(),
+				},
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			c := tt.sut()
+			got, err := c.ToCreateArticle(tt.args.ctx, tt.args.from)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("ToCreateArticle() error = %v, want %v", err, tt.want.err)
 				return
 			}
 			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
