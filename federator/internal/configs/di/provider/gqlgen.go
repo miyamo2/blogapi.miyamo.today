@@ -3,6 +3,9 @@ package provider
 import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/handler/extension"
+	"github.com/99designs/gqlgen/graphql/handler/lru"
+	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/google/wire"
 	"github.com/miyamo2/blogapi.miyamo.today/core/graphql/middleware"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver"
@@ -10,6 +13,8 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/fw/gqlgen"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/vektah/gqlparser/v2/ast"
+	"time"
 )
 
 func Usecases(
@@ -55,6 +60,28 @@ func GqlgenExecutableSchema(config *gqlgen.Config) *graphql.ExecutableSchema {
 
 func GqlgenServer(schema *graphql.ExecutableSchema, nr *newrelic.Application) *handler.Server {
 	srv := handler.New(*schema)
+
+	srv.AddTransport(transport.Websocket{
+		KeepAlivePingInterval: 10 * time.Second,
+	})
+	srv.AddTransport(transport.Options{
+		AllowedMethods: []string{"OPTIONS", "GET", "POST"},
+	})
+	srv.AddTransport(transport.Options{})
+	srv.AddTransport(transport.GET{})
+	srv.AddTransport(transport.POST{})
+	srv.AddTransport(transport.MultipartForm{
+		MaxUploadSize: 3 << 30,
+		MaxMemory:     3 << 30,
+	})
+
+	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
+
+	srv.Use(extension.Introspection{})
+	srv.Use(extension.AutomaticPersistedQuery{
+		Cache: lru.New[string](100),
+	})
+
 	srv.AroundOperations(middleware.StartNewRelicTransaction(nr))
 	srv.AroundOperations(middleware.SetBlogAPIContextToContext)
 	srv.AroundRootFields(middleware.StartNewRelicSegment)
