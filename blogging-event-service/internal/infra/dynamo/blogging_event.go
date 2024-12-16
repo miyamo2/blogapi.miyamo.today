@@ -50,6 +50,7 @@ func (s *BloggingEventCommandService) CreateArticle(ctx context.Context, in mode
 		defer nrtx.StartSegment("BloggingEventCommandService#AllEventsWithArticleID").End()
 		logger := slog.Default()
 		logger.Info("START")
+
 		tx = tx.WithContext(ctx)
 
 		eventID := fmt.Sprintf("%s", s.ulidGen())
@@ -62,7 +63,10 @@ func (s *BloggingEventCommandService) CreateArticle(ctx context.Context, in mode
 			Thumbnail: toPtrString(in.Thumbnail()),
 			Tags:      in.Tags(),
 		}
-		tx.Create(event)
+		result := tx.Create(&event)
+		if err := result.Error; err != nil {
+			return err
+		}
 
 		key := model.NewBloggingEventKey(eventID, articleID)
 		out.Set(&key)
