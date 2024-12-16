@@ -55,3 +55,17 @@ func (mr *MockBloggingEventServiceMockRecorder) CreateArticle(ctx, in, out any) 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArticle", reflect.TypeOf((*MockBloggingEventService)(nil).CreateArticle), ctx, in, out)
 }
+
+// UpdateArticleTitle mocks base method.
+func (m *MockBloggingEventService) UpdateArticleTitle(ctx context.Context, in model.UpdateArticleTitleEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateArticleTitle", ctx, in, out)
+	ret0, _ := ret[0].(db.Statement)
+	return ret0
+}
+
+// UpdateArticleTitle indicates an expected call of UpdateArticleTitle.
+func (mr *MockBloggingEventServiceMockRecorder) UpdateArticleTitle(ctx, in, out any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateArticleTitle", reflect.TypeOf((*MockBloggingEventService)(nil).UpdateArticleTitle), ctx, in, out)
+}

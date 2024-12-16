@@ -56,3 +56,42 @@ func (mr *MockToCreateArticleResponseMockRecorder) ToCreateArticleArticleRespons
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToCreateArticleArticleResponse", reflect.TypeOf((*MockToCreateArticleResponse)(nil).ToCreateArticleArticleResponse), ctx, from)
 }
+
+// MockToUpdateArticleTitleResponse is a mock of ToUpdateArticleTitleResponse interface.
+type MockToUpdateArticleTitleResponse struct {
+	ctrl     *gomock.Controller
+	recorder *MockToUpdateArticleTitleResponseMockRecorder
+	isgomock struct{}
+}
+
+// MockToUpdateArticleTitleResponseMockRecorder is the mock recorder for MockToUpdateArticleTitleResponse.
+type MockToUpdateArticleTitleResponseMockRecorder struct {
+	mock *MockToUpdateArticleTitleResponse
+}
+
+// NewMockToUpdateArticleTitleResponse creates a new mock instance.
+func NewMockToUpdateArticleTitleResponse(ctrl *gomock.Controller) *MockToUpdateArticleTitleResponse {
+	mock := &MockToUpdateArticleTitleResponse{ctrl: ctrl}
+	mock.recorder = &MockToUpdateArticleTitleResponseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockToUpdateArticleTitleResponse) EXPECT() *MockToUpdateArticleTitleResponseMockRecorder {
+	return m.recorder
+}
+
+// ToUpdateArticleTitleResponse mocks base method.
+func (m *MockToUpdateArticleTitleResponse) ToUpdateArticleTitleResponse(ctx context.Context, from *dto.UpdateArticleTitleOutDto) (*grpc.BloggingEventResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToUpdateArticleTitleResponse", ctx, from)
+	ret0, _ := ret[0].(*grpc.BloggingEventResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToUpdateArticleTitleResponse indicates an expected call of ToUpdateArticleTitleResponse.
+func (mr *MockToUpdateArticleTitleResponseMockRecorder) ToUpdateArticleTitleResponse(ctx, from any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleTitleResponse", reflect.TypeOf((*MockToUpdateArticleTitleResponse)(nil).ToUpdateArticleTitleResponse), ctx, from)
+}

@@ -19,8 +19,10 @@ var _ grpcgen.BloggingEventServiceServer = (*BloggingEventServiceServer)(nil)
 
 // BloggingEventServiceServer is implementation of grpc.BloggingEventServiceServer
 type BloggingEventServiceServer struct {
-	createArticleUsecase   usecase.CreateArticle
-	createArticleConverter presenters.ToCreateArticleResponse
+	createArticleUsecase        usecase.CreateArticle
+	createArticleConverter      presenters.ToCreateArticleResponse
+	updateArticleTitleUsecase   usecase.UpdateArticleTitle
+	updateArticleTitleConverter presenters.ToUpdateArticleTitleResponse
 	grpcgen.UnimplementedBloggingEventServiceServer
 }
 
@@ -59,7 +61,36 @@ func (s *BloggingEventServiceServer) CreateArticle(ctx context.Context, req *grp
 }
 
 func (s *BloggingEventServiceServer) UpdateArticleTitle(ctx context.Context, request *grpcgen.UpdateArticleTitleRequest) (*grpcgen.BloggingEventResponse, error) {
-	return s.UnimplementedBloggingEventServiceServer.UpdateArticleTitle(ctx, request)
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("UpdateArticleTitle").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.String("article id", request.GetId()), slog.String("title", request.GetTitle())))
+
+	inDto := dto.NewUpdateArticleTitleInDto(request.GetId(), request.GetTitle())
+	outDto, err := s.updateArticleTitleUsecase.Execute(ctx, &inDto)
+	if err != nil {
+		return nil, err
+	}
+	response, err := s.updateArticleTitleConverter.ToUpdateArticleTitleResponse(ctx, outDto)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger.WarnContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("grpc.BloggingEventResponse", nil),
+				slog.Any("error", err)))
+		return nil, err
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("return",
+			slog.Any("grpc.BloggingEventResponse", *response)))
+	return response, nil
 }
 
 func (s *BloggingEventServiceServer) UpdateArticleBody(ctx context.Context, request *grpcgen.UpdateArticleBodyRequest) (*grpcgen.BloggingEventResponse, error) {
@@ -87,9 +118,13 @@ func (s *BloggingEventServiceServer) mustEmbedUnimplementedBloggingEventServiceS
 func NewBloggingEventServiceServer(
 	createArticleUsecase usecase.CreateArticle,
 	createArticleConverter presenters.ToCreateArticleResponse,
+	updateArticleTitleUsecase usecase.UpdateArticleTitle,
+	updateArticleTitleConverter presenters.ToUpdateArticleTitleResponse,
 ) *BloggingEventServiceServer {
 	return &BloggingEventServiceServer{
-		createArticleUsecase:   createArticleUsecase,
-		createArticleConverter: createArticleConverter,
+		createArticleUsecase:        createArticleUsecase,
+		createArticleConverter:      createArticleConverter,
+		updateArticleTitleUsecase:   updateArticleTitleUsecase,
+		updateArticleTitleConverter: updateArticleTitleConverter,
 	}
 }

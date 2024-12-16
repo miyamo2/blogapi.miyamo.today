@@ -7,9 +7,13 @@ import (
 )
 
 // compatibility check
-var _ presenters.ToCreateArticleResponse = (*impl.Converter)(nil)
+var (
+	_ presenters.ToCreateArticleResponse      = (*impl.Converter)(nil)
+	_ presenters.ToUpdateArticleTitleResponse = (*impl.Converter)(nil)
+)
 
 var PresenterSet = wire.NewSet(
 	impl.NewConverter,
 	wire.Bind(new(presenters.ToCreateArticleResponse), new(*impl.Converter)),
+	wire.Bind(new(presenters.ToUpdateArticleTitleResponse), new(*impl.Converter)),
 )
