@@ -32,6 +32,26 @@ func NewCreateArticleEvent(title, content, thumbnail string, tags []string) Crea
 	}
 }
 
+type UpdateArticleTitleEvent struct {
+	articleID string
+	title     string
+}
+
+func (u UpdateArticleTitleEvent) ArticleID() string {
+	return u.articleID
+}
+
+func (u UpdateArticleTitleEvent) Title() string {
+	return u.title
+}
+
+func NewUpdateArticleTitleEvent(articleID, title string) UpdateArticleTitleEvent {
+	return UpdateArticleTitleEvent{
+		articleID: articleID,
+		title:     title,
+	}
+}
+
 type BloggingEventKey struct {
 	eventID   string
 	articleID string

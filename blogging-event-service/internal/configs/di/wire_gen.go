@@ -21,7 +21,8 @@ func GetDependencies() *Dependencies {
 	bloggingEventCommandService := provider.BloggingEventCommandService()
 	createArticle := provider.CreateArticleUsecase(bloggingEventCommandService)
 	converter := pb.NewConverter()
-	bloggingEventServiceServer := pb2.NewBloggingEventServiceServer(createArticle, converter)
+	updateArticleTitle := provider.UpdateArticleTitleUsecase(bloggingEventCommandService)
+	bloggingEventServiceServer := pb2.NewBloggingEventServiceServer(createArticle, converter, updateArticleTitle, converter)
 	dialector := provider.GormDialector(config)
 	dependencies := NewDependencies(config, server, application, bloggingEventServiceServer, dialector)
 	return dependencies

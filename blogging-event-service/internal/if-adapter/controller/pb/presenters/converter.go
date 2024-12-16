@@ -12,3 +12,8 @@ type ToCreateArticleResponse interface {
 	// ToCreateArticleArticleResponse converts from CreateArticle use-case's dto to pb response.
 	ToCreateArticleArticleResponse(ctx context.Context, from *dto.CreateArticleOutDto) (response *grpc.BloggingEventResponse, err error)
 }
+
+type ToUpdateArticleTitleResponse interface {
+	// ToUpdateArticleTitleResponse converts from UpdateArticleTitle use-case's dto to pb response.
+	ToUpdateArticleTitleResponse(ctx context.Context, from *dto.UpdateArticleTitleOutDto) (response *grpc.BloggingEventResponse, err error)
+}
