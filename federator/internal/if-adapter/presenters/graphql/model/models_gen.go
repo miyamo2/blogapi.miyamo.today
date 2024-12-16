@@ -3,7 +3,7 @@
 package model
 
 import (
-	"time"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 )
 
 type Node interface {
@@ -26,9 +26,9 @@ type ArticleNode struct {
 	ID           string                `json:"id"`
 	Title        string                `json:"title"`
 	Content      string                `json:"content"`
-	ThumbnailURL string                `json:"thumbnailUrl"`
-	CreatedAt    time.Time             `json:"createdAt"`
-	UpdatedAt    time.Time             `json:"updatedAt"`
+	ThumbnailURL gqlscalar.URL         `json:"thumbnailUrl"`
+	CreatedAt    gqlscalar.UTC         `json:"createdAt"`
+	UpdatedAt    gqlscalar.UTC         `json:"updatedAt"`
 	Tags         *ArticleTagConnection `json:"tags"`
 }
 
@@ -49,6 +49,20 @@ type ArticleTagEdge struct {
 type ArticleTagNode struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type CreateArticleInput struct {
+	Title            string        `json:"title"`
+	Content          string        `json:"content"`
+	ThumbnailURL     gqlscalar.URL `json:"thumbnailURL"`
+	TagNames         []string      `json:"tagNames"`
+	ClientMutationID *string       `json:"clientMutationId,omitempty"`
+}
+
+type CreateArticlePayload struct {
+	ArticleID        string  `json:"articleId"`
+	EventID          string  `json:"eventID"`
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
 }
 
 type Mutation struct {
@@ -84,11 +98,11 @@ type TagArticleEdge struct {
 }
 
 type TagArticleNode struct {
-	ID           string    `json:"id"`
-	Title        string    `json:"title"`
-	ThumbnailURL string    `json:"thumbnailUrl"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
+	ID           string        `json:"id"`
+	Title        string        `json:"title"`
+	ThumbnailURL gqlscalar.URL `json:"thumbnailUrl"`
+	CreatedAt    gqlscalar.UTC `json:"createdAt"`
+	UpdatedAt    gqlscalar.UTC `json:"updatedAt"`
 }
 
 func (TagArticleNode) IsNode()            {}

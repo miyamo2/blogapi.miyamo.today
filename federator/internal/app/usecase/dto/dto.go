@@ -1,68 +1,70 @@
 package dto
 
-import "github.com/cockroachdb/errors"
-
-var (
-	ErrInvalidateArticlesInDto = errors.New("invalidate articles in dto")
-	ErrInvalidateTagsInDto     = errors.New("invalidate tags in dto")
+import (
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
+	"github.com/cockroachdb/errors"
+	"net/url"
 )
 
-type ArticleInDto struct {
+var (
+	ErrInvalidateArticlesInDTO = errors.New("invalidate articles in dto")
+	ErrInvalidateTagsInDTO     = errors.New("invalidate tags in dto")
+)
+
+type ArticleInDTO struct {
 	id string
 }
 
-// Id returns id.
-func (i ArticleInDto) Id() string {
+// ID returns id.
+func (i ArticleInDTO) ID() string {
 	return i.id
 }
 
-// IsInDto is a marker for in dto.
-func (i ArticleInDto) IsInDto() {}
+// IsInDTO is a marker for in dto.
+func (i ArticleInDTO) IsInDTO() {}
 
-// NewArticleInDto constructor of ArticleInDto.
-func NewArticleInDto(id string) ArticleInDto {
-	return ArticleInDto{
+// NewArticleInDTO constructor of ArticleInDTO.
+func NewArticleInDTO(id string) ArticleInDTO {
+	return ArticleInDTO{
 		id: id,
 	}
 }
 
-// ArticlesInDto is a dto for articles.
-type ArticlesInDto struct {
+// ArticlesInDTO is a dto for articles.
+type ArticlesInDTO struct {
 	first  int
 	last   int
 	after  string
 	before string
 }
 
-// IsInDto is a marker for in dto.
-func (i ArticlesInDto) IsInDto() {}
-
-func (i ArticlesInDto) First() int {
+func (i ArticlesInDTO) First() int {
 	return i.first
 }
 
-func (i ArticlesInDto) Last() int {
+func (i ArticlesInDTO) Last() int {
 	return i.last
 }
 
-func (i ArticlesInDto) After() string {
+func (i ArticlesInDTO) After() string {
 	return i.after
 }
 
-func (i ArticlesInDto) Before() string {
+func (i ArticlesInDTO) Before() string {
 	return i.before
 }
 
-type ArticlesInDtoOption func(*ArticlesInDto) error
+type ArticlesInDTOOption func(*ArticlesInDTO) error
 
 // ArticlesInWithFirst specifies how many articles to retrieve from the beginning.
-func ArticlesInWithFirst(first int) ArticlesInDtoOption {
-	return func(d *ArticlesInDto) error {
+func ArticlesInWithFirst(first int) ArticlesInDTOOption {
+	return func(d *ArticlesInDTO) error {
 		if d.last != 0 {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if last is set, first cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if last is set, first cannot be set.")
 		}
 		if d.before != "" {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if before is set, first cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if before is set, first cannot be set.")
 		}
 		d.first = first
 		return nil
@@ -70,13 +72,13 @@ func ArticlesInWithFirst(first int) ArticlesInDtoOption {
 }
 
 // ArticlesInWithLast specifies how many articles to retrieve from the end.
-func ArticlesInWithLast(last int) ArticlesInDtoOption {
-	return func(d *ArticlesInDto) error {
+func ArticlesInWithLast(last int) ArticlesInDTOOption {
+	return func(d *ArticlesInDTO) error {
 		if d.first != 0 {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if first is set, last cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if first is set, last cannot be set.")
 		}
 		if d.after != "" {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if after is set, last cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if after is set, last cannot be set.")
 		}
 		d.last = last
 		return nil
@@ -86,17 +88,17 @@ func ArticlesInWithLast(last int) ArticlesInDtoOption {
 // ArticlesInWithAfter specifies which cursor to get as the starting point.
 //
 // NOTE: must always be executed after ArticlesInWithFirst
-// NOTE: if ArticlesInWithLast or ArticlesInWithBefore was executed, it will be returned ErrInvalidateArticlesInDto.
-func ArticlesInWithAfter(after string) ArticlesInDtoOption {
-	return func(d *ArticlesInDto) error {
+// NOTE: if ArticlesInWithLast or ArticlesInWithBefore was executed, it will be returned ErrInvalidateArticlesInDTO.
+func ArticlesInWithAfter(after string) ArticlesInDTOOption {
+	return func(d *ArticlesInDTO) error {
 		if d.last != 0 {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if last is set, after cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if last is set, after cannot be set.")
 		}
 		if d.before != "" {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if before is set, after cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if before is set, after cannot be set.")
 		}
 		if d.first == 0 {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if first is not set, after cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if first is not set, after cannot be set.")
 		}
 		d.after = after
 		return nil
@@ -106,31 +108,31 @@ func ArticlesInWithAfter(after string) ArticlesInDtoOption {
 // ArticlesInWithBefore specifies which cursor to get as the starting point.
 //
 // NOTE: must always be executed after ArticlesInWithLast
-// NOTE: if ArticlesInWithFirst or ArticlesInWithAfter was executed, it will be returned ErrInvalidateArticlesInDto.
-func ArticlesInWithBefore(before string) ArticlesInDtoOption {
-	return func(d *ArticlesInDto) error {
+// NOTE: if ArticlesInWithFirst or ArticlesInWithAfter was executed, it will be returned ErrInvalidateArticlesInDTO.
+func ArticlesInWithBefore(before string) ArticlesInDTOOption {
+	return func(d *ArticlesInDTO) error {
 		if d.first != 0 {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if first is set, before cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if first is set, before cannot be set.")
 		}
 		if d.after != "" {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if after is set, before cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if after is set, before cannot be set.")
 		}
 		if d.last == 0 {
-			return errors.WithMessage(ErrInvalidateArticlesInDto, "if last is not set, before cannot be set.")
+			return errors.WithMessage(ErrInvalidateArticlesInDTO, "if last is not set, before cannot be set.")
 		}
 		d.before = before
 		return nil
 	}
 }
 
-// NewArticlesInDto constructor of ArticlesInDto.
-// if options are invalid, return ErrInvalidateArticlesInDto.
-func NewArticlesInDto(options ...ArticlesInDtoOption) (ArticlesInDto, error) {
-	d := ArticlesInDto{}
+// NewArticlesInDTO constructor of ArticlesInDTO.
+// if options are invalid, return ErrInvalidateArticlesInDTO.
+func NewArticlesInDTO(options ...ArticlesInDTOOption) (ArticlesInDTO, error) {
+	d := ArticlesInDTO{}
 	for _, option := range options {
 		err := option(&d)
 		if err != nil {
-			return ArticlesInDto{}, err
+			return ArticlesInDTO{}, err
 		}
 	}
 	return d, nil
@@ -140,16 +142,16 @@ type Article struct {
 	id           string
 	title        string
 	body         string
-	thumbnailUrl string
-	createdAt    string
-	updatedAt    string
+	thumbnailURL url.URL
+	createdAt    synchro.Time[tz.UTC]
+	updatedAt    synchro.Time[tz.UTC]
 }
 
-// IsOutDto is a marker for out dto.
-func (a Article) IsOutDto() {}
+// IsOutDTO is a marker for out dto.
+func (a Article) IsOutDTO() {}
 
-// Id returns id.
-func (a Article) Id() string {
+// ID returns id.
+func (a Article) ID() string {
 	return a.id
 }
 
@@ -158,27 +160,27 @@ func (a Article) Title() string {
 	return a.title
 }
 
-// ThumbnailUrl returns thumbnail url.
-func (a Article) ThumbnailUrl() string {
-	return a.thumbnailUrl
+// ThumbnailURL returns thumbnail url.
+func (a Article) ThumbnailURL() url.URL {
+	return a.thumbnailURL
 }
 
 // CreatedAt returns created at.
-func (a Article) CreatedAt() string {
+func (a Article) CreatedAt() synchro.Time[tz.UTC] {
 	return a.createdAt
 }
 
 // UpdatedAt returns updated at.
-func (a Article) UpdatedAt() string {
+func (a Article) UpdatedAt() synchro.Time[tz.UTC] {
 	return a.updatedAt
 }
 
-func NewArticle(id, title, body, thumbnailUrl, createdAt, updatedAt string) Article {
+func NewArticle(id, title, body string, thumbnailURL url.URL, createdAt, updatedAt synchro.Time[tz.UTC]) Article {
 	return Article{
 		id:           id,
 		title:        title,
 		body:         body,
-		thumbnailUrl: thumbnailUrl,
+		thumbnailURL: thumbnailURL,
 		createdAt:    createdAt,
 		updatedAt:    updatedAt,
 	}
@@ -189,10 +191,10 @@ type Tag struct {
 	name string
 }
 
-// IsOutDto is a marker for out dto.
-func (t Tag) IsOutDto() {}
+// IsOutDTO is a marker for out dto.
+func (t Tag) IsOutDTO() {}
 
-func (t Tag) Id() string {
+func (t Tag) ID() string {
 	return t.id
 }
 
@@ -222,32 +224,32 @@ func (a ArticleTag) Tags() []Tag {
 	return a.tags
 }
 
-func NewArticleTag(id, title, body, thumbnailUrl, createdAt, updatedAt string, tags []Tag) ArticleTag {
+func NewArticleTag(id, title, body string, thumbnailURL url.URL, createdAt, updatedAt synchro.Time[tz.UTC], tags []Tag) ArticleTag {
 	return ArticleTag{
-		Article: NewArticle(id, title, body, thumbnailUrl, createdAt, updatedAt),
+		Article: NewArticle(id, title, body, thumbnailURL, createdAt, updatedAt),
 		tags:    tags,
 	}
 }
 
-type ArticleOutDto struct {
+type ArticleOutDTO struct {
 	article ArticleTag
 }
 
-func NewArticleOutDto(article ArticleTag) ArticleOutDto {
-	return ArticleOutDto{
+func NewArticleOutDTO(article ArticleTag) ArticleOutDTO {
+	return ArticleOutDTO{
 		article: article,
 	}
 }
 
-func (o ArticleOutDto) Article() ArticleTag {
+func (o ArticleOutDTO) Article() ArticleTag {
 	return o.article
 }
 
-// IsOutDto is a marker for out dto.
-func (o ArticleOutDto) IsOutDto() {}
+// IsOutDTO is a marker for out dto.
+func (o ArticleOutDTO) IsOutDTO() {}
 
-// ArticlesOutDto is a dto for articles.
-type ArticlesOutDto struct {
+// ArticlesOutDTO is a dto for articles.
+type ArticlesOutDTO struct {
 	articles   []ArticleTag
 	byBackward bool
 	byForward  bool
@@ -255,40 +257,40 @@ type ArticlesOutDto struct {
 	hasPrev    bool
 }
 
-// IsOutDto is a marker for out dto.
-func (o ArticlesOutDto) IsOutDto() {}
+// IsOutDTO is a marker for out dto.
+func (o ArticlesOutDTO) IsOutDTO() {}
 
 // Articles returns articles.
-func (o ArticlesOutDto) Articles() []ArticleTag {
+func (o ArticlesOutDTO) Articles() []ArticleTag {
 	return o.articles
 }
 
 // HasNext returns true if next page exists otherwise false.
-func (o ArticlesOutDto) HasNext() bool {
+func (o ArticlesOutDTO) HasNext() bool {
 	return o.hasNext
 }
 
 // HasPrev returns true if prev page exists otherwise false.
-func (o ArticlesOutDto) HasPrev() bool {
+func (o ArticlesOutDTO) HasPrev() bool {
 	return o.hasPrev
 }
 
 // ByForward returns true if this dto was fetched by next paging otherwise false.
-func (o ArticlesOutDto) ByForward() bool {
+func (o ArticlesOutDTO) ByForward() bool {
 	return o.byForward
 }
 
 // ByBackward returns true if this dto was fetched by prev paging otherwise false.
-func (o ArticlesOutDto) ByBackward() bool {
+func (o ArticlesOutDTO) ByBackward() bool {
 	return o.byBackward
 }
 
-// ArticlesOutDtoOption is an option for ArticlesOutDto.
-type ArticlesOutDtoOption func(*ArticlesOutDto)
+// ArticlesOutDTOOption is an option for ArticlesOutDTO.
+type ArticlesOutDTOOption func(*ArticlesOutDTO)
 
-// ArticlesOutDtoWithHasNext is an option for ArticlesOutDto.
-func ArticlesOutDtoWithHasNext(hasNext bool) ArticlesOutDtoOption {
-	return func(d *ArticlesOutDto) {
+// ArticlesOutDTOWithHasNext is an option for ArticlesOutDTO.
+func ArticlesOutDTOWithHasNext(hasNext bool) ArticlesOutDTOOption {
+	return func(d *ArticlesOutDTO) {
 		if d.byBackward || d.hasPrev {
 			return
 		}
@@ -297,9 +299,9 @@ func ArticlesOutDtoWithHasNext(hasNext bool) ArticlesOutDtoOption {
 	}
 }
 
-// ArticlesOutDtoWithHasPrev is an option for ArticlesOutDto.
-func ArticlesOutDtoWithHasPrev(hasPrev bool) ArticlesOutDtoOption {
-	return func(d *ArticlesOutDto) {
+// ArticlesOutDTOWithHasPrev is an option for ArticlesOutDTO.
+func ArticlesOutDTOWithHasPrev(hasPrev bool) ArticlesOutDTOOption {
+	return func(d *ArticlesOutDTO) {
 		if d.byForward || d.hasNext {
 			return
 		}
@@ -308,9 +310,9 @@ func ArticlesOutDtoWithHasPrev(hasPrev bool) ArticlesOutDtoOption {
 	}
 }
 
-// NewArticlesOutDto constructor of ArticlesOutDto.
-func NewArticlesOutDto(articles []ArticleTag, options ...ArticlesOutDtoOption) ArticlesOutDto {
-	d := ArticlesOutDto{
+// NewArticlesOutDTO constructor of ArticlesOutDTO.
+func NewArticlesOutDTO(articles []ArticleTag, options ...ArticlesOutDTOOption) ArticlesOutDTO {
+	d := ArticlesOutDTO{
 		articles: articles,
 	}
 	for _, option := range options {
@@ -319,63 +321,63 @@ func NewArticlesOutDto(articles []ArticleTag, options ...ArticlesOutDtoOption) A
 	return d
 }
 
-// TagInDto is a dto for tag input.
-type TagInDto struct {
+// TagInDTO is a dto for tag input.
+type TagInDTO struct {
 	id string
 }
 
-// IsInDto is a marker for in dto.
-func (i TagInDto) IsInDto() {}
+// IsInDTO is a marker for in dto.
+func (i TagInDTO) IsInDTO() {}
 
-// Id returns id.
-func (i TagInDto) Id() string {
+// ID returns id.
+func (i TagInDTO) ID() string {
 	return i.id
 }
 
-// NewTagInDto constructor of TagInDto.
-func NewTagInDto(id string) TagInDto {
-	return TagInDto{
+// NewTagInDTO constructor of TagInDTO.
+func NewTagInDTO(id string) TagInDTO {
+	return TagInDTO{
 		id: id,
 	}
 }
 
-// TagsInDto is a dto for articles.
-type TagsInDto struct {
+// TagsInDTO is a dto for articles.
+type TagsInDTO struct {
 	first  int
 	last   int
 	after  string
 	before string
 }
 
-// IsInDto is a marker for in dto.
-func (i TagsInDto) IsInDto() {}
+// IsInDTO is a marker for in dto.
+func (i TagsInDTO) IsInDTO() {}
 
-func (i TagsInDto) First() int {
+func (i TagsInDTO) First() int {
 	return i.first
 }
 
-func (i TagsInDto) Last() int {
+func (i TagsInDTO) Last() int {
 	return i.last
 }
 
-func (i TagsInDto) After() string {
+func (i TagsInDTO) After() string {
 	return i.after
 }
 
-func (i TagsInDto) Before() string {
+func (i TagsInDTO) Before() string {
 	return i.before
 }
 
-type TagsInDtoOption func(*TagsInDto) error
+type TagsInDTOOption func(*TagsInDTO) error
 
 // TagsInWithFirst specifies how many articles to retrieve from the beginning.
-func TagsInWithFirst(first int) TagsInDtoOption {
-	return func(d *TagsInDto) error {
+func TagsInWithFirst(first int) TagsInDTOOption {
+	return func(d *TagsInDTO) error {
 		if d.last != 0 {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if last is set, first cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if last is set, first cannot be set.")
 		}
 		if d.before != "" {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if before is set, first cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if before is set, first cannot be set.")
 		}
 		d.first = first
 		return nil
@@ -383,13 +385,13 @@ func TagsInWithFirst(first int) TagsInDtoOption {
 }
 
 // TagsInWithLast specifies how many articles to retrieve from the end.
-func TagsInWithLast(last int) TagsInDtoOption {
-	return func(d *TagsInDto) error {
+func TagsInWithLast(last int) TagsInDTOOption {
+	return func(d *TagsInDTO) error {
 		if d.first != 0 {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if first is set, last cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if first is set, last cannot be set.")
 		}
 		if d.after != "" {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if after is set, last cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if after is set, last cannot be set.")
 		}
 		d.last = last
 		return nil
@@ -399,17 +401,17 @@ func TagsInWithLast(last int) TagsInDtoOption {
 // TagsInWithAfter specifies which cursor to get as the starting point.
 //
 // NOTE: must always be executed after TagsInWithFirst
-// NOTE: if TagsInWithLast or TagsInWithBefore was executed, it will be returned ErrInvalidateTagsInDto.
-func TagsInWithAfter(after string) TagsInDtoOption {
-	return func(d *TagsInDto) error {
+// NOTE: if TagsInWithLast or TagsInWithBefore was executed, it will be returned ErrInvalidateTagsInDTO.
+func TagsInWithAfter(after string) TagsInDTOOption {
+	return func(d *TagsInDTO) error {
 		if d.last != 0 {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if last is set, after cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if last is set, after cannot be set.")
 		}
 		if d.before != "" {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if before is set, after cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if before is set, after cannot be set.")
 		}
 		if d.first == 0 {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if first is not set, after cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if first is not set, after cannot be set.")
 		}
 		d.after = after
 		return nil
@@ -419,31 +421,31 @@ func TagsInWithAfter(after string) TagsInDtoOption {
 // TagsInWithBefore specifies which cursor to get as the starting point.
 //
 // NOTE: must always be executed after TagsInWithLast
-// NOTE: if TagsInWithFirst or TagsInWithAfter was executed, it will be returned ErrInvalidateTagsInDto.
-func TagsInWithBefore(before string) TagsInDtoOption {
-	return func(d *TagsInDto) error {
+// NOTE: if TagsInWithFirst or TagsInWithAfter was executed, it will be returned ErrInvalidateTagsInDTO.
+func TagsInWithBefore(before string) TagsInDTOOption {
+	return func(d *TagsInDTO) error {
 		if d.first != 0 {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if first is set, before cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if first is set, before cannot be set.")
 		}
 		if d.after != "" {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if after is set, before cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if after is set, before cannot be set.")
 		}
 		if d.last == 0 {
-			return errors.WithMessage(ErrInvalidateTagsInDto, "if last is not set, before cannot be set.")
+			return errors.WithMessage(ErrInvalidateTagsInDTO, "if last is not set, before cannot be set.")
 		}
 		d.before = before
 		return nil
 	}
 }
 
-// NewTagsInDto constructor of TagsInDto.
-// if options are invalid, return ErrInvalidateTagsInDto.
-func NewTagsInDto(options ...TagsInDtoOption) (TagsInDto, error) {
-	d := TagsInDto{}
+// NewTagsInDTO constructor of TagsInDTO.
+// if options are invalid, return ErrInvalidateTagsInDTO.
+func NewTagsInDTO(options ...TagsInDTOOption) (TagsInDTO, error) {
+	d := TagsInDTO{}
 	for _, option := range options {
 		err := option(&d)
 		if err != nil {
-			return TagsInDto{}, err
+			return TagsInDTO{}, err
 		}
 	}
 	return d, nil
@@ -454,11 +456,11 @@ type TagArticle struct {
 	articles []Article
 }
 
-// IsOutDto is a marker for out dto.
-func (t TagArticle) IsOutDto() {}
+// IsOutDTO is a marker for out dto.
+func (t TagArticle) IsOutDTO() {}
 
-// Id returns id.
-func (t TagArticle) Id() string {
+// ID returns id.
+func (t TagArticle) ID() string {
 	return t.id
 }
 
@@ -480,28 +482,28 @@ func NewTagArticle(id, name string, articles []Article) TagArticle {
 	}
 }
 
-// TagOutDto is a dto for tag output.
-type TagOutDto struct {
+// TagOutDTO is a dto for tag output.
+type TagOutDTO struct {
 	tag TagArticle
 }
 
-// IsOutDto is a marker for out dto.
-func (o TagOutDto) IsOutDto() {}
+// IsOutDTO is a marker for out dto.
+func (o TagOutDTO) IsOutDTO() {}
 
 // Tag returns tag.
-func (o TagOutDto) Tag() TagArticle {
+func (o TagOutDTO) Tag() TagArticle {
 	return o.tag
 }
 
-// NewTagOutDto constructor of TagOutDto.
-func NewTagOutDto(tag TagArticle) TagOutDto {
-	return TagOutDto{
+// NewTagOutDTO constructor of TagOutDTO.
+func NewTagOutDTO(tag TagArticle) TagOutDTO {
+	return TagOutDTO{
 		tag: tag,
 	}
 }
 
-// TagsOutDto is a dto for tags output.
-type TagsOutDto struct {
+// TagsOutDTO is a dto for tags output.
+type TagsOutDTO struct {
 	tags       []TagArticle
 	byBackward bool
 	byForward  bool
@@ -509,40 +511,40 @@ type TagsOutDto struct {
 	hasPrev    bool
 }
 
-// IsOutDto is a marker for out dto.
-func (o TagsOutDto) IsOutDto() {}
+// IsOutDTO is a marker for out dto.
+func (o TagsOutDTO) IsOutDTO() {}
 
 // Tags returns tags.
-func (o TagsOutDto) Tags() []TagArticle {
+func (o TagsOutDTO) Tags() []TagArticle {
 	return o.tags
 }
 
 // HasNext returns true if next page exists otherwise false.
-func (o TagsOutDto) HasNext() bool {
+func (o TagsOutDTO) HasNext() bool {
 	return o.hasNext
 }
 
 // HasPrev returns true if prev page exists otherwise false.
-func (o TagsOutDto) HasPrev() bool {
+func (o TagsOutDTO) HasPrev() bool {
 	return o.hasPrev
 }
 
 // ByForward returns true if this dto was fetched by next paging otherwise false.
-func (o TagsOutDto) ByForward() bool {
+func (o TagsOutDTO) ByForward() bool {
 	return o.byForward
 }
 
 // ByBackward returns true if this dto was fetched by prev paging otherwise false.
-func (o TagsOutDto) ByBackward() bool {
+func (o TagsOutDTO) ByBackward() bool {
 	return o.byBackward
 }
 
-// TagsOutDtoOption is an option for ArticlesOutDto.
-type TagsOutDtoOption func(*TagsOutDto)
+// TagsOutDTOOption is an option for ArticlesOutDTO.
+type TagsOutDTOOption func(*TagsOutDTO)
 
-// TagsOutDtoWithHasNext is an option for ArticlesOutDto.
-func TagsOutDtoWithHasNext(hasNext bool) TagsOutDtoOption {
-	return func(o *TagsOutDto) {
+// TagsOutDTOWithHasNext is an option for ArticlesOutDTO.
+func TagsOutDTOWithHasNext(hasNext bool) TagsOutDTOOption {
+	return func(o *TagsOutDTO) {
 		if o.byBackward || o.hasPrev {
 			return
 		}
@@ -551,9 +553,9 @@ func TagsOutDtoWithHasNext(hasNext bool) TagsOutDtoOption {
 	}
 }
 
-// TagsOutDtoWithHasPrev is an option for ArticlesOutDto.
-func TagsOutDtoWithHasPrev(hasPrev bool) TagsOutDtoOption {
-	return func(o *TagsOutDto) {
+// TagsOutDTOWithHasPrev is an option for ArticlesOutDTO.
+func TagsOutDTOWithHasPrev(hasPrev bool) TagsOutDTOOption {
+	return func(o *TagsOutDTO) {
 		if o.byForward || o.hasNext {
 			return
 		}
@@ -562,13 +564,95 @@ func TagsOutDtoWithHasPrev(hasPrev bool) TagsOutDtoOption {
 	}
 }
 
-// NewTagsOutDto constructor of TagsOutDto.
-func NewTagsOutDto(tags []TagArticle, options ...TagsOutDtoOption) TagsOutDto {
-	o := TagsOutDto{
+// NewTagsOutDTO constructor of TagsOutDTO.
+func NewTagsOutDTO(tags []TagArticle, options ...TagsOutDTOOption) TagsOutDTO {
+	o := TagsOutDTO{
 		tags: tags,
 	}
 	for _, option := range options {
 		option(&o)
 	}
 	return o
+}
+
+// CreateArticleInDTO is a dto for creating an article.
+type CreateArticleInDTO struct {
+	title            string
+	body             string
+	thumbnailURL     url.URL
+	tagNames         []string
+	clientMutationID string
+}
+
+// IsInDTO is a marker for in dto.
+func (a CreateArticleInDTO) IsInDTO() {}
+
+// Title returns title.
+func (a CreateArticleInDTO) Title() string {
+	return a.title
+}
+
+// Body returns body.
+func (a CreateArticleInDTO) Body() string {
+	return a.body
+}
+
+// ThumbnailURL returns thumbnail url.
+func (a CreateArticleInDTO) ThumbnailURL() url.URL {
+	return a.thumbnailURL
+}
+
+// TagNames returns tag names.
+func (a CreateArticleInDTO) TagNames() []string {
+	return a.tagNames
+}
+
+// ClientMutationID returns client mutation id.
+func (a CreateArticleInDTO) ClientMutationID() string {
+	return a.clientMutationID
+}
+
+// NewCreateArticleInDTO constructor of CreateArticleInDTO.
+func NewCreateArticleInDTO(title, body string, thumbnailURL url.URL, tagNames []string, clientMutationID string) CreateArticleInDTO {
+	return CreateArticleInDTO{
+		title:            title,
+		body:             body,
+		thumbnailURL:     thumbnailURL,
+		tagNames:         tagNames,
+		clientMutationID: clientMutationID,
+	}
+}
+
+// CreateArticleOutDTO is a dto for creating an article.
+type CreateArticleOutDTO struct {
+	eventID          string
+	articleID        string
+	clientMutationID string
+}
+
+// IsOutDTO is a marker for out dto.
+func (a CreateArticleOutDTO) IsOutDTO() {}
+
+// EventID returns event id.
+func (a CreateArticleOutDTO) EventID() string {
+	return a.eventID
+}
+
+// ArticleID returns article id.
+func (a CreateArticleOutDTO) ArticleID() string {
+	return a.articleID
+}
+
+// ClientMutationID returns client mutation id.
+func (a CreateArticleOutDTO) ClientMutationID() string {
+	return a.clientMutationID
+}
+
+// NewCreateArticleOutDTO constructor of CreateArticleOutDTO.
+func NewCreateArticleOutDTO(eventID, articleID, clientMutationID string) CreateArticleOutDTO {
+	return CreateArticleOutDTO{
+		eventID:          eventID,
+		articleID:        articleID,
+		clientMutationID: clientMutationID,
+	}
 }

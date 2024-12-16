@@ -5,16 +5,16 @@ package gqlgen
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
-	"github.com/cockroachdb/errors"
 	"strconv"
 	"sync"
 	"sync/atomic"
-	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -85,8 +85,15 @@ type ComplexityRoot struct {
 		Name func(childComplexity int) int
 	}
 
+	CreateArticlePayload struct {
+		ArticleID        func(childComplexity int) int
+		ClientMutationID func(childComplexity int) int
+		EventID          func(childComplexity int) int
+	}
+
 	Mutation struct {
-		Noop func(childComplexity int, input *model.NoopInput) int
+		CreateArticle func(childComplexity int, input model.CreateArticleInput) int
+		Noop          func(childComplexity int, input *model.NoopInput) int
 	}
 
 	NoopPayload struct {
@@ -147,6 +154,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	Noop(ctx context.Context, input *model.NoopInput) (*model.NoopPayload, error)
+	CreateArticle(ctx context.Context, input model.CreateArticleInput) (*model.CreateArticlePayload, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (model.Node, error)
@@ -312,6 +320,39 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ArticleTagNode.Name(childComplexity), true
+
+	case "CreateArticlePayload.articleId":
+		if e.complexity.CreateArticlePayload.ArticleID == nil {
+			break
+		}
+
+		return e.complexity.CreateArticlePayload.ArticleID(childComplexity), true
+
+	case "CreateArticlePayload.clientMutationId":
+		if e.complexity.CreateArticlePayload.ClientMutationID == nil {
+			break
+		}
+
+		return e.complexity.CreateArticlePayload.ClientMutationID(childComplexity), true
+
+	case "CreateArticlePayload.eventID":
+		if e.complexity.CreateArticlePayload.EventID == nil {
+			break
+		}
+
+		return e.complexity.CreateArticlePayload.EventID(childComplexity), true
+
+	case "Mutation.createArticle":
+		if e.complexity.Mutation.CreateArticle == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createArticle_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateArticle(childComplexity, args["input"].(model.CreateArticleInput)), true
 
 	case "Mutation.noop":
 		if e.complexity.Mutation.Noop == nil {
@@ -556,14 +597,15 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 }
 
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
-	rc := graphql.GetOperationContext(ctx)
-	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
+	opCtx := graphql.GetOperationContext(ctx)
+	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputCreateArticleInput,
 		ec.unmarshalInputNoopInput,
 	)
 	first := true
 
-	switch rc.Operation.Operation {
+	switch opCtx.Operation.Operation {
 	case ast.Query:
 		return func(ctx context.Context) *graphql.Response {
 			var response graphql.Response
@@ -571,7 +613,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			if first {
 				first = false
 				ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
-				data = ec._Query(ctx, rc.Operation.SelectionSet)
+				data = ec._Query(ctx, opCtx.Operation.SelectionSet)
 			} else {
 				if atomic.LoadInt32(&ec.pendingDeferred) > 0 {
 					result := <-ec.deferredResults
@@ -601,7 +643,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			}
 			first = false
 			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
-			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
+			data := ec._Mutation(ctx, opCtx.Operation.SelectionSet)
 			var buf bytes.Buffer
 			data.MarshalGQL(&buf)
 
@@ -661,7 +703,7 @@ var sources = []*ast.Source{
   id: ID!
   title: String!
   content: Markdown!
-  thumbnailUrl: String!
+  thumbnailUrl: URL!
   createdAt: DateTime!
   updatedAt: DateTime!
   tags(
@@ -733,11 +775,31 @@ type NoopPayload {
   startCursor: String!
   endCursor: String!
 }`, BuiltIn: false},
-	{Name: "../../../../.api/base/scalar.backend.graphqls", Input: `scalar Markdown`, BuiltIn: false},
+	{Name: "../../../../.api/base/scalar.backend.graphqls", Input: `scalar Markdown
+scalar URL`, BuiltIn: false},
 	{Name: "../../../../.api/base/scalar.graphqls", Input: `scalar DateTime
 scalar Upload`, BuiltIn: false},
 	{Name: "../../../../.api/base/schema.graphqls", Input: `schema {
   query: Query
+  mutation: Mutation
+}`, BuiltIn: false},
+	{Name: "../../../../.api/blogging_event/blogging-event.model.graphqls", Input: `input CreateArticleInput {
+  title: String!
+  content: String!
+  thumbnailURL: URL!
+  tagNames: [String!]!
+  clientMutationId: String
+}
+
+type CreateArticlePayload {
+  articleId: ID!
+  eventID: ID!
+  clientMutationId: String
+}`, BuiltIn: false},
+	{Name: "../../../../.api/blogging_event/blogging-event.mutation.graphqls", Input: `extend type Mutation {
+    createArticle(input: CreateArticleInput!): CreateArticlePayload!
+}`, BuiltIn: false},
+	{Name: "../../../../.api/blogging_event/blogging-event.schema.graphqls", Input: `extend schema {
   mutation: Mutation
 }`, BuiltIn: false},
 	{Name: "../../../../.api/tag/tag.model.graphqls", Input: `type TagNode {
@@ -754,7 +816,7 @@ scalar Upload`, BuiltIn: false},
 type TagArticleNode implements Node @derivedTypes {
   id: ID!
   title: String!
-  thumbnailUrl: String!
+  thumbnailUrl: URL!
   createdAt: DateTime!
   updatedAt: DateTime!
 }
@@ -800,274 +862,709 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_ArticleNode_tags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_ArticleNode_tags_argsAfter(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["after"] = arg0
-	var arg1 *string
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg1, err := ec.field_ArticleNode_tags_argsBefore(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["before"] = arg1
-	var arg2 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg2, err := ec.field_ArticleNode_tags_argsFirst(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["first"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg3, err := ec.field_ArticleNode_tags_argsLast(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["last"] = arg3
 	return args, nil
+}
+func (ec *executionContext) field_ArticleNode_tags_argsAfter(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["after"]
+	if !ok {
+		var zeroVal *string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+	if tmp, ok := rawArgs["after"]; ok {
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_ArticleNode_tags_argsBefore(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["before"]
+	if !ok {
+		var zeroVal *string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+	if tmp, ok := rawArgs["before"]; ok {
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_ArticleNode_tags_argsFirst(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["first"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+	if tmp, ok := rawArgs["first"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_ArticleNode_tags_argsLast(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["last"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+	if tmp, ok := rawArgs["last"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_createArticle_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_createArticle_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_createArticle_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.CreateArticleInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.CreateArticleInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNCreateArticleInput2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐCreateArticleInput(ctx, tmp)
+	}
+
+	var zeroVal model.CreateArticleInput
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Mutation_noop_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.NoopInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalONoopInput2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNoopInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_Mutation_noop_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["input"] = arg0
 	return args, nil
+}
+func (ec *executionContext) field_Mutation_noop_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*model.NoopInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal *model.NoopInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalONoopInput2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNoopInput(ctx, tmp)
+	}
+
+	var zeroVal *model.NoopInput
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["name"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_Query___type_argsName(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["name"] = arg0
 	return args, nil
+}
+func (ec *executionContext) field_Query___type_argsName(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["name"]
+	if !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+	if tmp, ok := rawArgs["name"]; ok {
+		return ec.unmarshalNString2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Query_article_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_Query_article_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["id"] = arg0
 	return args, nil
+}
+func (ec *executionContext) field_Query_article_argsID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["id"]
+	if !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Query_articles_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_Query_articles_argsFirst(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["first"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg1, err := ec.field_Query_articles_argsLast(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["last"] = arg1
-	var arg2 *string
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg2, err := ec.field_Query_articles_argsAfter(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["after"] = arg2
-	var arg3 *string
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg3, err := ec.field_Query_articles_argsBefore(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["before"] = arg3
 	return args, nil
+}
+func (ec *executionContext) field_Query_articles_argsFirst(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["first"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+	if tmp, ok := rawArgs["first"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_articles_argsLast(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["last"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+	if tmp, ok := rawArgs["last"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_articles_argsAfter(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["after"]
+	if !ok {
+		var zeroVal *string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+	if tmp, ok := rawArgs["after"]; ok {
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_articles_argsBefore(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["before"]
+	if !ok {
+		var zeroVal *string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+	if tmp, ok := rawArgs["before"]; ok {
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Query_node_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_Query_node_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["id"] = arg0
 	return args, nil
+}
+func (ec *executionContext) field_Query_node_argsID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["id"]
+	if !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Query_tag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_Query_tag_argsID(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["id"] = arg0
 	return args, nil
+}
+func (ec *executionContext) field_Query_tag_argsID(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["id"]
+	if !ok {
+		var zeroVal string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+	if tmp, ok := rawArgs["id"]; ok {
+		return ec.unmarshalNID2string(ctx, tmp)
+	}
+
+	var zeroVal string
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field_Query_tags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_Query_tags_argsFirst(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["first"] = arg0
-	var arg1 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg1, err := ec.field_Query_tags_argsLast(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["last"] = arg1
-	var arg2 *string
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg2, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg2, err := ec.field_Query_tags_argsAfter(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["after"] = arg2
-	var arg3 *string
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg3, err := ec.field_Query_tags_argsBefore(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["before"] = arg3
 	return args, nil
+}
+func (ec *executionContext) field_Query_tags_argsFirst(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["first"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+	if tmp, ok := rawArgs["first"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_tags_argsLast(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["last"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+	if tmp, ok := rawArgs["last"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_tags_argsAfter(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["after"]
+	if !ok {
+		var zeroVal *string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+	if tmp, ok := rawArgs["after"]; ok {
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Query_tags_argsBefore(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["before"]
+	if !ok {
+		var zeroVal *string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+	if tmp, ok := rawArgs["before"]; ok {
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field_TagNode_articles_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["after"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
-		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field_TagNode_articles_argsAfter(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["after"] = arg0
-	var arg1 *string
-	if tmp, ok := rawArgs["before"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
-		arg1, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg1, err := ec.field_TagNode_articles_argsBefore(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["before"] = arg1
-	var arg2 *int
-	if tmp, ok := rawArgs["first"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
-		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg2, err := ec.field_TagNode_articles_argsFirst(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["first"] = arg2
-	var arg3 *int
-	if tmp, ok := rawArgs["last"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
-		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg3, err := ec.field_TagNode_articles_argsLast(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["last"] = arg3
 	return args, nil
+}
+func (ec *executionContext) field_TagNode_articles_argsAfter(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["after"]
+	if !ok {
+		var zeroVal *string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+	if tmp, ok := rawArgs["after"]; ok {
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_TagNode_articles_argsBefore(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*string, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["before"]
+	if !ok {
+		var zeroVal *string
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+	if tmp, ok := rawArgs["before"]; ok {
+		return ec.unmarshalOString2ᚖstring(ctx, tmp)
+	}
+
+	var zeroVal *string
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_TagNode_articles_argsFirst(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["first"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+	if tmp, ok := rawArgs["first"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_TagNode_articles_argsLast(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (*int, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["last"]
+	if !ok {
+		var zeroVal *int
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+	if tmp, ok := rawArgs["last"]; ok {
+		return ec.unmarshalOInt2ᚖint(ctx, tmp)
+	}
+
+	var zeroVal *int
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field___Type_enumValues_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 bool
-	if tmp, ok := rawArgs["includeDeprecated"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
-		arg0, err = ec.unmarshalOBoolean2bool(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field___Type_enumValues_argsIncludeDeprecated(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["includeDeprecated"] = arg0
 	return args, nil
+}
+func (ec *executionContext) field___Type_enumValues_argsIncludeDeprecated(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (bool, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["includeDeprecated"]
+	if !ok {
+		var zeroVal bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
+	if tmp, ok := rawArgs["includeDeprecated"]; ok {
+		return ec.unmarshalOBoolean2bool(ctx, tmp)
+	}
+
+	var zeroVal bool
+	return zeroVal, nil
 }
 
 func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 bool
-	if tmp, ok := rawArgs["includeDeprecated"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
-		arg0, err = ec.unmarshalOBoolean2bool(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
+	arg0, err := ec.field___Type_fields_argsIncludeDeprecated(ctx, rawArgs)
+	if err != nil {
+		return nil, err
 	}
 	args["includeDeprecated"] = arg0
 	return args, nil
+}
+func (ec *executionContext) field___Type_fields_argsIncludeDeprecated(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (bool, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["includeDeprecated"]
+	if !ok {
+		var zeroVal bool
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("includeDeprecated"))
+	if tmp, ok := rawArgs["includeDeprecated"]; ok {
+		return ec.unmarshalOBoolean2bool(ctx, tmp)
+	}
+
+	var zeroVal bool
+	return zeroVal, nil
 }
 
 // endregion ***************************** args.gotpl *****************************
@@ -1106,10 +1603,10 @@ func (ec *executionContext) _ArticleConnection_edges(ctx context.Context, field 
 	}
 	res := resTmp.([]*model.ArticleEdge)
 	fc.Result = res
-	return ec.marshalNArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleEdgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleEdgeᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleConnection",
 		Field:      field,
@@ -1156,10 +1653,10 @@ func (ec *executionContext) _ArticleConnection_pageInfo(ctx context.Context, fie
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleConnection",
 		Field:      field,
@@ -1213,7 +1710,7 @@ func (ec *executionContext) _ArticleConnection_totalCount(ctx context.Context, f
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleConnection",
 		Field:      field,
@@ -1257,7 +1754,7 @@ func (ec *executionContext) _ArticleEdge_cursor(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleEdge",
 		Field:      field,
@@ -1298,10 +1795,10 @@ func (ec *executionContext) _ArticleEdge_node(ctx context.Context, field graphql
 	}
 	res := resTmp.(*model.ArticleNode)
 	fc.Result = res
-	return ec.marshalNArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleNode(ctx, field.Selections, res)
+	return ec.marshalNArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleNode(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleEdge",
 		Field:      field,
@@ -1361,7 +1858,7 @@ func (ec *executionContext) _ArticleNode_id(ctx context.Context, field graphql.C
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleNode_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleNode_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleNode",
 		Field:      field,
@@ -1405,7 +1902,7 @@ func (ec *executionContext) _ArticleNode_title(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleNode_title(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleNode_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleNode",
 		Field:      field,
@@ -1449,7 +1946,7 @@ func (ec *executionContext) _ArticleNode_content(ctx context.Context, field grap
 	return ec.marshalNMarkdown2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleNode_content(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleNode_content(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleNode",
 		Field:      field,
@@ -1488,19 +1985,19 @@ func (ec *executionContext) _ArticleNode_thumbnailUrl(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(gqlscalar.URL)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNURL2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐURL(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleNode_thumbnailUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleNode_thumbnailUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleNode",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type URL does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1532,12 +2029,12 @@ func (ec *executionContext) _ArticleNode_createdAt(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Time)
+	res := resTmp.(gqlscalar.UTC)
 	fc.Result = res
-	return ec.marshalNDateTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNDateTime2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐUTC(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleNode_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleNode_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleNode",
 		Field:      field,
@@ -1576,12 +2073,12 @@ func (ec *executionContext) _ArticleNode_updatedAt(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Time)
+	res := resTmp.(gqlscalar.UTC)
 	fc.Result = res
-	return ec.marshalNDateTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNDateTime2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐUTC(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleNode_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleNode_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleNode",
 		Field:      field,
@@ -1622,7 +2119,7 @@ func (ec *executionContext) _ArticleNode_tags(ctx context.Context, field graphql
 	}
 	res := resTmp.(*model.ArticleTagConnection)
 	fc.Result = res
-	return ec.marshalNArticleTagConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagConnection(ctx, field.Selections, res)
+	return ec.marshalNArticleTagConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_ArticleNode_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1685,10 +2182,10 @@ func (ec *executionContext) _ArticleTagConnection_edges(ctx context.Context, fie
 	}
 	res := resTmp.([]*model.ArticleTagEdge)
 	fc.Result = res
-	return ec.marshalNArticleTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagEdgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNArticleTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagEdgeᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleTagConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleTagConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleTagConnection",
 		Field:      field,
@@ -1735,10 +2232,10 @@ func (ec *executionContext) _ArticleTagConnection_pageInfo(ctx context.Context, 
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleTagConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleTagConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleTagConnection",
 		Field:      field,
@@ -1792,7 +2289,7 @@ func (ec *executionContext) _ArticleTagConnection_totalCount(ctx context.Context
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleTagConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleTagConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleTagConnection",
 		Field:      field,
@@ -1836,7 +2333,7 @@ func (ec *executionContext) _ArticleTagEdge_cursor(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleTagEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleTagEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleTagEdge",
 		Field:      field,
@@ -1877,10 +2374,10 @@ func (ec *executionContext) _ArticleTagEdge_node(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.ArticleTagNode)
 	fc.Result = res
-	return ec.marshalNArticleTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagNode(ctx, field.Selections, res)
+	return ec.marshalNArticleTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagNode(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleTagEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleTagEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleTagEdge",
 		Field:      field,
@@ -1930,7 +2427,7 @@ func (ec *executionContext) _ArticleTagNode_id(ctx context.Context, field graphq
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleTagNode_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleTagNode_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleTagNode",
 		Field:      field,
@@ -1974,9 +2471,138 @@ func (ec *executionContext) _ArticleTagNode_name(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_ArticleTagNode_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_ArticleTagNode_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ArticleTagNode",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateArticlePayload_articleId(ctx context.Context, field graphql.CollectedField, obj *model.CreateArticlePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateArticlePayload_articleId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ArticleID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateArticlePayload_articleId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateArticlePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateArticlePayload_eventID(ctx context.Context, field graphql.CollectedField, obj *model.CreateArticlePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateArticlePayload_eventID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateArticlePayload_eventID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateArticlePayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CreateArticlePayload_clientMutationId(ctx context.Context, field graphql.CollectedField, obj *model.CreateArticlePayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateArticlePayload_clientMutationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClientMutationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateArticlePayload_clientMutationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateArticlePayload",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2012,7 +2638,7 @@ func (ec *executionContext) _Mutation_noop(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*model.NoopPayload)
 	fc.Result = res
-	return ec.marshalONoopPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNoopPayload(ctx, field.Selections, res)
+	return ec.marshalONoopPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNoopPayload(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_noop(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2037,6 +2663,69 @@ func (ec *executionContext) fieldContext_Mutation_noop(ctx context.Context, fiel
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_noop_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createArticle(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createArticle(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateArticle(rctx, fc.Args["input"].(model.CreateArticleInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.CreateArticlePayload)
+	fc.Result = res
+	return ec.marshalNCreateArticlePayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐCreateArticlePayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createArticle(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "articleId":
+				return ec.fieldContext_CreateArticlePayload_articleId(ctx, field)
+			case "eventID":
+				return ec.fieldContext_CreateArticlePayload_eventID(ctx, field)
+			case "clientMutationId":
+				return ec.fieldContext_CreateArticlePayload_clientMutationId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CreateArticlePayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createArticle_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2071,7 +2760,7 @@ func (ec *executionContext) _NoopPayload_clientMutationId(ctx context.Context, f
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_NoopPayload_clientMutationId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_NoopPayload_clientMutationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "NoopPayload",
 		Field:      field,
@@ -2112,7 +2801,7 @@ func (ec *executionContext) _PageInfo_hasNextPage(ctx context.Context, field gra
 	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PageInfo_hasNextPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PageInfo_hasNextPage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PageInfo",
 		Field:      field,
@@ -2153,7 +2842,7 @@ func (ec *executionContext) _PageInfo_hasPreviousPage(ctx context.Context, field
 	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PageInfo_hasPreviousPage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PageInfo_hasPreviousPage(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PageInfo",
 		Field:      field,
@@ -2197,7 +2886,7 @@ func (ec *executionContext) _PageInfo_startCursor(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PageInfo_startCursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PageInfo_startCursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PageInfo",
 		Field:      field,
@@ -2241,7 +2930,7 @@ func (ec *executionContext) _PageInfo_endCursor(ctx context.Context, field graph
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_PageInfo_endCursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_PageInfo_endCursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PageInfo",
 		Field:      field,
@@ -2279,7 +2968,7 @@ func (ec *executionContext) _Query_node(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(model.Node)
 	fc.Result = res
-	return ec.marshalONode2githubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNode(ctx, field.Selections, res)
+	return ec.marshalONode2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNode(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2334,7 +3023,7 @@ func (ec *executionContext) _Query_articles(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.ArticleConnection)
 	fc.Result = res
-	return ec.marshalNArticleConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleConnection(ctx, field.Selections, res)
+	return ec.marshalNArticleConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_articles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2394,7 +3083,7 @@ func (ec *executionContext) _Query_article(ctx context.Context, field graphql.Co
 	}
 	res := resTmp.(*model.ArticleNode)
 	fc.Result = res
-	return ec.marshalOArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleNode(ctx, field.Selections, res)
+	return ec.marshalOArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleNode(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_article(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2465,7 +3154,7 @@ func (ec *executionContext) _Query_tags(ctx context.Context, field graphql.Colle
 	}
 	res := resTmp.(*model.TagConnection)
 	fc.Result = res
-	return ec.marshalNTagConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagConnection(ctx, field.Selections, res)
+	return ec.marshalNTagConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2525,7 +3214,7 @@ func (ec *executionContext) _Query_tag(ctx context.Context, field graphql.Collec
 	}
 	res := resTmp.(*model.TagNode)
 	fc.Result = res
-	return ec.marshalOTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagNode(ctx, field.Selections, res)
+	return ec.marshalOTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagNode(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_tag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2662,7 +3351,7 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query___schema(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -2717,10 +3406,10 @@ func (ec *executionContext) _TagArticleConnection_edges(ctx context.Context, fie
 	}
 	res := resTmp.([]*model.TagArticleEdge)
 	fc.Result = res
-	return ec.marshalNTagArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleEdgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNTagArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleEdgeᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleConnection",
 		Field:      field,
@@ -2767,10 +3456,10 @@ func (ec *executionContext) _TagArticleConnection_pageInfo(ctx context.Context, 
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleConnection",
 		Field:      field,
@@ -2824,7 +3513,7 @@ func (ec *executionContext) _TagArticleConnection_totalCount(ctx context.Context
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleConnection",
 		Field:      field,
@@ -2868,7 +3557,7 @@ func (ec *executionContext) _TagArticleEdge_cursor(ctx context.Context, field gr
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleEdge",
 		Field:      field,
@@ -2909,10 +3598,10 @@ func (ec *executionContext) _TagArticleEdge_node(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.TagArticleNode)
 	fc.Result = res
-	return ec.marshalNTagArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleNode(ctx, field.Selections, res)
+	return ec.marshalNTagArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleNode(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleEdge",
 		Field:      field,
@@ -2968,7 +3657,7 @@ func (ec *executionContext) _TagArticleNode_id(ctx context.Context, field graphq
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleNode_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleNode_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleNode",
 		Field:      field,
@@ -3012,7 +3701,7 @@ func (ec *executionContext) _TagArticleNode_title(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleNode_title(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleNode_title(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleNode",
 		Field:      field,
@@ -3051,19 +3740,19 @@ func (ec *executionContext) _TagArticleNode_thumbnailUrl(ctx context.Context, fi
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(gqlscalar.URL)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNURL2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐURL(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleNode_thumbnailUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleNode_thumbnailUrl(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleNode",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type URL does not have child fields")
 		},
 	}
 	return fc, nil
@@ -3095,12 +3784,12 @@ func (ec *executionContext) _TagArticleNode_createdAt(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Time)
+	res := resTmp.(gqlscalar.UTC)
 	fc.Result = res
-	return ec.marshalNDateTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNDateTime2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐUTC(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleNode_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleNode_createdAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleNode",
 		Field:      field,
@@ -3139,12 +3828,12 @@ func (ec *executionContext) _TagArticleNode_updatedAt(ctx context.Context, field
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Time)
+	res := resTmp.(gqlscalar.UTC)
 	fc.Result = res
-	return ec.marshalNDateTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNDateTime2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐUTC(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagArticleNode_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagArticleNode_updatedAt(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagArticleNode",
 		Field:      field,
@@ -3185,10 +3874,10 @@ func (ec *executionContext) _TagConnection_edges(ctx context.Context, field grap
 	}
 	res := resTmp.([]*model.TagEdge)
 	fc.Result = res
-	return ec.marshalNTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagEdgeᚄ(ctx, field.Selections, res)
+	return ec.marshalNTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagEdgeᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagConnection_edges(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagConnection",
 		Field:      field,
@@ -3235,10 +3924,10 @@ func (ec *executionContext) _TagConnection_pageInfo(ctx context.Context, field g
 	}
 	res := resTmp.(*model.PageInfo)
 	fc.Result = res
-	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx, field.Selections, res)
+	return ec.marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagConnection_pageInfo(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagConnection",
 		Field:      field,
@@ -3292,7 +3981,7 @@ func (ec *executionContext) _TagConnection_totalCount(ctx context.Context, field
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagConnection_totalCount(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagConnection",
 		Field:      field,
@@ -3336,7 +4025,7 @@ func (ec *executionContext) _TagEdge_cursor(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagEdge_cursor(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagEdge",
 		Field:      field,
@@ -3377,10 +4066,10 @@ func (ec *executionContext) _TagEdge_node(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(*model.TagNode)
 	fc.Result = res
-	return ec.marshalNTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagNode(ctx, field.Selections, res)
+	return ec.marshalNTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagNode(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagEdge_node(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagEdge",
 		Field:      field,
@@ -3432,7 +4121,7 @@ func (ec *executionContext) _TagNode_id(ctx context.Context, field graphql.Colle
 	return ec.marshalNID2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagNode_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagNode_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagNode",
 		Field:      field,
@@ -3476,7 +4165,7 @@ func (ec *executionContext) _TagNode_name(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TagNode_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TagNode_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TagNode",
 		Field:      field,
@@ -3517,7 +4206,7 @@ func (ec *executionContext) _TagNode_articles(ctx context.Context, field graphql
 	}
 	res := resTmp.(*model.TagArticleConnection)
 	fc.Result = res
-	return ec.marshalNTagArticleConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleConnection(ctx, field.Selections, res)
+	return ec.marshalNTagArticleConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TagNode_articles(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3583,7 +4272,7 @@ func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Directive_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Directive_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Directive",
 		Field:      field,
@@ -3624,7 +4313,7 @@ func (ec *executionContext) ___Directive_description(ctx context.Context, field 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Directive_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Directive_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Directive",
 		Field:      field,
@@ -3668,7 +4357,7 @@ func (ec *executionContext) ___Directive_locations(ctx context.Context, field gr
 	return ec.marshalN__DirectiveLocation2ᚕstringᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Directive_locations(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Directive_locations(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Directive",
 		Field:      field,
@@ -3712,7 +4401,7 @@ func (ec *executionContext) ___Directive_args(ctx context.Context, field graphql
 	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Directive_args(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Directive_args(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Directive",
 		Field:      field,
@@ -3766,7 +4455,7 @@ func (ec *executionContext) ___Directive_isRepeatable(ctx context.Context, field
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Directive_isRepeatable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Directive_isRepeatable(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Directive",
 		Field:      field,
@@ -3810,7 +4499,7 @@ func (ec *executionContext) ___EnumValue_name(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___EnumValue_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___EnumValue_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__EnumValue",
 		Field:      field,
@@ -3851,7 +4540,7 @@ func (ec *executionContext) ___EnumValue_description(ctx context.Context, field 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___EnumValue_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___EnumValue_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__EnumValue",
 		Field:      field,
@@ -3895,7 +4584,7 @@ func (ec *executionContext) ___EnumValue_isDeprecated(ctx context.Context, field
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___EnumValue_isDeprecated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___EnumValue_isDeprecated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__EnumValue",
 		Field:      field,
@@ -3936,7 +4625,7 @@ func (ec *executionContext) ___EnumValue_deprecationReason(ctx context.Context, 
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___EnumValue_deprecationReason(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___EnumValue_deprecationReason(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__EnumValue",
 		Field:      field,
@@ -3980,7 +4669,7 @@ func (ec *executionContext) ___Field_name(ctx context.Context, field graphql.Col
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Field_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Field_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Field",
 		Field:      field,
@@ -4021,7 +4710,7 @@ func (ec *executionContext) ___Field_description(ctx context.Context, field grap
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Field_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Field_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Field",
 		Field:      field,
@@ -4065,7 +4754,7 @@ func (ec *executionContext) ___Field_args(ctx context.Context, field graphql.Col
 	return ec.marshalN__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Field_args(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Field_args(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Field",
 		Field:      field,
@@ -4119,7 +4808,7 @@ func (ec *executionContext) ___Field_type(ctx context.Context, field graphql.Col
 	return ec.marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Field_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Field_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Field",
 		Field:      field,
@@ -4185,7 +4874,7 @@ func (ec *executionContext) ___Field_isDeprecated(ctx context.Context, field gra
 	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Field_isDeprecated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Field_isDeprecated(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Field",
 		Field:      field,
@@ -4226,7 +4915,7 @@ func (ec *executionContext) ___Field_deprecationReason(ctx context.Context, fiel
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Field_deprecationReason(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Field_deprecationReason(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Field",
 		Field:      field,
@@ -4270,7 +4959,7 @@ func (ec *executionContext) ___InputValue_name(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___InputValue_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___InputValue_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__InputValue",
 		Field:      field,
@@ -4311,7 +5000,7 @@ func (ec *executionContext) ___InputValue_description(ctx context.Context, field
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___InputValue_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___InputValue_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__InputValue",
 		Field:      field,
@@ -4355,7 +5044,7 @@ func (ec *executionContext) ___InputValue_type(ctx context.Context, field graphq
 	return ec.marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___InputValue_type(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___InputValue_type(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__InputValue",
 		Field:      field,
@@ -4418,7 +5107,7 @@ func (ec *executionContext) ___InputValue_defaultValue(ctx context.Context, fiel
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___InputValue_defaultValue(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___InputValue_defaultValue(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__InputValue",
 		Field:      field,
@@ -4459,7 +5148,7 @@ func (ec *executionContext) ___Schema_description(ctx context.Context, field gra
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Schema_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Schema_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Schema",
 		Field:      field,
@@ -4503,7 +5192,7 @@ func (ec *executionContext) ___Schema_types(ctx context.Context, field graphql.C
 	return ec.marshalN__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐTypeᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Schema_types(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Schema_types(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Schema",
 		Field:      field,
@@ -4569,7 +5258,7 @@ func (ec *executionContext) ___Schema_queryType(ctx context.Context, field graph
 	return ec.marshalN__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Schema_queryType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Schema_queryType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Schema",
 		Field:      field,
@@ -4632,7 +5321,7 @@ func (ec *executionContext) ___Schema_mutationType(ctx context.Context, field gr
 	return ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Schema_mutationType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Schema_mutationType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Schema",
 		Field:      field,
@@ -4695,7 +5384,7 @@ func (ec *executionContext) ___Schema_subscriptionType(ctx context.Context, fiel
 	return ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Schema_subscriptionType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Schema_subscriptionType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Schema",
 		Field:      field,
@@ -4761,7 +5450,7 @@ func (ec *executionContext) ___Schema_directives(ctx context.Context, field grap
 	return ec.marshalN__Directive2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirectiveᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Schema_directives(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Schema_directives(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Schema",
 		Field:      field,
@@ -4817,7 +5506,7 @@ func (ec *executionContext) ___Type_kind(ctx context.Context, field graphql.Coll
 	return ec.marshalN__TypeKind2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Type_kind(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Type_kind(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Type",
 		Field:      field,
@@ -4858,7 +5547,7 @@ func (ec *executionContext) ___Type_name(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Type_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Type_name(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Type",
 		Field:      field,
@@ -4899,7 +5588,7 @@ func (ec *executionContext) ___Type_description(ctx context.Context, field graph
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Type_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Type_description(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Type",
 		Field:      field,
@@ -5006,7 +5695,7 @@ func (ec *executionContext) ___Type_interfaces(ctx context.Context, field graphq
 	return ec.marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐTypeᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Type_interfaces(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Type_interfaces(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Type",
 		Field:      field,
@@ -5069,7 +5758,7 @@ func (ec *executionContext) ___Type_possibleTypes(ctx context.Context, field gra
 	return ec.marshalO__Type2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐTypeᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Type_possibleTypes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Type_possibleTypes(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Type",
 		Field:      field,
@@ -5194,7 +5883,7 @@ func (ec *executionContext) ___Type_inputFields(ctx context.Context, field graph
 	return ec.marshalO__InputValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐInputValueᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Type_inputFields(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Type_inputFields(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Type",
 		Field:      field,
@@ -5245,7 +5934,7 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 	return ec.marshalO__Type2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Type_ofType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Type_ofType(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Type",
 		Field:      field,
@@ -5308,7 +5997,7 @@ func (ec *executionContext) ___Type_specifiedByURL(ctx context.Context, field gr
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "__Type",
 		Field:      field,
@@ -5324,6 +6013,61 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 // endregion **************************** field.gotpl *****************************
 
 // region    **************************** input.gotpl *****************************
+
+func (ec *executionContext) unmarshalInputCreateArticleInput(ctx context.Context, obj interface{}) (model.CreateArticleInput, error) {
+	var it model.CreateArticleInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"title", "content", "thumbnailURL", "tagNames", "clientMutationId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "title":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Title = data
+		case "content":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("content"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Content = data
+		case "thumbnailURL":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("thumbnailURL"))
+			data, err := ec.unmarshalNURL2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐURL(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ThumbnailURL = data
+		case "tagNames":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tagNames"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TagNames = data
+		case "clientMutationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clientMutationId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClientMutationID = data
+		}
+	}
+
+	return it, nil
+}
 
 func (ec *executionContext) unmarshalInputNoopInput(ctx context.Context, obj interface{}) (model.NoopInput, error) {
 	var it model.NoopInput
@@ -5682,6 +6426,52 @@ func (ec *executionContext) _ArticleTagNode(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var createArticlePayloadImplementors = []string{"CreateArticlePayload"}
+
+func (ec *executionContext) _CreateArticlePayload(ctx context.Context, sel ast.SelectionSet, obj *model.CreateArticlePayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createArticlePayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreateArticlePayload")
+		case "articleId":
+			out.Values[i] = ec._CreateArticlePayload_articleId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "eventID":
+			out.Values[i] = ec._CreateArticlePayload_eventID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "clientMutationId":
+			out.Values[i] = ec._CreateArticlePayload_clientMutationId(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -5705,6 +6495,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_noop(ctx, field)
 			})
+		case "createArticle":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createArticle(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5834,7 +6631,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "node":
 			field := field
 
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
@@ -5875,7 +6672,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "article":
 			field := field
 
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
@@ -5916,7 +6713,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "tag":
 			field := field
 
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
@@ -6583,11 +7380,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNArticleConnection2githubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleConnection(ctx context.Context, sel ast.SelectionSet, v model.ArticleConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNArticleConnection2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleConnection(ctx context.Context, sel ast.SelectionSet, v model.ArticleConnection) graphql.Marshaler {
 	return ec._ArticleConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNArticleConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleConnection(ctx context.Context, sel ast.SelectionSet, v *model.ArticleConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNArticleConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleConnection(ctx context.Context, sel ast.SelectionSet, v *model.ArticleConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6597,7 +7394,7 @@ func (ec *executionContext) marshalNArticleConnection2ᚖgithubᚗcomᚋmiyamo2�
 	return ec._ArticleConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ArticleEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ArticleEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -6621,7 +7418,7 @@ func (ec *executionContext) marshalNArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋb
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalNArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -6641,7 +7438,7 @@ func (ec *executionContext) marshalNArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋb
 	return ret
 }
 
-func (ec *executionContext) marshalNArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleEdge(ctx context.Context, sel ast.SelectionSet, v *model.ArticleEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleEdge(ctx context.Context, sel ast.SelectionSet, v *model.ArticleEdge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6651,7 +7448,7 @@ func (ec *executionContext) marshalNArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblog
 	return ec._ArticleEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleNode(ctx context.Context, sel ast.SelectionSet, v *model.ArticleNode) graphql.Marshaler {
+func (ec *executionContext) marshalNArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleNode(ctx context.Context, sel ast.SelectionSet, v *model.ArticleNode) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6661,7 +7458,7 @@ func (ec *executionContext) marshalNArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblog
 	return ec._ArticleNode(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNArticleTagConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagConnection(ctx context.Context, sel ast.SelectionSet, v *model.ArticleTagConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNArticleTagConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagConnection(ctx context.Context, sel ast.SelectionSet, v *model.ArticleTagConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6671,7 +7468,7 @@ func (ec *executionContext) marshalNArticleTagConnection2ᚖgithubᚗcomᚋmiyam
 	return ec._ArticleTagConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNArticleTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ArticleTagEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNArticleTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ArticleTagEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -6695,7 +7492,7 @@ func (ec *executionContext) marshalNArticleTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNArticleTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalNArticleTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -6715,7 +7512,7 @@ func (ec *executionContext) marshalNArticleTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2�
 	return ret
 }
 
-func (ec *executionContext) marshalNArticleTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagEdge(ctx context.Context, sel ast.SelectionSet, v *model.ArticleTagEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNArticleTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagEdge(ctx context.Context, sel ast.SelectionSet, v *model.ArticleTagEdge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6725,7 +7522,7 @@ func (ec *executionContext) marshalNArticleTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋb
 	return ec._ArticleTagEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNArticleTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagNode(ctx context.Context, sel ast.SelectionSet, v *model.ArticleTagNode) graphql.Marshaler {
+func (ec *executionContext) marshalNArticleTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleTagNode(ctx context.Context, sel ast.SelectionSet, v *model.ArticleTagNode) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6750,19 +7547,33 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNDateTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
-	res, err := graphql.UnmarshalTime(v)
+func (ec *executionContext) unmarshalNCreateArticleInput2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐCreateArticleInput(ctx context.Context, v interface{}) (model.CreateArticleInput, error) {
+	res, err := ec.unmarshalInputCreateArticleInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNDateTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
-	res := graphql.MarshalTime(v)
-	if res == graphql.Null {
+func (ec *executionContext) marshalNCreateArticlePayload2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐCreateArticlePayload(ctx context.Context, sel ast.SelectionSet, v model.CreateArticlePayload) graphql.Marshaler {
+	return ec._CreateArticlePayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCreateArticlePayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐCreateArticlePayload(ctx context.Context, sel ast.SelectionSet, v *model.CreateArticlePayload) graphql.Marshaler {
+	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
 		}
+		return graphql.Null
 	}
-	return res
+	return ec._CreateArticlePayload(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNDateTime2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐUTC(ctx context.Context, v interface{}) (gqlscalar.UTC, error) {
+	var res gqlscalar.UTC
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDateTime2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐUTC(ctx context.Context, sel ast.SelectionSet, v gqlscalar.UTC) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
@@ -6810,7 +7621,7 @@ func (ec *executionContext) marshalNMarkdown2string(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
+func (ec *executionContext) marshalNPageInfo2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v *model.PageInfo) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6835,7 +7646,39 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNTagArticleConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleConnection(ctx context.Context, sel ast.SelectionSet, v *model.TagArticleConnection) graphql.Marshaler {
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTagArticleConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleConnection(ctx context.Context, sel ast.SelectionSet, v *model.TagArticleConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6845,7 +7688,7 @@ func (ec *executionContext) marshalNTagArticleConnection2ᚖgithubᚗcomᚋmiyam
 	return ec._TagArticleConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNTagArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TagArticleEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNTagArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TagArticleEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -6869,7 +7712,7 @@ func (ec *executionContext) marshalNTagArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTagArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalNTagArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -6889,7 +7732,7 @@ func (ec *executionContext) marshalNTagArticleEdge2ᚕᚖgithubᚗcomᚋmiyamo2�
 	return ret
 }
 
-func (ec *executionContext) marshalNTagArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleEdge(ctx context.Context, sel ast.SelectionSet, v *model.TagArticleEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNTagArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleEdge(ctx context.Context, sel ast.SelectionSet, v *model.TagArticleEdge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6899,7 +7742,7 @@ func (ec *executionContext) marshalNTagArticleEdge2ᚖgithubᚗcomᚋmiyamo2ᚋb
 	return ec._TagArticleEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNTagArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleNode(ctx context.Context, sel ast.SelectionSet, v *model.TagArticleNode) graphql.Marshaler {
+func (ec *executionContext) marshalNTagArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagArticleNode(ctx context.Context, sel ast.SelectionSet, v *model.TagArticleNode) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6909,11 +7752,11 @@ func (ec *executionContext) marshalNTagArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋb
 	return ec._TagArticleNode(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNTagConnection2githubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagConnection(ctx context.Context, sel ast.SelectionSet, v model.TagConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNTagConnection2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagConnection(ctx context.Context, sel ast.SelectionSet, v model.TagConnection) graphql.Marshaler {
 	return ec._TagConnection(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTagConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagConnection(ctx context.Context, sel ast.SelectionSet, v *model.TagConnection) graphql.Marshaler {
+func (ec *executionContext) marshalNTagConnection2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagConnection(ctx context.Context, sel ast.SelectionSet, v *model.TagConnection) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6923,7 +7766,7 @@ func (ec *executionContext) marshalNTagConnection2ᚖgithubᚗcomᚋmiyamo2ᚋbl
 	return ec._TagConnection(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TagEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagEdgeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.TagEdge) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -6947,7 +7790,7 @@ func (ec *executionContext) marshalNTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋbloga
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagEdge(ctx, sel, v[i])
+			ret[i] = ec.marshalNTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagEdge(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -6967,7 +7810,7 @@ func (ec *executionContext) marshalNTagEdge2ᚕᚖgithubᚗcomᚋmiyamo2ᚋbloga
 	return ret
 }
 
-func (ec *executionContext) marshalNTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagEdge(ctx context.Context, sel ast.SelectionSet, v *model.TagEdge) graphql.Marshaler {
+func (ec *executionContext) marshalNTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagEdge(ctx context.Context, sel ast.SelectionSet, v *model.TagEdge) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6977,7 +7820,7 @@ func (ec *executionContext) marshalNTagEdge2ᚖgithubᚗcomᚋmiyamo2ᚋblogapi�
 	return ec._TagEdge(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagNode(ctx context.Context, sel ast.SelectionSet, v *model.TagNode) graphql.Marshaler {
+func (ec *executionContext) marshalNTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagNode(ctx context.Context, sel ast.SelectionSet, v *model.TagNode) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -6985,6 +7828,16 @@ func (ec *executionContext) marshalNTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapi�
 		return graphql.Null
 	}
 	return ec._TagNode(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNURL2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐURL(ctx context.Context, v interface{}) (gqlscalar.URL, error) {
+	var res gqlscalar.URL
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNURL2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐURL(ctx context.Context, sel ast.SelectionSet, v gqlscalar.URL) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -7240,7 +8093,7 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
-func (ec *executionContext) marshalOArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleNode(ctx context.Context, sel ast.SelectionSet, v *model.ArticleNode) graphql.Marshaler {
+func (ec *executionContext) marshalOArticleNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐArticleNode(ctx context.Context, sel ast.SelectionSet, v *model.ArticleNode) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7289,14 +8142,14 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return res
 }
 
-func (ec *executionContext) marshalONode2githubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNode(ctx context.Context, sel ast.SelectionSet, v model.Node) graphql.Marshaler {
+func (ec *executionContext) marshalONode2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNode(ctx context.Context, sel ast.SelectionSet, v model.Node) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalONoopInput2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNoopInput(ctx context.Context, v interface{}) (*model.NoopInput, error) {
+func (ec *executionContext) unmarshalONoopInput2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNoopInput(ctx context.Context, v interface{}) (*model.NoopInput, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -7304,7 +8157,7 @@ func (ec *executionContext) unmarshalONoopInput2ᚖgithubᚗcomᚋmiyamo2ᚋblog
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalONoopPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNoopPayload(ctx context.Context, sel ast.SelectionSet, v *model.NoopPayload) graphql.Marshaler {
+func (ec *executionContext) marshalONoopPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐNoopPayload(ctx context.Context, sel ast.SelectionSet, v *model.NoopPayload) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -7327,7 +8180,7 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagNode(ctx context.Context, sel ast.SelectionSet, v *model.TagNode) graphql.Marshaler {
+func (ec *executionContext) marshalOTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐTagNode(ctx context.Context, sel ast.SelectionSet, v *model.TagNode) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

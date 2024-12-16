@@ -2,7 +2,10 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"reflect"
 	"testing"
 
@@ -16,10 +19,10 @@ import (
 func TestTags_Execute(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  dto.TagsInDto
+		in  dto.TagsInDTO
 	}
 	type want struct {
-		out dto.TagsOutDto
+		out dto.TagsOutDTO
 		err error
 	}
 	type testCase struct {
@@ -42,8 +45,8 @@ func TestTags_Execute(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetNextTagResponse{
 						Tags: []*grpc.Tag{
@@ -54,9 +57,9 @@ func TestTags_Execute(t *testing.T) {
 									{
 										Id:           "Article1",
 										Title:        "Article1",
-										ThumbnailUrl: "example.test",
-										CreatedAt:    "2020-01-01T00:00:00Z",
-										UpdatedAt:    "2020-01-01T00:00:00Z",
+										ThumbnailUrl: "example.com/example.png",
+										CreatedAt:    "2020-01-01T00:00:00.000000Z",
+										UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 									},
 								},
 							},
@@ -64,17 +67,17 @@ func TestTags_Execute(t *testing.T) {
 						StillExists: true,
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.TagsInDto {
-					in, _ := dto.NewTagsInDto(dto.TagsInWithFirst(1), dto.TagsInWithAfter("Tag0"))
+				in: func() dto.TagsInDTO {
+					in, _ := dto.NewTagsInDTO(dto.TagsInWithFirst(1), dto.TagsInWithAfter("Tag0"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.NewTagsOutDto(
+				out: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -84,41 +87,41 @@ func TestTags_Execute(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									utils.MustURLParse("example.com/example.png"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
 					},
-					dto.TagsOutDtoWithHasNext(true),
+					dto.TagsOutDTOWithHasNext(true),
 				),
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetNextTagResponse{}, errTestTags).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.TagsInDto {
-					in, _ := dto.NewTagsInDto(dto.TagsInWithFirst(1), dto.TagsInWithAfter("Tag0"))
+				in: func() dto.TagsInDTO {
+					in, _ := dto.NewTagsInDTO(dto.TagsInWithFirst(1), dto.TagsInWithAfter("Tag0"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.TagsOutDto{},
+				out: dto.TagsOutDTO{},
 				err: errTestTags,
 			},
 			wantErr: true,
 		},
 		"happy_path/prev_paging": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetPrevTagResponse{
 						Tags: []*grpc.Tag{
@@ -129,9 +132,9 @@ func TestTags_Execute(t *testing.T) {
 									{
 										Id:           "Article1",
 										Title:        "Article1",
-										ThumbnailUrl: "example.test",
-										CreatedAt:    "2020-01-01T00:00:00Z",
-										UpdatedAt:    "2020-01-01T00:00:00Z",
+										ThumbnailUrl: "example.com/example.png",
+										CreatedAt:    "2020-01-01T00:00:00.000000Z",
+										UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 									},
 								},
 							},
@@ -139,17 +142,17 @@ func TestTags_Execute(t *testing.T) {
 						StillExists: true,
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.TagsInDto {
-					in, _ := dto.NewTagsInDto(dto.TagsInWithLast(1), dto.TagsInWithBefore("Tag2"))
+				in: func() dto.TagsInDTO {
+					in, _ := dto.NewTagsInDTO(dto.TagsInWithLast(1), dto.TagsInWithBefore("Tag2"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.NewTagsOutDto(
+				out: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -159,41 +162,41 @@ func TestTags_Execute(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									utils.MustURLParse("example.com/example.png"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
 					},
-					dto.TagsOutDtoWithHasPrev(true),
+					dto.TagsOutDTOWithHasPrev(true),
 				),
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetPrevTagResponse{}, errTestTags).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.TagsInDto {
-					in, _ := dto.NewTagsInDto(dto.TagsInWithLast(1), dto.TagsInWithBefore("Tag2"))
+				in: func() dto.TagsInDTO {
+					in, _ := dto.NewTagsInDTO(dto.TagsInWithLast(1), dto.TagsInWithBefore("Tag2"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.TagsOutDto{},
+				out: dto.TagsOutDTO{},
 				err: errTestTags,
 			},
 			wantErr: true,
 		},
 		"happy_path/execute": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetAllTagsResponse{
 						Tags: []*grpc.Tag{
@@ -204,23 +207,23 @@ func TestTags_Execute(t *testing.T) {
 									{
 										Id:           "Article1",
 										Title:        "Article1",
-										ThumbnailUrl: "example.test",
-										CreatedAt:    "2020-01-01T00:00:00Z",
-										UpdatedAt:    "2020-01-01T00:00:00Z",
+										ThumbnailUrl: "example.com/example.png",
+										CreatedAt:    "2020-01-01T00:00:00.000000Z",
+										UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 									},
 								},
 							},
 						},
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.TagsInDto{},
+				in:  dto.TagsInDTO{},
 			},
 			want: want{
-				out: dto.NewTagsOutDto(
+				out: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -230,9 +233,9 @@ func TestTags_Execute(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									utils.MustURLParse("example.com/example.png"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
 					},
 				),
@@ -240,19 +243,19 @@ func TestTags_Execute(t *testing.T) {
 		},
 		"unhappy_path/execute_returns_error": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetAllTagsResponse{}, errTestTags).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.TagsInDto{},
+				in:  dto.TagsInDTO{},
 			},
 			want: want{
-				out: dto.TagsOutDto{},
+				out: dto.TagsOutDTO{},
 				err: errTestTags,
 			},
 			wantErr: true,
@@ -262,8 +265,8 @@ func TestTags_Execute(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			aSvcClt := tt.articleServiceClient(ctrl)
-			u := NewTags(aSvcClt)
+			articleServiceClient := tt.articleServiceClient(ctrl)
+			u := NewTags(articleServiceClient)
 			got, err := u.Execute(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {
@@ -288,10 +291,10 @@ func TestTags_Execute(t *testing.T) {
 func TestTags_executeNextPaging(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  dto.TagsInDto
+		in  dto.TagsInDTO
 	}
 	type want struct {
-		out dto.TagsOutDto
+		out dto.TagsOutDTO
 		err error
 	}
 	type testCase struct {
@@ -314,8 +317,8 @@ func TestTags_executeNextPaging(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetNextTagResponse{
 						Tags: []*grpc.Tag{
@@ -326,9 +329,9 @@ func TestTags_executeNextPaging(t *testing.T) {
 									{
 										Id:           "Article1",
 										Title:        "Article1",
-										ThumbnailUrl: "example.test",
-										CreatedAt:    "2020-01-01T00:00:00Z",
-										UpdatedAt:    "2020-01-01T00:00:00Z",
+										ThumbnailUrl: "example.com/example.png",
+										CreatedAt:    "2020-01-01T00:00:00.000000Z",
+										UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 									},
 								},
 							},
@@ -336,17 +339,17 @@ func TestTags_executeNextPaging(t *testing.T) {
 						StillExists: true,
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.TagsInDto {
-					in, _ := dto.NewTagsInDto(dto.TagsInWithFirst(1), dto.TagsInWithAfter("Tag0"))
+				in: func() dto.TagsInDTO {
+					in, _ := dto.NewTagsInDTO(dto.TagsInWithFirst(1), dto.TagsInWithAfter("Tag0"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.NewTagsOutDto(
+				out: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -356,33 +359,33 @@ func TestTags_executeNextPaging(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									utils.MustURLParse("example.com/example.png"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
 					},
-					dto.TagsOutDtoWithHasNext(true),
+					dto.TagsOutDTOWithHasNext(true),
 				),
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetNextTagResponse{}, errTestTags).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.TagsInDto {
-					in, _ := dto.NewTagsInDto(dto.TagsInWithFirst(1), dto.TagsInWithAfter("Tag0"))
+				in: func() dto.TagsInDTO {
+					in, _ := dto.NewTagsInDTO(dto.TagsInWithFirst(1), dto.TagsInWithAfter("Tag0"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.TagsOutDto{},
+				out: dto.TagsOutDTO{},
 				err: errTestTags,
 			},
 			wantErr: true,
@@ -392,8 +395,8 @@ func TestTags_executeNextPaging(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			aSvcClt := tt.articleServiceClient(ctrl)
-			u := NewTags(aSvcClt)
+			articleServiceClient := tt.articleServiceClient(ctrl)
+			u := NewTags(articleServiceClient)
 			got, err := u.executeNextPaging(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {
@@ -418,10 +421,10 @@ func TestTags_executeNextPaging(t *testing.T) {
 func TestTags_executePrevPaging(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  dto.TagsInDto
+		in  dto.TagsInDTO
 	}
 	type want struct {
-		out dto.TagsOutDto
+		out dto.TagsOutDTO
 		err error
 	}
 	type testCase struct {
@@ -444,8 +447,8 @@ func TestTags_executePrevPaging(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/prev_paging": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetPrevTagResponse{
 						Tags: []*grpc.Tag{
@@ -456,9 +459,9 @@ func TestTags_executePrevPaging(t *testing.T) {
 									{
 										Id:           "Article1",
 										Title:        "Article1",
-										ThumbnailUrl: "example.test",
-										CreatedAt:    "2020-01-01T00:00:00Z",
-										UpdatedAt:    "2020-01-01T00:00:00Z",
+										ThumbnailUrl: "example.com/example.png",
+										CreatedAt:    "2020-01-01T00:00:00.000000Z",
+										UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 									},
 								},
 							},
@@ -466,17 +469,17 @@ func TestTags_executePrevPaging(t *testing.T) {
 						StillExists: true,
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.TagsInDto {
-					in, _ := dto.NewTagsInDto(dto.TagsInWithLast(2), dto.TagsInWithBefore("Tag2"))
+				in: func() dto.TagsInDTO {
+					in, _ := dto.NewTagsInDTO(dto.TagsInWithLast(2), dto.TagsInWithBefore("Tag2"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.NewTagsOutDto(
+				out: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -486,33 +489,33 @@ func TestTags_executePrevPaging(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									utils.MustURLParse("example.com/example.png"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
 					},
-					dto.TagsOutDtoWithHasPrev(true),
+					dto.TagsOutDTOWithHasPrev(true),
 				),
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetPrevTagResponse{}, errTestTags).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in: func() dto.TagsInDto {
-					in, _ := dto.NewTagsInDto(dto.TagsInWithLast(2), dto.TagsInWithBefore("Tag2"))
+				in: func() dto.TagsInDTO {
+					in, _ := dto.NewTagsInDTO(dto.TagsInWithLast(2), dto.TagsInWithBefore("Tag2"))
 					return in
 				}(),
 			},
 			want: want{
-				out: dto.TagsOutDto{},
+				out: dto.TagsOutDTO{},
 				err: errTestTags,
 			},
 			wantErr: true,
@@ -522,8 +525,8 @@ func TestTags_executePrevPaging(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			aSvcClt := tt.articleServiceClient(ctrl)
-			u := NewTags(aSvcClt)
+			articleServiceClient := tt.articleServiceClient(ctrl)
+			u := NewTags(articleServiceClient)
 			got, err := u.Execute(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {
@@ -550,7 +553,7 @@ func TestTags_execute(t *testing.T) {
 		ctx context.Context
 	}
 	type want struct {
-		out dto.TagsOutDto
+		out dto.TagsOutDTO
 		err error
 	}
 	type testCase struct {
@@ -573,8 +576,8 @@ func TestTags_execute(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/all_articles": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetAllTagsResponse{
 						Tags: []*grpc.Tag{
@@ -585,22 +588,22 @@ func TestTags_execute(t *testing.T) {
 									{
 										Id:           "Article1",
 										Title:        "Article1",
-										ThumbnailUrl: "example.test",
-										CreatedAt:    "2020-01-01T00:00:00Z",
-										UpdatedAt:    "2020-01-01T00:00:00Z",
+										ThumbnailUrl: "example.com/example.png",
+										CreatedAt:    "2020-01-01T00:00:00.000000Z",
+										UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 									},
 								},
 							},
 						},
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
 			},
 			want: want{
-				out: dto.NewTagsOutDto(
+				out: dto.NewTagsOutDTO(
 					[]dto.TagArticle{
 						dto.NewTagArticle(
 							"Tag1",
@@ -610,9 +613,9 @@ func TestTags_execute(t *testing.T) {
 									"Article1",
 									"Article1",
 									"",
-									"example.test",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"),
+									utils.MustURLParse("example.com/example.png"),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							}),
 					},
 				),
@@ -620,18 +623,18 @@ func TestTags_execute(t *testing.T) {
 		},
 		"unhappy_path/all_articles_returns_error": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				aSvcClt := mgrpc.NewMockTagServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetAllTagsResponse{}, errTestTags).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
 			},
 			want: want{
-				out: dto.TagsOutDto{},
+				out: dto.TagsOutDTO{},
 				err: errTestTags,
 			},
 			wantErr: true,
@@ -641,8 +644,8 @@ func TestTags_execute(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			aSvcClt := tt.articleServiceClient(ctrl)
-			u := NewTags(aSvcClt)
+			articleServiceClient := tt.articleServiceClient(ctrl)
+			u := NewTags(articleServiceClient)
 			got, err := u.execute(tt.args.ctx)
 			if tt.wantErr {
 				if err == nil {

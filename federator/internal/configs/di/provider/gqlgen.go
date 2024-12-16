@@ -6,7 +6,7 @@ import (
 	"github.com/google/wire"
 	"github.com/miyamo2/blogapi.miyamo.today/core/graphql/middleware"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converter"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converters"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/fw/gqlgen"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -17,30 +17,34 @@ func Usecases(
 	articles usecase.Articles,
 	tag usecase.Tag,
 	tags usecase.Tags,
+	createArticle usecase.CreateArticle,
 ) *resolver.Usecases {
 	return resolver.NewUsecases(
 		resolver.WithArticlesUsecase(articles),
 		resolver.WithArticleUsecase(article),
 		resolver.WithTagUsecase(tag),
-		resolver.WithTagsUsecase(tags))
+		resolver.WithTagsUsecase(tags),
+		resolver.WithCreateArticleUsecase(createArticle))
 }
 
 func Converters(
-	article converter.ArticleConverter,
-	articles converter.ArticlesConverter,
-	tag converter.TagConverter,
-	tags converter.TagsConverter,
+	article converters.ArticleConverter,
+	articles converters.ArticlesConverter,
+	tag converters.TagConverter,
+	tags converters.TagsConverter,
+	createArticle converters.CreateArticleConverter,
 ) *resolver.Converters {
 	return resolver.NewConverters(
 		resolver.WithArticleConverter(article),
 		resolver.WithArticlesConverter(articles),
 		resolver.WithTagConverter(tag),
-		resolver.WithTagsConverter(tags))
+		resolver.WithTagsConverter(tags),
+		resolver.WithCreateArticleConverter(createArticle))
 }
 
-func GqlgenConfig(rslvr *resolver.Resolver) *gqlgen.Config {
+func GqlgenConfig(resolver *resolver.Resolver) *gqlgen.Config {
 	return &gqlgen.Config{
-		Resolvers: rslvr,
+		Resolvers: resolver,
 	}
 }
 
@@ -50,7 +54,7 @@ func GqlgenExecutableSchema(config *gqlgen.Config) *graphql.ExecutableSchema {
 }
 
 func GqlgenServer(schema *graphql.ExecutableSchema, nr *newrelic.Application) *handler.Server {
-	srv := handler.NewDefaultServer(*schema)
+	srv := handler.New(*schema)
 	srv.AroundOperations(middleware.StartNewRelicTransaction(nr))
 	srv.AroundOperations(middleware.SetBlogAPIContextToContext)
 	srv.AroundRootFields(middleware.StartNewRelicSegment)

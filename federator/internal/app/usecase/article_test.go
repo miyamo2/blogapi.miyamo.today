@@ -2,8 +2,11 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	mgrpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/infra/grpc/article"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"reflect"
 	"testing"
 
@@ -16,10 +19,10 @@ import (
 func TestArticle_Execute(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  dto.ArticleInDto
+		in  dto.ArticleInDTO
 	}
 	type want struct {
-		out dto.ArticleOutDto
+		out dto.ArticleOutDTO
 		err error
 	}
 	type testCase struct {
@@ -42,17 +45,17 @@ func TestArticle_Execute(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path/single_tag": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetArticleByIdResponse{
 						Article: &grpc.Article{
 							Id:           "Article1",
 							Title:        "happy_path/single_tag",
 							Body:         "## happy_path/single_tag",
-							ThumbnailUrl: "example.test",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							ThumbnailUrl: "example.com/example.png",
+							CreatedAt:    "2020-01-01T00:00:00.000000Z",
+							UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 							Tags: []*grpc.Tag{
 								{
 									Id:   "Tag1",
@@ -62,21 +65,21 @@ func TestArticle_Execute(t *testing.T) {
 						},
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewArticleInDto("Article1"),
+				in:  dto.NewArticleInDTO("Article1"),
 			},
 			want: want{
-				out: dto.NewArticleOutDto(
+				out: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"happy_path/single_tag",
 						"## happy_path/single_tag",
-						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						utils.MustURLParse("example.com/example.png"),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("Tag1", "Tag1"),
 						}),
@@ -85,17 +88,17 @@ func TestArticle_Execute(t *testing.T) {
 		},
 		"happy_path/multiple_tags": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetArticleByIdResponse{
 						Article: &grpc.Article{
 							Id:           "Article1",
 							Title:        "happy_path/multiple_tags",
 							Body:         "## happy_path/multiple_tags",
-							ThumbnailUrl: "example.test",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							ThumbnailUrl: "example.com/example.png",
+							CreatedAt:    "2020-01-01T00:00:00.000000Z",
+							UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 							Tags: []*grpc.Tag{
 								{
 									Id:   "Tag1",
@@ -113,21 +116,21 @@ func TestArticle_Execute(t *testing.T) {
 						},
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewArticleInDto("Article1"),
+				in:  dto.NewArticleInDTO("Article1"),
 			},
 			want: want{
-				out: dto.NewArticleOutDto(
+				out: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"happy_path/multiple_tags",
 						"## happy_path/multiple_tags",
-						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						utils.MustURLParse("example.com/example.png"),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("Tag1", "Tag1"),
 							dto.NewTag("Tag2", "Tag2"),
@@ -139,53 +142,53 @@ func TestArticle_Execute(t *testing.T) {
 		},
 		"happy_path/no_tags": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetArticleByIdResponse{
 						Article: &grpc.Article{
 							Id:           "Article1",
 							Title:        "happy_path/no_tags",
 							Body:         "## happy_path/no_tags",
-							ThumbnailUrl: "example.test",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							ThumbnailUrl: "example.com/example.png",
+							CreatedAt:    "2020-01-01T00:00:00.000000Z",
+							UpdatedAt:    "2020-01-01T00:00:00.000000Z",
 						},
 					}, nil).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewArticleInDto("Article1"),
+				in:  dto.NewArticleInDTO("Article1"),
 			},
 			want: want{
-				out: dto.NewArticleOutDto(
+				out: dto.NewArticleOutDTO(
 					dto.NewArticleTag(
 						"Article1",
 						"happy_path/no_tags",
 						"## happy_path/no_tags",
-						"example.test",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						utils.MustURLParse("example.com/example.png"),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{})),
 			},
 		},
 		"unhappy_path/grpc_returns_error": {
 			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				aSvcClt := mgrpc.NewMockArticleServiceClient(ctrl)
-				aSvcClt.EXPECT().
+				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
 					Return(&grpc.GetArticleByIdResponse{}, errTestArticle).
 					Times(1)
-				return aSvcClt
+				return articleServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
-				in:  dto.NewArticleInDto("Article1"),
+				in:  dto.NewArticleInDTO("Article1"),
 			},
 			want: want{
-				out: dto.ArticleOutDto{},
+				out: dto.ArticleOutDTO{},
 				err: errTestArticle,
 			},
 			wantErr: true,
@@ -195,8 +198,8 @@ func TestArticle_Execute(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			aSvcClt := tt.articleServiceClient(ctrl)
-			u := NewArticle(aSvcClt)
+			articleServiceClient := tt.articleServiceClient(ctrl)
+			u := NewArticle(articleServiceClient)
 			got, err := u.Execute(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {

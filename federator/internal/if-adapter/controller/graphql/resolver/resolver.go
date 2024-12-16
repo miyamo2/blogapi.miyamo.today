@@ -1,7 +1,7 @@
 package resolver
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converter"
+	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converters"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
 )
 
@@ -15,10 +15,11 @@ type Resolver struct {
 }
 
 type Usecases struct {
-	article  usecase.Article
-	articles usecase.Articles
-	tag      usecase.Tag
-	tags     usecase.Tags
+	article       usecase.Article
+	articles      usecase.Articles
+	tag           usecase.Tag
+	tags          usecase.Tags
+	createArticle usecase.CreateArticle
 }
 
 type UsecasesOption func(*Usecases)
@@ -51,6 +52,13 @@ func WithTagsUsecase(tags usecase.Tags) UsecasesOption {
 	}
 }
 
+// WithCreateArticleUsecase option for Usecases.
+func WithCreateArticleUsecase(createArticle usecase.CreateArticle) UsecasesOption {
+	return func(u *Usecases) {
+		u.createArticle = createArticle
+	}
+}
+
 // NewUsecases constructor of Usecases.
 func NewUsecases(options ...UsecasesOption) *Usecases {
 	u := &Usecases{}
@@ -60,41 +68,49 @@ func NewUsecases(options ...UsecasesOption) *Usecases {
 	return u
 }
 
+type Converters struct {
+	article       converters.ArticleConverter
+	articles      converters.ArticlesConverter
+	tag           converters.TagConverter
+	tags          converters.TagsConverter
+	createArticle converters.CreateArticleConverter
+}
+
 type ConvertersOption func(*Converters)
 
 // WithArticleConverter option for Converters.
-func WithArticleConverter(article converter.ArticleConverter) ConvertersOption {
+func WithArticleConverter(article converters.ArticleConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.article = article
 	}
 }
 
 // WithArticlesConverter option for Converters.
-func WithArticlesConverter(articles converter.ArticlesConverter) ConvertersOption {
+func WithArticlesConverter(articles converters.ArticlesConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.articles = articles
 	}
 }
 
 // WithTagConverter option for Converters.
-func WithTagConverter(tag converter.TagConverter) ConvertersOption {
+func WithTagConverter(tag converters.TagConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.tag = tag
 	}
 }
 
 // WithTagsConverter option for Converters.
-func WithTagsConverter(tags converter.TagsConverter) ConvertersOption {
+func WithTagsConverter(tags converters.TagsConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.tags = tags
 	}
 }
 
-type Converters struct {
-	article  converter.ArticleConverter
-	articles converter.ArticlesConverter
-	tag      converter.TagConverter
-	tags     converter.TagsConverter
+// WithCreateArticleConverter option for Converters.
+func WithCreateArticleConverter(createArticle converters.CreateArticleConverter) ConvertersOption {
+	return func(c *Converters) {
+		c.createArticle = createArticle
+	}
 }
 
 // NewConverters constructor of Converters.
