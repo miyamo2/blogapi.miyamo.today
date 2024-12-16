@@ -3,6 +3,7 @@ package dynamo
 import (
 	"context"
 	"fmt"
+	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/domain/model"
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
@@ -61,8 +62,9 @@ func (s *BloggingEventCommandService) CreateArticle(ctx context.Context, in mode
 			Thumbnail: in.Thumbnail(),
 			Tags:      sqldav.Set[string](in.Tags()),
 		}
-		result := tx.Create(&event)
-		if err := result.Error; err != nil {
+		prevErr := tx.Error
+		err = tx.Create(&event).Error
+		if !errors.Is(err, prevErr) {
 			return err
 		}
 
