@@ -23,15 +23,12 @@ type DB struct {
 var _ schema.Tabler = (*bloggingEvent)(nil)
 
 type bloggingEvent struct {
-	EventID    string `gorm:"primaryKey"`
-	ArticleID  string `gorm:"primaryKey"`
-	Title      *string
-	Content    *string
-	Thumbnail  *string
-	Tags       sqldav.Set[string]
-	AttachTags sqldav.Set[string]
-	DetachTags sqldav.Set[string]
-	Invisible  *bool
+	EventID   string `gorm:"primaryKey"`
+	ArticleID string `gorm:"primaryKey"`
+	Title     string
+	Content   string
+	Thumbnail string
+	Tags      sqldav.Set[string]
 }
 
 func (b bloggingEvent) TableName() string {
@@ -55,13 +52,14 @@ func (s *BloggingEventCommandService) CreateArticle(ctx context.Context, in mode
 
 		eventID := fmt.Sprintf("%s", s.ulidGen())
 		articleID := fmt.Sprintf("%s", s.ulidGen())
+
 		event := bloggingEvent{
 			EventID:   eventID,
 			ArticleID: articleID,
-			Title:     toPtrString(in.Title()),
-			Content:   toPtrString(in.Content()),
-			Thumbnail: toPtrString(in.Thumbnail()),
-			Tags:      in.Tags(),
+			Title:     in.Title(),
+			Content:   in.Content(),
+			Thumbnail: in.Thumbnail(),
+			Tags:      sqldav.Set[string](in.Tags()),
 		}
 		result := tx.Create(&event)
 		if err := result.Error; err != nil {
@@ -84,8 +82,4 @@ func NewBloggingEventCommandService(ulidGen *pkg.ULIDGenerator) *BloggingEventCo
 	return &BloggingEventCommandService{
 		ulidGen: *ulidGen,
 	}
-}
-
-func toPtrString(s string) *string {
-	return &s
 }
