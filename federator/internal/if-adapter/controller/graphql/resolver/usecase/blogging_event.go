@@ -9,3 +9,7 @@ import (
 type CreateArticle interface {
 	Execute(ctx context.Context, in dto.CreateArticleInDTO) (dto.CreateArticleOutDTO, error)
 }
+
+type UpdateArticleTitle interface {
+	Execute(ctx context.Context, in dto.UpdateArticleTitleInDTO) (dto.UpdateArticleTitleOutDTO, error)
+}

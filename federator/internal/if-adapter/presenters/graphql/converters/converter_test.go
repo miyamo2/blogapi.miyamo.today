@@ -2529,3 +2529,52 @@ func TestConverter_ToCreateArticle(t *testing.T) {
 		})
 	}
 }
+
+func TestConverter_ToUpdateArticle(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		from dto.UpdateArticleTitleOutDTO
+	}
+	type want struct {
+		out *model.UpdateArticleTitlePayload
+		err error
+	}
+	type testCase struct {
+		sut  func() *Converter
+		args args
+		want want
+	}
+	tests := map[string]testCase{
+		"happy_path": {
+			sut: NewConverter,
+			args: args{
+				ctx:  context.Background(),
+				from: dto.NewUpdateArticleTitleOutDTO("event_id", "article_id", "client_mutation_id"),
+			},
+			want: want{
+				out: &model.UpdateArticleTitlePayload{
+					ArticleID: "article_id",
+					EventID:   "event_id",
+					ClientMutationID: func() *string {
+						v := "client_mutation_id"
+						return &v
+					}(),
+				},
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			c := tt.sut()
+			got, err := c.ToUpdateArticleTitle(tt.args.ctx, tt.args.from)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("ToUpdateArticleTitle() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
+				t.Error(diff)
+				return
+			}
+		})
+	}
+}

@@ -27,3 +27,7 @@ type TagsConverter interface {
 type CreateArticleConverter interface {
 	ToCreateArticle(ctx context.Context, from dto.CreateArticleOutDTO) (*model.CreateArticlePayload, error)
 }
+
+type UpdateArticleTitleConverter interface {
+	ToUpdateArticleTitle(ctx context.Context, from dto.UpdateArticleTitleOutDTO) (*model.UpdateArticleTitlePayload, error)
+}

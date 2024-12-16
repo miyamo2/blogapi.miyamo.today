@@ -8,11 +8,12 @@ import (
 
 // compatibility check
 var (
-	_ abstract.ArticleConverter       = (*converters.Converter)(nil)
-	_ abstract.ArticlesConverter      = (*converters.Converter)(nil)
-	_ abstract.TagConverter           = (*converters.Converter)(nil)
-	_ abstract.TagsConverter          = (*converters.Converter)(nil)
-	_ abstract.CreateArticleConverter = (*converters.Converter)(nil)
+	_ abstract.ArticleConverter            = (*converters.Converter)(nil)
+	_ abstract.ArticlesConverter           = (*converters.Converter)(nil)
+	_ abstract.TagConverter                = (*converters.Converter)(nil)
+	_ abstract.TagsConverter               = (*converters.Converter)(nil)
+	_ abstract.CreateArticleConverter      = (*converters.Converter)(nil)
+	_ abstract.UpdateArticleTitleConverter = (*converters.Converter)(nil)
 )
 
 var PresenterSet = wire.NewSet(
@@ -22,4 +23,5 @@ var PresenterSet = wire.NewSet(
 	wire.Bind(new(abstract.TagConverter), new(*converters.Converter)),
 	wire.Bind(new(abstract.TagsConverter), new(*converters.Converter)),
 	wire.Bind(new(abstract.CreateArticleConverter), new(*converters.Converter)),
+	wire.Bind(new(abstract.UpdateArticleTitleConverter), new(*converters.Converter)),
 )

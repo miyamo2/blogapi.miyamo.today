@@ -343,6 +343,34 @@ func (c Converter) ToTags(ctx context.Context, from dto.TagsOutDTO) (*model.TagC
 	return &connection, nil
 }
 
+func (c Converter) ToUpdateArticleTitle(ctx context.Context, from dto.UpdateArticleTitleOutDTO) (*model.UpdateArticleTitlePayload, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToUpdateArticleTitle").End()
+
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.Any("from", from)))
+	var clientMutationID *string
+	if v := from.ClientMutationID(); len(v) > 0 {
+		clientMutationID = &v
+	}
+	payload := model.UpdateArticleTitlePayload{
+		ClientMutationID: clientMutationID,
+		EventID:          from.EventID(),
+		ArticleID:        from.ArticleID(),
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("returns",
+			slog.Any("*model.UpdateArticleTitlePayload", payload),
+			slog.Any("error", nil)))
+	return &payload, nil
+}
+
 func NewConverter() *Converter {
 	return &Converter{}
 }

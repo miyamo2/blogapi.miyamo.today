@@ -124,3 +124,15 @@ type TagNode struct {
 	Name     string                `json:"name"`
 	Articles *TagArticleConnection `json:"articles"`
 }
+
+type UpdateArticleTitleInput struct {
+	ArticleID        string  `json:"articleId"`
+	Title            string  `json:"title"`
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
+type UpdateArticleTitlePayload struct {
+	ArticleID        string  `json:"articleId"`
+	EventID          string  `json:"eventID"`
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
