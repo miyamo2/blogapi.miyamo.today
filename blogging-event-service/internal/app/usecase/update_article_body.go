@@ -31,17 +31,21 @@ func (u *UpdateArticleBody) Execute(ctx context.Context, in *dto.UpdateArticleBo
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN")
+	defer func() {
+		if err != nil {
+			logger.WarnContext(ctx, "END",
+				slog.Group("return",
+					slog.Any("dto.UpdateArticleBody", nil),
+					slog.Any("error", err)))
+		}
+		logger.InfoContext(ctx, "END")
+	}()
 
 	command := model.NewUpdateArticleBodyEvent(in.ID(), in.Body())
 	commandOut := db.NewSingleStatementResult[*model.BloggingEventKey]()
 	err = u.bloggingEventCommand.UpdateArticleBody(ctx, command, commandOut).Execute(ctx)
 	if err != nil {
-		err := errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger.WarnContext(ctx, "END",
-			slog.Group("return",
-				slog.Any("dto.UpdateArticleBody", nil),
-				slog.Any("error", err)))
+		err = errors.WithStack(err)
 		return nil, err
 	}
 

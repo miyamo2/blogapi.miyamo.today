@@ -20,28 +20,32 @@ type UpdateArticleTitle struct {
 }
 
 // Execute executes the UpdateArticleTitle use-case.
-func (u *UpdateArticleTitle) Execute(ctx context.Context, in *dto.UpdateArticleTitleInDto) (*dto.UpdateArticleTitleOutDto, error) {
+func (u *UpdateArticleTitle) Execute(ctx context.Context, in *dto.UpdateArticleTitleInDto) (_ *dto.UpdateArticleTitleOutDto, err error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
-		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN")
+	defer func() {
+		if err != nil {
+			logger.WarnContext(ctx, "END",
+				slog.Group("return",
+					slog.Any("dto.UpdateArticleTitleOutDto", nil),
+					slog.Any("error", err)))
+			return
+		}
+		logger.InfoContext(ctx, "END")
+	}()
 
 	command := model.NewUpdateArticleTitleEvent(in.ID(), in.Title())
 	commandOut := db.NewSingleStatementResult[*model.BloggingEventKey]()
 	err = u.bloggingEventCommand.UpdateArticleTitle(ctx, command, commandOut).Execute(ctx)
 	if err != nil {
-		err := errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger.WarnContext(ctx, "END",
-			slog.Group("return",
-				slog.Any("dto.UpdateArticleTitleOutDto", nil),
-				slog.Any("error", err)))
+		err = errors.WithStack(err)
 		return nil, err
 	}
 

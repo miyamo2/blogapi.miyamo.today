@@ -20,7 +20,7 @@ type CreateArticle struct {
 }
 
 // Execute executes the CreateArticle use-case.
-func (u *CreateArticle) Execute(ctx context.Context, in *dto.CreateArticleInDto) (*dto.CreateArticleOutDto, error) {
+func (u *CreateArticle) Execute(ctx context.Context, in *dto.CreateArticleInDto) (_ *dto.CreateArticleOutDto, err error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
