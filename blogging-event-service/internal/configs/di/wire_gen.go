@@ -8,7 +8,6 @@ package di
 
 import (
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/configs/di/provider"
-	pb2 "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb"
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/presenter/pb"
 )
 
@@ -22,7 +21,8 @@ func GetDependencies() *Dependencies {
 	createArticle := provider.CreateArticleUsecase(bloggingEventCommandService)
 	converter := pb.NewConverter()
 	updateArticleTitle := provider.UpdateArticleTitleUsecase(bloggingEventCommandService)
-	bloggingEventServiceServer := pb2.NewBloggingEventServiceServer(createArticle, converter, updateArticleTitle, converter)
+	updateArticleBody := provider.UpdateArticleBodyUsecase(bloggingEventCommandService)
+	bloggingEventServiceServer := provider.NewBloggingEventServiceServer(createArticle, converter, updateArticleTitle, converter, updateArticleBody, converter)
 	dialector := provider.GormDialector(config)
 	dependencies := NewDependencies(config, server, application, bloggingEventServiceServer, dialector)
 	return dependencies

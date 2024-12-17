@@ -109,3 +109,51 @@ func NewUpdateArticleTitleOutDto(eventID, articleID string) UpdateArticleTitleOu
 		articleID: articleID,
 	}
 }
+
+// UpdateArticleBodyInDto is an Input DTO for UpdateArticleBody use-case
+type UpdateArticleBodyInDto struct {
+	id   string
+	body string
+}
+
+// ID returns the ID of the article to be updated
+func (i UpdateArticleBodyInDto) ID() string {
+	return i.id
+}
+
+// Body returns the body of the article to be updated
+func (i UpdateArticleBodyInDto) Body() string {
+	return i.body
+}
+
+// NewUpdateArticleBodyInDto is constructor of UpdateArticleBodyInDto.
+func NewUpdateArticleBodyInDto(id string, body string) UpdateArticleBodyInDto {
+	return UpdateArticleBodyInDto{
+		id:   id,
+		body: body,
+	}
+}
+
+// UpdateArticleBodyOutDto is an Output DTO for UpdateArticleBody use-case
+type UpdateArticleBodyOutDto struct {
+	eventID   string
+	articleID string
+}
+
+// EventID returns the ID of the event
+func (o UpdateArticleBodyOutDto) EventID() string {
+	return o.eventID
+}
+
+// ArticleID returns the ID of the article
+func (o UpdateArticleBodyOutDto) ArticleID() string {
+	return o.articleID
+}
+
+// NewUpdateArticleBodyOutDto is constructor of UpdateArticleBodyOutDto.
+func NewUpdateArticleBodyOutDto(eventID, articleID string) UpdateArticleBodyOutDto {
+	return UpdateArticleBodyOutDto{
+		eventID:   eventID,
+		articleID: articleID,
+	}
+}

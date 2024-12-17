@@ -52,6 +52,30 @@ func NewUpdateArticleTitleEvent(articleID, title string) UpdateArticleTitleEvent
 	}
 }
 
+// UpdateArticleBodyEvent is an event to update the article body.
+type UpdateArticleBodyEvent struct {
+	articleID string
+	body      string
+}
+
+// ArticleID returns the article id.
+func (u UpdateArticleBodyEvent) ArticleID() string {
+	return u.articleID
+}
+
+// Body returns the article body.
+func (u UpdateArticleBodyEvent) Body() string {
+	return u.body
+}
+
+// NewUpdateArticleBodyEvent creates a new UpdateArticleBodyEvent.
+func NewUpdateArticleBodyEvent(id string, body string) UpdateArticleBodyEvent {
+	return UpdateArticleBodyEvent{
+		articleID: id,
+		body:      body,
+	}
+}
+
 type BloggingEventKey struct {
 	eventID   string
 	articleID string

@@ -95,3 +95,42 @@ func (mr *MockToUpdateArticleTitleResponseMockRecorder) ToUpdateArticleTitleResp
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleTitleResponse", reflect.TypeOf((*MockToUpdateArticleTitleResponse)(nil).ToUpdateArticleTitleResponse), ctx, from)
 }
+
+// MockToUpdateArticleBodyResponse is a mock of ToUpdateArticleBodyResponse interface.
+type MockToUpdateArticleBodyResponse struct {
+	ctrl     *gomock.Controller
+	recorder *MockToUpdateArticleBodyResponseMockRecorder
+	isgomock struct{}
+}
+
+// MockToUpdateArticleBodyResponseMockRecorder is the mock recorder for MockToUpdateArticleBodyResponse.
+type MockToUpdateArticleBodyResponseMockRecorder struct {
+	mock *MockToUpdateArticleBodyResponse
+}
+
+// NewMockToUpdateArticleBodyResponse creates a new mock instance.
+func NewMockToUpdateArticleBodyResponse(ctrl *gomock.Controller) *MockToUpdateArticleBodyResponse {
+	mock := &MockToUpdateArticleBodyResponse{ctrl: ctrl}
+	mock.recorder = &MockToUpdateArticleBodyResponseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockToUpdateArticleBodyResponse) EXPECT() *MockToUpdateArticleBodyResponseMockRecorder {
+	return m.recorder
+}
+
+// ToUpdateArticleBodyResponse mocks base method.
+func (m *MockToUpdateArticleBodyResponse) ToUpdateArticleBodyResponse(ctx context.Context, from *dto.UpdateArticleBodyOutDto) (*grpc.BloggingEventResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToUpdateArticleBodyResponse", ctx, from)
+	ret0, _ := ret[0].(*grpc.BloggingEventResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToUpdateArticleBodyResponse indicates an expected call of ToUpdateArticleBodyResponse.
+func (mr *MockToUpdateArticleBodyResponseMockRecorder) ToUpdateArticleBodyResponse(ctx, from any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleBodyResponse", reflect.TypeOf((*MockToUpdateArticleBodyResponse)(nil).ToUpdateArticleBodyResponse), ctx, from)
+}

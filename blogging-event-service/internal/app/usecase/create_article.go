@@ -40,7 +40,7 @@ func (u *CreateArticle) Execute(ctx context.Context, in *dto.CreateArticleInDto)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("dto.GetAllOutDto", nil),
+				slog.Any("dto.CreateArticleOutDto", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}

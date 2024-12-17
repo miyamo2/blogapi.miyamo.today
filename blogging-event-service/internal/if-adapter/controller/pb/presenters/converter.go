@@ -17,3 +17,8 @@ type ToUpdateArticleTitleResponse interface {
 	// ToUpdateArticleTitleResponse converts from UpdateArticleTitle use-case's dto to pb response.
 	ToUpdateArticleTitleResponse(ctx context.Context, from *dto.UpdateArticleTitleOutDto) (response *grpc.BloggingEventResponse, err error)
 }
+
+type ToUpdateArticleBodyResponse interface {
+	// ToUpdateArticleBodyResponse converts from UpdateArticleBody use-case's dto to pb response.
+	ToUpdateArticleBodyResponse(ctx context.Context, from *dto.UpdateArticleBodyOutDto) (response *grpc.BloggingEventResponse, err error)
+}

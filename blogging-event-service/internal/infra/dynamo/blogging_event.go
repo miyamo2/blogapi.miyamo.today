@@ -120,6 +120,47 @@ func (s *BloggingEventCommandService) UpdateArticleTitle(ctx context.Context, in
 	}, out)
 }
 
+type bloggingEventUpdateArticleBody struct {
+	EventID   string `gorm:"primaryKey"`
+	ArticleID string `gorm:"primaryKey"`
+	Body      string
+}
+
+func (b bloggingEventUpdateArticleBody) TableName() string {
+	return os.Getenv("BLOGGING_EVENTS_TABLE_NAME")
+}
+
+func (s *BloggingEventCommandService) UpdateArticleBody(ctx context.Context, in model.UpdateArticleBodyEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleBody").End()
+	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
+		nrtx := newrelic.FromContext(ctx)
+		defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleBody").End()
+		logger := slog.Default()
+		logger.Info("START")
+
+		tx = tx.WithContext(ctx)
+
+		eventID := fmt.Sprintf("%s", s.ulidGen())
+		articleID := in.ArticleID()
+
+		event := bloggingEventUpdateArticleBody{
+			EventID:   eventID,
+			ArticleID: articleID,
+			Body:      in.Body(),
+		}
+		if err := tx.Create(&event).Error; err != nil {
+			err = errors.WithStack(err)
+			nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		}
+
+		key := model.NewBloggingEventKey(eventID, articleID)
+		out.Set(&key)
+		logger.Info("END")
+		return nil
+	}, out)
+}
+
 func NewBloggingEventCommandService(ulidGen *pkg.ULIDGenerator) *BloggingEventCommandService {
 	if ulidGen == nil {
 		return &BloggingEventCommandService{

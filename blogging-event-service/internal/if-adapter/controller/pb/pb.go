@@ -19,10 +19,7 @@ var _ grpcgen.BloggingEventServiceServer = (*BloggingEventServiceServer)(nil)
 
 // BloggingEventServiceServer is implementation of grpc.BloggingEventServiceServer
 type BloggingEventServiceServer struct {
-	createArticleUsecase        usecase.CreateArticle
-	createArticleConverter      presenters.ToCreateArticleResponse
-	updateArticleTitleUsecase   usecase.UpdateArticleTitle
-	updateArticleTitleConverter presenters.ToUpdateArticleTitleResponse
+	bloggingEventServiceServerConfig
 	grpcgen.UnimplementedBloggingEventServiceServer
 }
 
@@ -94,7 +91,36 @@ func (s *BloggingEventServiceServer) UpdateArticleTitle(ctx context.Context, req
 }
 
 func (s *BloggingEventServiceServer) UpdateArticleBody(ctx context.Context, request *grpcgen.UpdateArticleBodyRequest) (*grpcgen.BloggingEventResponse, error) {
-	return s.UnimplementedBloggingEventServiceServer.UpdateArticleBody(ctx, request)
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("UpdateArticleBody").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.String("article id", request.GetId()), slog.String("body", request.GetBody())))
+
+	inDto := dto.NewUpdateArticleBodyInDto(request.GetId(), request.GetBody())
+	outDto, err := s.updateArticleBodyUsecase.Execute(ctx, &inDto)
+	if err != nil {
+		return nil, err
+	}
+	response, err := s.updateArticleBodyConverter.ToUpdateArticleBodyResponse(ctx, outDto)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger.WarnContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("grpc.BloggingEventResponse", nil),
+				slog.Any("error", err)))
+		return nil, err
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("return",
+			slog.Any("grpc.BloggingEventResponse", *response)))
+	return response, nil
 }
 
 func (s *BloggingEventServiceServer) UpdateArticleThumbnail(ctx context.Context, request *grpcgen.UpdateArticleThumbnailRequest) (*grpcgen.BloggingEventResponse, error) {
@@ -115,16 +141,59 @@ func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStre
 
 func (s *BloggingEventServiceServer) mustEmbedUnimplementedBloggingEventServiceServer() {}
 
-func NewBloggingEventServiceServer(
-	createArticleUsecase usecase.CreateArticle,
-	createArticleConverter presenters.ToCreateArticleResponse,
-	updateArticleTitleUsecase usecase.UpdateArticleTitle,
-	updateArticleTitleConverter presenters.ToUpdateArticleTitleResponse,
-) *BloggingEventServiceServer {
+type bloggingEventServiceServerConfig struct {
+	createArticleUsecase        usecase.CreateArticle
+	createArticleConverter      presenters.ToCreateArticleResponse
+	updateArticleTitleUsecase   usecase.UpdateArticleTitle
+	updateArticleTitleConverter presenters.ToUpdateArticleTitleResponse
+	updateArticleBodyUsecase    usecase.UpdateArticleBody
+	updateArticleBodyConverter  presenters.ToUpdateArticleBodyResponse
+}
+
+type BloggingEventServiceServerOption func(*bloggingEventServiceServerConfig)
+
+func WithCreateArticleUsecase(createArticleUsecase usecase.CreateArticle) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.createArticleUsecase = createArticleUsecase
+	}
+}
+
+func WithCreateArticleConverter(createArticleConverter presenters.ToCreateArticleResponse) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.createArticleConverter = createArticleConverter
+	}
+}
+
+func WithUpdateArticleTitleUsecase(updateArticleTitleUsecase usecase.UpdateArticleTitle) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.updateArticleTitleUsecase = updateArticleTitleUsecase
+	}
+}
+
+func WithUpdateArticleTitleConverter(updateArticleTitleConverter presenters.ToUpdateArticleTitleResponse) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.updateArticleTitleConverter = updateArticleTitleConverter
+	}
+}
+
+func WithUpdateArticleBodyUsecase(updateArticleBodyUsecase usecase.UpdateArticleBody) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.updateArticleBodyUsecase = updateArticleBodyUsecase
+	}
+}
+
+func WithUpdateArticleBodyConverter(updateArticleBodyConverter presenters.ToUpdateArticleBodyResponse) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.updateArticleBodyConverter = updateArticleBodyConverter
+	}
+}
+
+func NewBloggingEventServiceServer(options ...BloggingEventServiceServerOption) *BloggingEventServiceServer {
+	config := bloggingEventServiceServerConfig{}
+	for _, option := range options {
+		option(&config)
+	}
 	return &BloggingEventServiceServer{
-		createArticleUsecase:        createArticleUsecase,
-		createArticleConverter:      createArticleConverter,
-		updateArticleTitleUsecase:   updateArticleTitleUsecase,
-		updateArticleTitleConverter: updateArticleTitleConverter,
+		bloggingEventServiceServerConfig: config,
 	}
 }

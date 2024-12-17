@@ -14,13 +14,13 @@ import (
 	"log/slog"
 )
 
-// UpdateArticleTitle is a use-case for creating an article.
-type UpdateArticleTitle struct {
+// UpdateArticleBody is a use-case for creating an article.
+type UpdateArticleBody struct {
 	bloggingEventCommand command.BloggingEventService
 }
 
-// Execute executes the UpdateArticleTitle use-case.
-func (u *UpdateArticleTitle) Execute(ctx context.Context, in *dto.UpdateArticleTitleInDto) (*dto.UpdateArticleTitleOutDto, error) {
+// Execute executes the UpdateArticleBody use-case.
+func (u *UpdateArticleBody) Execute(ctx context.Context, in *dto.UpdateArticleBodyInDto) (*dto.UpdateArticleBodyOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
@@ -32,25 +32,25 @@ func (u *UpdateArticleTitle) Execute(ctx context.Context, in *dto.UpdateArticleT
 	}
 	logger.InfoContext(ctx, "BEGIN")
 
-	command := model.NewUpdateArticleTitleEvent(in.ID(), in.Title())
+	command := model.NewUpdateArticleBodyEvent(in.ID(), in.Body())
 	commandOut := db.NewSingleStatementResult[*model.BloggingEventKey]()
-	err = u.bloggingEventCommand.UpdateArticleTitle(ctx, command, commandOut).Execute(ctx)
+	err = u.bloggingEventCommand.UpdateArticleBody(ctx, command, commandOut).Execute(ctx)
 	if err != nil {
 		err := errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("dto.UpdateArticleTitleOutDto", nil),
+				slog.Any("dto.UpdateArticleBody", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
 
 	key := commandOut.StrictGet()
-	result := dto.NewUpdateArticleTitleOutDto(key.EventID(), key.ArticleID())
+	result := dto.NewUpdateArticleBodyOutDto(key.EventID(), key.ArticleID())
 	return &result, nil
 }
 
-// NewUpdateArticleTitle is a constructor for UpdateArticleTitle use-case.
-func NewUpdateArticleTitle(bloggingEventCommand command.BloggingEventService) *UpdateArticleTitle {
-	return &UpdateArticleTitle{bloggingEventCommand: bloggingEventCommand}
+// NewUpdateArticleBody is a constructor for UpdateArticleBody use-case.
+func NewUpdateArticleBody(bloggingEventCommand command.BloggingEventService) *UpdateArticleBody {
+	return &UpdateArticleBody{bloggingEventCommand: bloggingEventCommand}
 }
