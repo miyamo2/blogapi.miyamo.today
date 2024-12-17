@@ -14,7 +14,7 @@ import (
 	"log/slog"
 )
 
-// UpdateArticleBody is a use-case for creating an article.
+// UpdateArticleBody is a use-case for updating an article body.
 type UpdateArticleBody struct {
 	bloggingEventCommand command.BloggingEventService
 }
