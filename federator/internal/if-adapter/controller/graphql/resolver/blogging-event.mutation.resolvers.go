@@ -47,3 +47,30 @@ func (r *mutationResolver) CreateArticle(ctx context.Context, input model.Create
 	}
 	return payload, err
 }
+
+// UpdateArticleTitle is the resolver for the updateArticleTitle field.
+func (r *mutationResolver) UpdateArticleTitle(ctx context.Context, input model.UpdateArticleTitleInput) (*model.UpdateArticleTitlePayload, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("UpdateArticleTitle").End()
+
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = ErrorWithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.String("input", fmt.Sprintf("%+v", input))))
+
+	var clientMutationID string
+	if input.ClientMutationID != nil {
+		clientMutationID = *input.ClientMutationID
+	}
+
+	outDTO, err := r.usecases.updateArticleTitle.Execute(ctx, dto.NewUpdateArticleTitleInDTO(input.ArticleID, input.Title, clientMutationID))
+	if err != nil {
+		return nil, err
+	}
+
+	return r.converters.updateArticleTitle.ToUpdateArticleTitle(ctx, outDTO)
+}

@@ -23,13 +23,15 @@ func Usecases(
 	tag usecase.Tag,
 	tags usecase.Tags,
 	createArticle usecase.CreateArticle,
+	updateArticleTiele usecase.UpdateArticleTitle,
 ) *resolver.Usecases {
 	return resolver.NewUsecases(
 		resolver.WithArticlesUsecase(articles),
 		resolver.WithArticleUsecase(article),
 		resolver.WithTagUsecase(tag),
 		resolver.WithTagsUsecase(tags),
-		resolver.WithCreateArticleUsecase(createArticle))
+		resolver.WithCreateArticleUsecase(createArticle),
+		resolver.WithUpdateArticleTitleUsecase(updateArticleTiele))
 }
 
 func Converters(
@@ -38,13 +40,15 @@ func Converters(
 	tag converters.TagConverter,
 	tags converters.TagsConverter,
 	createArticle converters.CreateArticleConverter,
+	updateArticleTitle converters.UpdateArticleTitleConverter,
 ) *resolver.Converters {
 	return resolver.NewConverters(
 		resolver.WithArticleConverter(article),
 		resolver.WithArticlesConverter(articles),
 		resolver.WithTagConverter(tag),
 		resolver.WithTagsConverter(tags),
-		resolver.WithCreateArticleConverter(createArticle))
+		resolver.WithCreateArticleConverter(createArticle),
+		resolver.WithUpdateArticleTitleConverter(updateArticleTitle))
 }
 
 func GqlgenConfig(resolver *resolver.Resolver) *gqlgen.Config {

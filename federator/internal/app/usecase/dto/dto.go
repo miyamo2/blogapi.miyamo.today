@@ -656,3 +656,71 @@ func NewCreateArticleOutDTO(eventID, articleID, clientMutationID string) CreateA
 		clientMutationID: clientMutationID,
 	}
 }
+
+// UpdateArticleTitleInDTO is a dto for updating an article.
+type UpdateArticleTitleInDTO struct {
+	id               string
+	title            string
+	clientMutationID string
+}
+
+// IsInDTO is a marker for in dto.
+func (u UpdateArticleTitleInDTO) IsInDTO() {}
+
+// ID returns id.
+func (u UpdateArticleTitleInDTO) ID() string {
+	return u.id
+}
+
+// Title returns title.
+func (u UpdateArticleTitleInDTO) Title() string {
+	return u.title
+}
+
+// ClientMutationID returns client mutation id.
+func (u UpdateArticleTitleInDTO) ClientMutationID() string {
+	return u.clientMutationID
+}
+
+// NewUpdateArticleTitleInDTO constructor of UpdateArticleTitleInDTO.
+func NewUpdateArticleTitleInDTO(id, title, clientMutationID string) UpdateArticleTitleInDTO {
+	return UpdateArticleTitleInDTO{
+		id:               id,
+		title:            title,
+		clientMutationID: clientMutationID,
+	}
+}
+
+// UpdateArticleTitleOutDTO is a dto for updating an article.
+type UpdateArticleTitleOutDTO struct {
+	eventID          string
+	articleID        string
+	clientMutationID string
+}
+
+// IsOutDTO is a marker for out dto.
+func (u UpdateArticleTitleOutDTO) IsOutDTO() {}
+
+// EventID returns event id.
+func (u UpdateArticleTitleOutDTO) EventID() string {
+	return u.eventID
+}
+
+// ArticleID returns article id.
+func (u UpdateArticleTitleOutDTO) ArticleID() string {
+	return u.articleID
+}
+
+// ClientMutationID returns client mutation id.
+func (u UpdateArticleTitleOutDTO) ClientMutationID() string {
+	return u.clientMutationID
+}
+
+// NewUpdateArticleTitleOutDTO constructor of UpdateArticleTitleOutDTO.
+func NewUpdateArticleTitleOutDTO(eventID, articleID, clientMutationID string) UpdateArticleTitleOutDTO {
+	return UpdateArticleTitleOutDTO{
+		eventID:          eventID,
+		articleID:        articleID,
+		clientMutationID: clientMutationID,
+	}
+}

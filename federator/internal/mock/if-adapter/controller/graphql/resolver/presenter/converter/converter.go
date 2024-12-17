@@ -212,3 +212,42 @@ func (mr *MockCreateArticleConverterMockRecorder) ToCreateArticle(ctx, from any)
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToCreateArticle", reflect.TypeOf((*MockCreateArticleConverter)(nil).ToCreateArticle), ctx, from)
 }
+
+// MockUpdateArticleTitleConverter is a mock of UpdateArticleTitleConverter interface.
+type MockUpdateArticleTitleConverter struct {
+	ctrl     *gomock.Controller
+	recorder *MockUpdateArticleTitleConverterMockRecorder
+	isgomock struct{}
+}
+
+// MockUpdateArticleTitleConverterMockRecorder is the mock recorder for MockUpdateArticleTitleConverter.
+type MockUpdateArticleTitleConverterMockRecorder struct {
+	mock *MockUpdateArticleTitleConverter
+}
+
+// NewMockUpdateArticleTitleConverter creates a new mock instance.
+func NewMockUpdateArticleTitleConverter(ctrl *gomock.Controller) *MockUpdateArticleTitleConverter {
+	mock := &MockUpdateArticleTitleConverter{ctrl: ctrl}
+	mock.recorder = &MockUpdateArticleTitleConverterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUpdateArticleTitleConverter) EXPECT() *MockUpdateArticleTitleConverterMockRecorder {
+	return m.recorder
+}
+
+// ToUpdateArticleTitle mocks base method.
+func (m *MockUpdateArticleTitleConverter) ToUpdateArticleTitle(ctx context.Context, from dto.UpdateArticleTitleOutDTO) (*model.UpdateArticleTitlePayload, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToUpdateArticleTitle", ctx, from)
+	ret0, _ := ret[0].(*model.UpdateArticleTitlePayload)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToUpdateArticleTitle indicates an expected call of ToUpdateArticleTitle.
+func (mr *MockUpdateArticleTitleConverterMockRecorder) ToUpdateArticleTitle(ctx, from any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleTitle", reflect.TypeOf((*MockUpdateArticleTitleConverter)(nil).ToUpdateArticleTitle), ctx, from)
+}

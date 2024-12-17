@@ -15,11 +15,12 @@ type Resolver struct {
 }
 
 type Usecases struct {
-	article       usecase.Article
-	articles      usecase.Articles
-	tag           usecase.Tag
-	tags          usecase.Tags
-	createArticle usecase.CreateArticle
+	article            usecase.Article
+	articles           usecase.Articles
+	tag                usecase.Tag
+	tags               usecase.Tags
+	createArticle      usecase.CreateArticle
+	updateArticleTitle usecase.UpdateArticleTitle
 }
 
 type UsecasesOption func(*Usecases)
@@ -59,6 +60,13 @@ func WithCreateArticleUsecase(createArticle usecase.CreateArticle) UsecasesOptio
 	}
 }
 
+// WithUpdateArticleTitleUsecase option for Usecases.
+func WithUpdateArticleTitleUsecase(updateArticleTitle usecase.UpdateArticleTitle) UsecasesOption {
+	return func(u *Usecases) {
+		u.updateArticleTitle = updateArticleTitle
+	}
+}
+
 // NewUsecases constructor of Usecases.
 func NewUsecases(options ...UsecasesOption) *Usecases {
 	u := &Usecases{}
@@ -69,11 +77,12 @@ func NewUsecases(options ...UsecasesOption) *Usecases {
 }
 
 type Converters struct {
-	article       converters.ArticleConverter
-	articles      converters.ArticlesConverter
-	tag           converters.TagConverter
-	tags          converters.TagsConverter
-	createArticle converters.CreateArticleConverter
+	article            converters.ArticleConverter
+	articles           converters.ArticlesConverter
+	tag                converters.TagConverter
+	tags               converters.TagsConverter
+	createArticle      converters.CreateArticleConverter
+	updateArticleTitle converters.UpdateArticleTitleConverter
 }
 
 type ConvertersOption func(*Converters)
@@ -110,6 +119,13 @@ func WithTagsConverter(tags converters.TagsConverter) ConvertersOption {
 func WithCreateArticleConverter(createArticle converters.CreateArticleConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.createArticle = createArticle
+	}
+}
+
+// WithUpdateArticleTitleConverter option for Converters.
+func WithUpdateArticleTitleConverter(updateArticleTitle converters.UpdateArticleTitleConverter) ConvertersOption {
+	return func(c *Converters) {
+		c.updateArticleTitle = updateArticleTitle
 	}
 }
 
