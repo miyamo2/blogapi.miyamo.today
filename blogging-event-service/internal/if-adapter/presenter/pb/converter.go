@@ -66,7 +66,7 @@ func (c Converter) ToUpdateArticleBodyResponse(ctx context.Context, from *dto.Up
 		logger = log.DefaultLogger()
 		err = nil
 	}
-	logger.InfoContext(ctx, "BEGIN", slog.Group("patameters", slog.Any("from", *from)))
+	logger.InfoContext(ctx, "BEGIN", slog.Group("parameters", slog.Any("from", *from)))
 	defer func() {
 		logger.InfoContext(ctx, "END", slog.Group("return", slog.Any("response", *response)))
 	}()
