@@ -22,7 +22,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0
 	go.uber.org/mock v0.5.0
 	google.golang.org/grpc v1.69.0
-	google.golang.org/protobuf v1.35.2
+	google.golang.org/protobuf v1.36.0
 	gorm.io/gorm v1.25.12
 )
 
