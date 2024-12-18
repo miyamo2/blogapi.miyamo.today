@@ -1,4 +1,4 @@
-name: ci_tag_service
+name: ci_blogging-event-service
 
 on:
   push:
