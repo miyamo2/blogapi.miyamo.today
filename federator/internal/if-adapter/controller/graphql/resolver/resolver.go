@@ -21,6 +21,7 @@ type Usecases struct {
 	tags               usecase.Tags
 	createArticle      usecase.CreateArticle
 	updateArticleTitle usecase.UpdateArticleTitle
+	updateArticleBody  usecase.UpdateArticleBody
 }
 
 type UsecasesOption func(*Usecases)
@@ -67,6 +68,13 @@ func WithUpdateArticleTitleUsecase(updateArticleTitle usecase.UpdateArticleTitle
 	}
 }
 
+// WithUpdateArticleBodyUsecase option for Usecases.
+func WithUpdateArticleBodyUsecase(updateArticleBody usecase.UpdateArticleBody) UsecasesOption {
+	return func(u *Usecases) {
+		u.updateArticleBody = updateArticleBody
+	}
+}
+
 // NewUsecases constructor of Usecases.
 func NewUsecases(options ...UsecasesOption) *Usecases {
 	u := &Usecases{}
@@ -83,6 +91,7 @@ type Converters struct {
 	tags               converters.TagsConverter
 	createArticle      converters.CreateArticleConverter
 	updateArticleTitle converters.UpdateArticleTitleConverter
+	updateArticleBody  converters.UpdateArticleBodyConverter
 }
 
 type ConvertersOption func(*Converters)
@@ -126,6 +135,13 @@ func WithCreateArticleConverter(createArticle converters.CreateArticleConverter)
 func WithUpdateArticleTitleConverter(updateArticleTitle converters.UpdateArticleTitleConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.updateArticleTitle = updateArticleTitle
+	}
+}
+
+// WithUpdateArticleBodyConverter option for Converters.
+func WithUpdateArticleBodyConverter(updateArticleBody converters.UpdateArticleBodyConverter) ConvertersOption {
+	return func(c *Converters) {
+		c.updateArticleBody = updateArticleBody
 	}
 }
 

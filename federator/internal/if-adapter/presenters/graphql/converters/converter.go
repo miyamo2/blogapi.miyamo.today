@@ -371,6 +371,34 @@ func (c Converter) ToUpdateArticleTitle(ctx context.Context, from dto.UpdateArti
 	return &payload, nil
 }
 
+func (c Converter) ToUpdateArticleBody(ctx context.Context, from dto.UpdateArticleBodyOutDTO) (*model.UpdateArticleBodyPayload, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToUpdateArticleBody").End()
+
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.Any("from", from)))
+	var clientMutationID *string
+	if v := from.ClientMutationID(); len(v) > 0 {
+		clientMutationID = &v
+	}
+	payload := model.UpdateArticleBodyPayload{
+		ClientMutationID: clientMutationID,
+		EventID:          from.EventID(),
+		ArticleID:        from.ArticleID(),
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("returns",
+			slog.Any("*model.UpdateArticleBodyPayload", payload),
+			slog.Any("error", nil)))
+	return &payload, nil
+}
+
 func NewConverter() *Converter {
 	return &Converter{}
 }

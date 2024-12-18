@@ -31,3 +31,7 @@ type CreateArticleConverter interface {
 type UpdateArticleTitleConverter interface {
 	ToUpdateArticleTitle(ctx context.Context, from dto.UpdateArticleTitleOutDTO) (*model.UpdateArticleTitlePayload, error)
 }
+
+type UpdateArticleBodyConverter interface {
+	ToUpdateArticleBody(ctx context.Context, from dto.UpdateArticleBodyOutDTO) (*model.UpdateArticleBodyPayload, error)
+}

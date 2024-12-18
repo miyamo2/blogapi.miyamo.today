@@ -13,3 +13,7 @@ type CreateArticle interface {
 type UpdateArticleTitle interface {
 	Execute(ctx context.Context, in dto.UpdateArticleTitleInDTO) (dto.UpdateArticleTitleOutDTO, error)
 }
+
+type UpdateArticleBody interface {
+	Execute(ctx context.Context, in dto.UpdateArticleBodyInDTO) (dto.UpdateArticleBodyOutDTO, error)
+}

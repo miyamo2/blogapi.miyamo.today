@@ -14,6 +14,7 @@ var (
 	_ abstract.Tags               = (*usecase.Tags)(nil)
 	_ abstract.CreateArticle      = (*usecase.CreateArticle)(nil)
 	_ abstract.UpdateArticleTitle = (*usecase.UpdateArticleTitle)(nil)
+	_ abstract.UpdateArticleBody  = (*usecase.UpdateArticleBody)(nil)
 )
 
 var UsecaseSet = wire.NewSet(
@@ -29,4 +30,6 @@ var UsecaseSet = wire.NewSet(
 	wire.Bind(new(abstract.CreateArticle), new(*usecase.CreateArticle)),
 	usecase.NewUpdateArticleTitle,
 	wire.Bind(new(abstract.UpdateArticleTitle), new(*usecase.UpdateArticleTitle)),
+	usecase.NewUpdateArticleBody,
+	wire.Bind(new(abstract.UpdateArticleBody), new(*usecase.UpdateArticleBody)),
 )
