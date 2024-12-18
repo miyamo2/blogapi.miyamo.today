@@ -424,6 +424,202 @@ func (m *UpdateArticleTitleInDTOMatcher) Matches(x interface{}) bool {
 	return false
 }
 
-func (m *UpdateArticleTitleInDTOMatcher) String() string {
+func Test_mutationResolver_UpdateArticleBody(t *testing.T) {
+	type args struct {
+		ctx   context.Context
+		input model.UpdateArticleBodyInput
+	}
+	type want struct {
+		out *model.UpdateArticleBodyPayload
+		err error
+	}
+	type usecaseResult struct {
+		out dto.UpdateArticleBodyOutDTO
+		err error
+	}
+	type converterResult struct {
+		out *model.UpdateArticleBodyPayload
+		err error
+	}
+	type testCase struct {
+		sut                func(resolver *Resolver) *mutationResolver
+		updateArticleInDTO dto.UpdateArticleBodyInDTO
+		setupMockUsecase   func(uc *musecase.MockUpdateArticleBody, input dto.UpdateArticleBodyInDTO, usecaseResult usecaseResult)
+		usecaseResult      usecaseResult
+		setupMockConverter func(converter *mconverter.MockUpdateArticleBodyConverter, from dto.UpdateArticleBodyOutDTO, converterResult converterResult)
+		converterResult    converterResult
+		args               args
+		want               want
+		wantErr            bool
+	}
+	errFailedToUsecase := errors.New("failed to usecase")
+	errFailedToConverter := errors.New("failed to converter")
+	tests := map[string]testCase{
+		"happy_path": {
+			sut: func(resolver *Resolver) *mutationResolver {
+				return &mutationResolver{resolver}
+			},
+			updateArticleInDTO: dto.NewUpdateArticleBodyInDTO("Article1", "Content1", "Mutation1"),
+			setupMockUsecase: func(uc *musecase.MockUpdateArticleBody, input dto.UpdateArticleBodyInDTO, usecaseResult usecaseResult) {
+				uc.EXPECT().
+					Execute(gomock.Any(), NewUpdateArticleBodyInputMatcher(input)).
+					Return(usecaseResult.out, usecaseResult.err).
+					Times(1)
+			},
+			usecaseResult: usecaseResult{
+				out: dto.NewUpdateArticleBodyOutDTO(
+					"Event1",
+					"Article1",
+					"Mutation1",
+				),
+			},
+			setupMockConverter: func(converter *mconverter.MockUpdateArticleBodyConverter, from dto.UpdateArticleBodyOutDTO, converterResult converterResult) {
+				converter.EXPECT().
+					ToUpdateArticleBody(gomock.Any(), from).
+					Return(converterResult.out, converterResult.err).
+					Times(1)
+			},
+			converterResult: converterResult{
+				out: &model.UpdateArticleBodyPayload{
+					EventID:          "Event1",
+					ArticleID:        "Article1",
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				input: model.UpdateArticleBodyInput{
+					ArticleID:        "Article1",
+					Content:          "Content1",
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			want: want{
+				out: &model.UpdateArticleBodyPayload{
+					EventID:          "Event1",
+					ArticleID:        "Article1",
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+		},
+		"unhappy_path:usecase-returns-error": {
+			sut: func(resolver *Resolver) *mutationResolver {
+				return &mutationResolver{resolver}
+			},
+			updateArticleInDTO: dto.NewUpdateArticleBodyInDTO("Article1", "Content1", "Mutation1"),
+			setupMockUsecase: func(uc *musecase.MockUpdateArticleBody, input dto.UpdateArticleBodyInDTO, usecaseResult usecaseResult) {
+				uc.EXPECT().
+					Execute(gomock.Any(), NewUpdateArticleBodyInputMatcher(input)).
+					Return(usecaseResult.out, usecaseResult.err).
+					Times(1)
+			},
+			usecaseResult: usecaseResult{
+				err: errFailedToUsecase,
+			},
+			setupMockConverter: func(converter *mconverter.MockUpdateArticleBodyConverter, from dto.UpdateArticleBodyOutDTO, converterResult converterResult) {
+				converter.EXPECT().
+					ToUpdateArticleBody(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+				input: model.UpdateArticleBodyInput{
+					ArticleID:        "Article1",
+					Content:          "Content1",
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			want: want{
+				err: errFailedToUsecase,
+			},
+		},
+		"unhappy_path:converter-returns-error": {
+			sut: func(resolver *Resolver) *mutationResolver {
+				return &mutationResolver{resolver}
+			},
+			updateArticleInDTO: dto.NewUpdateArticleBodyInDTO("Article1", "Content1", "Mutation1"),
+			setupMockUsecase: func(uc *musecase.MockUpdateArticleBody, input dto.UpdateArticleBodyInDTO, usecaseResult usecaseResult) {
+				uc.EXPECT().
+					Execute(gomock.Any(), NewUpdateArticleBodyInputMatcher(input)).
+					Return(usecaseResult.out, usecaseResult.err).
+					Times(1)
+			},
+			usecaseResult: usecaseResult{
+				out: dto.NewUpdateArticleBodyOutDTO(
+					"Event1",
+					"Article1",
+					"Mutation1",
+				),
+			},
+			setupMockConverter: func(converter *mconverter.MockUpdateArticleBodyConverter, from dto.UpdateArticleBodyOutDTO, converterResult converterResult) {
+				converter.EXPECT().
+					ToUpdateArticleBody(gomock.Any(), from).
+					Return(converterResult.out, converterResult.err).
+					Times(1)
+			},
+			converterResult: converterResult{
+				err: errFailedToConverter,
+			},
+			args: args{
+				ctx: context.Background(),
+				input: model.UpdateArticleBodyInput{
+					ArticleID:        "Article1",
+					Content:          "Content1",
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			want: want{
+				err: errFailedToConverter,
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			uc := musecase.NewMockUpdateArticleBody(ctrl)
+			tt.setupMockUsecase(uc, tt.updateArticleInDTO, tt.usecaseResult)
+
+			converter := mconverter.NewMockUpdateArticleBodyConverter(ctrl)
+			tt.setupMockConverter(converter, tt.usecaseResult.out, tt.converterResult)
+
+			sut := tt.sut(NewResolver(NewUsecases(WithUpdateArticleBodyUsecase(uc)), NewConverters(WithUpdateArticleBodyConverter(converter))))
+			got, err := sut.UpdateArticleBody(tt.args.ctx, tt.args.input)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("UpdateArticleBody() got = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
+				t.Error(diff)
+				return
+			}
+		})
+	}
+}
+
+type UpdateArticleBodyInputMatcher struct {
+	gomock.Matcher
+	expect dto.UpdateArticleBodyInDTO
+}
+
+func NewUpdateArticleBodyInputMatcher(expect dto.UpdateArticleBodyInDTO) gomock.Matcher {
+	return &UpdateArticleBodyInputMatcher{
+		expect: expect,
+	}
+}
+
+func (m *UpdateArticleBodyInputMatcher) Matches(x interface{}) bool {
+	switch x := x.(type) {
+	case dto.UpdateArticleBodyInDTO:
+		return cmp.Diff(x.ID(), m.expect.ID(), cmpOpts...) == "" &&
+			cmp.Diff(x.Content(), m.expect.Content(), cmpOpts...) == "" &&
+			cmp.Diff(x.ClientMutationID(), m.expect.ClientMutationID(), cmpOpts...) == ""
+	}
+	return false
+}
+
+func (m *UpdateArticleBodyInputMatcher) String() string {
 	return fmt.Sprintf("is equal to %+v", m.expect)
 }

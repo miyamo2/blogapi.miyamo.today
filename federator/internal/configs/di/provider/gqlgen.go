@@ -24,6 +24,7 @@ func Usecases(
 	tags usecase.Tags,
 	createArticle usecase.CreateArticle,
 	updateArticleTiele usecase.UpdateArticleTitle,
+	updateArticleBody usecase.UpdateArticleBody,
 ) *resolver.Usecases {
 	return resolver.NewUsecases(
 		resolver.WithArticlesUsecase(articles),
@@ -31,7 +32,8 @@ func Usecases(
 		resolver.WithTagUsecase(tag),
 		resolver.WithTagsUsecase(tags),
 		resolver.WithCreateArticleUsecase(createArticle),
-		resolver.WithUpdateArticleTitleUsecase(updateArticleTiele))
+		resolver.WithUpdateArticleTitleUsecase(updateArticleTiele),
+		resolver.WithUpdateArticleBodyUsecase(updateArticleBody))
 }
 
 func Converters(

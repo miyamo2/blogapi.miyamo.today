@@ -125,6 +125,18 @@ type TagNode struct {
 	Articles *TagArticleConnection `json:"articles"`
 }
 
+type UpdateArticleBodyInput struct {
+	ArticleID        string  `json:"articleId"`
+	Content          string  `json:"content"`
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
+type UpdateArticleBodyPayload struct {
+	ArticleID        string  `json:"articleId"`
+	EventID          string  `json:"eventID"`
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
 type UpdateArticleTitleInput struct {
 	ArticleID        string  `json:"articleId"`
 	Title            string  `json:"title"`
