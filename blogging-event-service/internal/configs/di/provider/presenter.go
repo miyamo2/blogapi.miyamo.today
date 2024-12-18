@@ -10,10 +10,12 @@ import (
 var (
 	_ presenters.ToCreateArticleResponse      = (*impl.Converter)(nil)
 	_ presenters.ToUpdateArticleTitleResponse = (*impl.Converter)(nil)
+	_ presenters.ToUpdateArticleBodyResponse  = (*impl.Converter)(nil)
 )
 
 var PresenterSet = wire.NewSet(
 	impl.NewConverter,
 	wire.Bind(new(presenters.ToCreateArticleResponse), new(*impl.Converter)),
 	wire.Bind(new(presenters.ToUpdateArticleTitleResponse), new(*impl.Converter)),
+	wire.Bind(new(presenters.ToUpdateArticleBodyResponse), new(*impl.Converter)),
 )

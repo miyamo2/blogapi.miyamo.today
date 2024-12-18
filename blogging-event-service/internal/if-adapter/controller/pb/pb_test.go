@@ -126,7 +126,7 @@ func TestBloggingEventServiceServer_CreateArticle(t *testing.T) {
 			response := tt.want.response
 			conv := mpresenter.NewMockToCreateArticleResponse(ctrl)
 			tt.setupConverter(out, response, conv)
-			s := NewBloggingEventServiceServer(u, conv, nil, nil)
+			s := NewBloggingEventServiceServer(WithCreateArticleUsecase(u), WithCreateArticleConverter(conv))
 			got, err := s.CreateArticle(tt.args.ctx, tt.args.in)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
@@ -247,8 +247,129 @@ func TestBloggingEventServiceServer_UpdateArticleTitle(t *testing.T) {
 			response := tt.want.response
 			conv := mpresenter.NewMockToUpdateArticleTitleResponse(ctrl)
 			tt.setupConverter(out, response, conv)
-			s := NewBloggingEventServiceServer(nil, nil, u, conv)
+			s := NewBloggingEventServiceServer(WithUpdateArticleTitleUsecase(u), WithUpdateArticleTitleConverter(conv))
 			got, err := s.UpdateArticleTitle(tt.args.ctx, tt.args.in)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
+			}
+			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
+			}
+		})
+	}
+}
+
+func TestBloggingEventServiceServer_UpdateArticleBody(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		in  *grpc.UpdateArticleBodyRequest
+	}
+	type want struct {
+		response *grpc.BloggingEventResponse
+		err      error
+	}
+	type testCase struct {
+		outDto         dto.UpdateArticleBodyOutDto
+		setupUsecase   func(out dto.UpdateArticleBodyOutDto, u *musecase.MockUpdateArticleBody)
+		setupConverter func(from dto.UpdateArticleBodyOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToUpdateArticleBodyResponse)
+		args           args
+		want           want
+	}
+
+	errInUsecase := errors.New("error in usecase")
+	errInConverter := errors.New("error in converter")
+
+	tests := map[string]testCase{
+		"happy_path": {
+			outDto: dto.NewUpdateArticleBodyOutDto("eventID", "articleID"),
+			setupUsecase: func(out dto.UpdateArticleBodyOutDto, u *musecase.MockUpdateArticleBody) {
+				in := dto.NewUpdateArticleBodyInDto("articleID", "body")
+				u.EXPECT().
+					Execute(gomock.Any(), &in).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.UpdateArticleBodyOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToUpdateArticleBodyResponse) {
+				conv.EXPECT().ToUpdateArticleBodyResponse(gomock.Any(), &from).
+					Return(res, nil).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: &grpc.UpdateArticleBodyRequest{
+					Id:   "articleID",
+					Body: "body",
+				},
+			},
+			want: want{
+				response: &grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"},
+			},
+		},
+		"unhappy_path/usecase-returns-error": {
+			outDto: dto.NewUpdateArticleBodyOutDto("", ""),
+			setupUsecase: func(out dto.UpdateArticleBodyOutDto, u *musecase.MockUpdateArticleBody) {
+				in := dto.NewUpdateArticleBodyInDto("articleID", "body")
+				u.EXPECT().
+					Execute(gomock.Any(), &in).
+					Return(&out, errInUsecase).
+					Times(1)
+			},
+			setupConverter: func(from dto.UpdateArticleBodyOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToUpdateArticleBodyResponse) {
+				conv.EXPECT().
+					ToUpdateArticleBodyResponse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: &grpc.UpdateArticleBodyRequest{
+					Id:   "articleID",
+					Body: "body",
+				},
+			},
+			want: want{
+				err: errInUsecase,
+			},
+		},
+		"unhappy_path/converter-returns-error": {
+			outDto: dto.NewUpdateArticleBodyOutDto("eventID", "articleID"),
+			setupUsecase: func(out dto.UpdateArticleBodyOutDto, u *musecase.MockUpdateArticleBody) {
+				in := dto.NewUpdateArticleBodyInDto("articleID", "body")
+				u.EXPECT().
+					Execute(gomock.Any(), &in).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.UpdateArticleBodyOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToUpdateArticleBodyResponse) {
+				conv.EXPECT().
+					ToUpdateArticleBodyResponse(gomock.Any(), &from).
+					Return(nil, errInConverter).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: &grpc.UpdateArticleBodyRequest{
+					Id:   "articleID",
+					Body: "body",
+				},
+			},
+			want: want{
+				err: errInConverter,
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			out := tt.outDto
+			u := musecase.NewMockUpdateArticleBody(ctrl)
+			tt.setupUsecase(out, u)
+			response := tt.want.response
+			conv := mpresenter.NewMockToUpdateArticleBodyResponse(ctrl)
+			tt.setupConverter(out, response, conv)
+			s := NewBloggingEventServiceServer(WithUpdateArticleBodyUsecase(u), WithUpdateArticleBodyConverter(conv))
+			got, err := s.UpdateArticleBody(tt.args.ctx, tt.args.in)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
 			}

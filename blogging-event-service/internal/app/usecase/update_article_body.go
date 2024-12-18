@@ -14,18 +14,19 @@ import (
 	"log/slog"
 )
 
-// UpdateArticleTitle is a use-case for creating an article.
-type UpdateArticleTitle struct {
+// UpdateArticleBody is a use-case for updating an article body.
+type UpdateArticleBody struct {
 	bloggingEventCommand command.BloggingEventService
 }
 
-// Execute executes the UpdateArticleTitle use-case.
-func (u *UpdateArticleTitle) Execute(ctx context.Context, in *dto.UpdateArticleTitleInDto) (_ *dto.UpdateArticleTitleOutDto, err error) {
+// Execute executes the UpdateArticleBody use-case.
+func (u *UpdateArticleBody) Execute(ctx context.Context, in *dto.UpdateArticleBodyInDto) (*dto.UpdateArticleBodyOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
+		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger = log.DefaultLogger()
 	}
@@ -34,27 +35,26 @@ func (u *UpdateArticleTitle) Execute(ctx context.Context, in *dto.UpdateArticleT
 		if err != nil {
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("dto.UpdateArticleTitleOutDto", nil),
+					slog.Any("dto.UpdateArticleBody", nil),
 					slog.Any("error", err)))
-			return
 		}
 		logger.InfoContext(ctx, "END")
 	}()
 
-	command := model.NewUpdateArticleTitleEvent(in.ID(), in.Title())
+	command := model.NewUpdateArticleBodyEvent(in.ID(), in.Body())
 	commandOut := db.NewSingleStatementResult[*model.BloggingEventKey]()
-	err = u.bloggingEventCommand.UpdateArticleTitle(ctx, command, commandOut).Execute(ctx)
+	err = u.bloggingEventCommand.UpdateArticleBody(ctx, command, commandOut).Execute(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		return nil, err
 	}
 
 	key := commandOut.StrictGet()
-	result := dto.NewUpdateArticleTitleOutDto(key.EventID(), key.ArticleID())
+	result := dto.NewUpdateArticleBodyOutDto(key.EventID(), key.ArticleID())
 	return &result, nil
 }
 
-// NewUpdateArticleTitle is a constructor for UpdateArticleTitle use-case.
-func NewUpdateArticleTitle(bloggingEventCommand command.BloggingEventService) *UpdateArticleTitle {
-	return &UpdateArticleTitle{bloggingEventCommand: bloggingEventCommand}
+// NewUpdateArticleBody is a constructor for UpdateArticleBody use-case.
+func NewUpdateArticleBody(bloggingEventCommand command.BloggingEventService) *UpdateArticleBody {
+	return &UpdateArticleBody{bloggingEventCommand: bloggingEventCommand}
 }

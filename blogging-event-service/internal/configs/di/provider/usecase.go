@@ -11,6 +11,7 @@ import (
 var (
 	_ usecase.CreateArticle      = (*impl.CreateArticle)(nil)
 	_ usecase.UpdateArticleTitle = (*impl.UpdateArticleTitle)(nil)
+	_ usecase.UpdateArticleBody  = (*impl.UpdateArticleBody)(nil)
 )
 
 func CreateArticleUsecase(bloggingEventCommand command.BloggingEventService) *impl.CreateArticle {
@@ -21,9 +22,15 @@ func UpdateArticleTitleUsecase(bloggingEventCommand command.BloggingEventService
 	return impl.NewUpdateArticleTitle(bloggingEventCommand)
 }
 
+func UpdateArticleBodyUsecase(bloggingEventCommand command.BloggingEventService) *impl.UpdateArticleBody {
+	return impl.NewUpdateArticleBody(bloggingEventCommand)
+}
+
 var UsecaseSet = wire.NewSet(
 	CreateArticleUsecase,
 	wire.Bind(new(usecase.CreateArticle), new(*impl.CreateArticle)),
 	UpdateArticleTitleUsecase,
 	wire.Bind(new(usecase.UpdateArticleTitle), new(*impl.UpdateArticleTitle)),
+	UpdateArticleBodyUsecase,
+	wire.Bind(new(usecase.UpdateArticleBody), new(*impl.UpdateArticleBody)),
 )

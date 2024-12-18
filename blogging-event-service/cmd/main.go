@@ -23,7 +23,6 @@ func init() {
 
 func main() {
 	dependencies := di.GetDependencies()
-
 	gormDialector := dependencies.GORMDialector
 	gwrapper.InitializeDialector(gormDialector)
 
