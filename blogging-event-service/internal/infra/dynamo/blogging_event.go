@@ -123,7 +123,7 @@ func (s *BloggingEventCommandService) UpdateArticleTitle(ctx context.Context, in
 type bloggingEventUpdateArticleBody struct {
 	EventID   string `gorm:"primaryKey"`
 	ArticleID string `gorm:"primaryKey"`
-	Body      string
+	Content   string
 }
 
 func (b bloggingEventUpdateArticleBody) TableName() string {
@@ -147,7 +147,7 @@ func (s *BloggingEventCommandService) UpdateArticleBody(ctx context.Context, in 
 		event := bloggingEventUpdateArticleBody{
 			EventID:   eventID,
 			ArticleID: articleID,
-			Body:      in.Body(),
+			Content:   in.Body(),
 		}
 		if err := tx.Create(&event).Error; err != nil {
 			err = errors.WithStack(err)
