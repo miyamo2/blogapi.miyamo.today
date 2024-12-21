@@ -163,12 +163,43 @@ func (s *BloggingEventServiceServer) UpdateArticleThumbnail(ctx context.Context,
 	return response, nil
 }
 
-func (s *BloggingEventServiceServer) AttachTag(ctx context.Context, request *grpcgen.AttachTagRequest) (*grpcgen.BloggingEventResponse, error) {
-	return s.UnimplementedBloggingEventServiceServer.AttachTag(ctx, request)
+func (s *BloggingEventServiceServer) AttachTag(ctx context.Context, request *grpcgen.AttachTagsRequest) (*grpcgen.BloggingEventResponse, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("AttachTag").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.String("article id", request.GetId()), slog.Any("attach_tag", request.GetTagNames())))
+
+	inDto := dto.NewAttachTagsInDto(request.GetId(), request.GetTagNames())
+	outDto, err := s.attachTagUsecase.Execute(ctx, &inDto)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		return nil, err
+	}
+	response, err := s.attachTagConverter.ToAttachTagsResponse(ctx, outDto)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger.WarnContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("grpc.BloggingEventResponse", nil),
+				slog.Any("error", err)))
+		return nil, err
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("return",
+			slog.Any("grpc.BloggingEventResponse", *response)))
+	return response, nil
 }
 
-func (s *BloggingEventServiceServer) DetachTag(ctx context.Context, request *grpcgen.DetachTagRequest) (*grpcgen.BloggingEventResponse, error) {
-	return s.UnimplementedBloggingEventServiceServer.DetachTag(ctx, request)
+func (s *BloggingEventServiceServer) DetachTag(ctx context.Context, request *grpcgen.DetachTagsRequest) (*grpcgen.BloggingEventResponse, error) {
+	return s.UnimplementedBloggingEventServiceServer.DetachTags(ctx, request)
 }
 
 func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStreamingServer[grpcgen.UploadImageRequest, grpcgen.UploadImageResponse]) error {
@@ -186,6 +217,8 @@ type bloggingEventServiceServerConfig struct {
 	updateArticleBodyConverter      presenters.ToUpdateArticleBodyResponse
 	updateArticleThumbnailUsecase   usecase.UpdateArticleThumbnail
 	updateArticleThumbnailConverter presenters.ToUpdateArticleThumbnailResponse
+	attachTagUsecase                usecase.AttachTags
+	attachTagConverter              presenters.ToAttachTagsResponse
 }
 
 type BloggingEventServiceServerOption func(*bloggingEventServiceServerConfig)
@@ -235,6 +268,18 @@ func WithUpdateArticleThumbnailUsecase(updateArticleThumbnailUsecase usecase.Upd
 func WithUpdateArticleThumbnailConverter(updateArticleThumbnailConverter presenters.ToUpdateArticleThumbnailResponse) BloggingEventServiceServerOption {
 	return func(c *bloggingEventServiceServerConfig) {
 		c.updateArticleThumbnailConverter = updateArticleThumbnailConverter
+	}
+}
+
+func WithAttachTagsUsecase(attachTagUsecase usecase.AttachTags) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.attachTagUsecase = attachTagUsecase
+	}
+}
+
+func WithAttachTagsConverter(attachTagConverter presenters.ToAttachTagsResponse) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.attachTagConverter = attachTagConverter
 	}
 }
 

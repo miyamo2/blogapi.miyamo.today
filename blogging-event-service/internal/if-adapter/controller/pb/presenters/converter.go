@@ -27,3 +27,8 @@ type ToUpdateArticleThumbnailResponse interface {
 	// ToUpdateArticleThumbnailResponse converts from UpdateArticleThumbnail use-case's dto to pb response.
 	ToUpdateArticleThumbnailResponse(ctx context.Context, from *dto.UpdateArticleThumbnailOutDto) (response *grpc.BloggingEventResponse, err error)
 }
+
+type ToAttachTagsResponse interface {
+	// ToAttachTagsResponse converts from AttachTags use-case's dto to pb response.
+	ToAttachTagsResponse(ctx context.Context, from *dto.AttachTagsOutDto) (response *grpc.BloggingEventResponse, err error)
+}

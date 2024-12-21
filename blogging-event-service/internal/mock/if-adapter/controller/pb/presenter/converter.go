@@ -173,3 +173,42 @@ func (mr *MockToUpdateArticleThumbnailResponseMockRecorder) ToUpdateArticleThumb
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleThumbnailResponse", reflect.TypeOf((*MockToUpdateArticleThumbnailResponse)(nil).ToUpdateArticleThumbnailResponse), ctx, from)
 }
+
+// MockToAttachTagsResponse is a mock of ToAttachTagsResponse interface.
+type MockToAttachTagsResponse struct {
+	ctrl     *gomock.Controller
+	recorder *MockToAttachTagsResponseMockRecorder
+	isgomock struct{}
+}
+
+// MockToAttachTagsResponseMockRecorder is the mock recorder for MockToAttachTagsResponse.
+type MockToAttachTagsResponseMockRecorder struct {
+	mock *MockToAttachTagsResponse
+}
+
+// NewMockToAttachTagsResponse creates a new mock instance.
+func NewMockToAttachTagsResponse(ctrl *gomock.Controller) *MockToAttachTagsResponse {
+	mock := &MockToAttachTagsResponse{ctrl: ctrl}
+	mock.recorder = &MockToAttachTagsResponseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockToAttachTagsResponse) EXPECT() *MockToAttachTagsResponseMockRecorder {
+	return m.recorder
+}
+
+// ToAttachTagsResponse mocks base method.
+func (m *MockToAttachTagsResponse) ToAttachTagsResponse(ctx context.Context, from *dto.AttachTagsOutDto) (*grpc.BloggingEventResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToAttachTagsResponse", ctx, from)
+	ret0, _ := ret[0].(*grpc.BloggingEventResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToAttachTagsResponse indicates an expected call of ToAttachTagsResponse.
+func (mr *MockToAttachTagsResponseMockRecorder) ToAttachTagsResponse(ctx, from any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToAttachTagsResponse", reflect.TypeOf((*MockToAttachTagsResponse)(nil).ToAttachTagsResponse), ctx, from)
+}

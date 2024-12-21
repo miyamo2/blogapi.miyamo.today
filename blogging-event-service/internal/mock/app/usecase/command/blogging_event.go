@@ -42,6 +42,20 @@ func (m *MockBloggingEventService) EXPECT() *MockBloggingEventServiceMockRecorde
 	return m.recorder
 }
 
+// AttachTags mocks base method.
+func (m *MockBloggingEventService) AttachTags(ctx context.Context, command model.AttachTagsEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AttachTags", ctx, command, out)
+	ret0, _ := ret[0].(db.Statement)
+	return ret0
+}
+
+// AttachTags indicates an expected call of AttachTags.
+func (mr *MockBloggingEventServiceMockRecorder) AttachTags(ctx, command, out any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachTags", reflect.TypeOf((*MockBloggingEventService)(nil).AttachTags), ctx, command, out)
+}
+
 // CreateArticle mocks base method.
 func (m *MockBloggingEventService) CreateArticle(ctx context.Context, in model.CreateArticleEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
 	m.ctrl.T.Helper()

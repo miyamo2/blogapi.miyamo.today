@@ -102,6 +102,30 @@ func NewUpdateArticleThumbnailEvent(id string, thumbnail url.URL) UpdateArticleT
 	}
 }
 
+// AttachTagsEvent is an event to attach tags to the article.
+type AttachTagsEvent struct {
+	articleID string
+	tags      []string
+}
+
+// ArticleID returns the article id.
+func (a AttachTagsEvent) ArticleID() string {
+	return a.articleID
+}
+
+// Tags returns the tags.
+func (a AttachTagsEvent) Tags() []string {
+	return a.tags
+}
+
+// NewAttachTagsEvent creates a new AttachTagsEvent.
+func NewAttachTagsEvent(articleID string, tags []string) AttachTagsEvent {
+	return AttachTagsEvent{
+		articleID: articleID,
+		tags:      tags,
+	}
+}
+
 type BloggingEventKey struct {
 	eventID   string
 	articleID string

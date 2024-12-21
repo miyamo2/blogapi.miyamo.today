@@ -174,3 +174,44 @@ func TestConverter_ToUpdateArticleThumbnailResponse(t *testing.T) {
 		})
 	}
 }
+
+func TestConverter_ToAttachTagsResponse(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		from func() *dto.AttachTagsOutDto
+	}
+	type want struct {
+		result *grpc.BloggingEventResponse
+		err    error
+	}
+	type testCase struct {
+		args args
+		want want
+	}
+	tests := map[string]testCase{
+		"happy_path/single": {
+			args: args{
+				ctx: context.Background(),
+				from: func() *dto.AttachTagsOutDto {
+					o := dto.NewAttachTagsOutDto("abc", "def")
+					return &o
+				},
+			},
+			want: want{
+				result: &grpc.BloggingEventResponse{EventId: "abc", ArticleId: "def"},
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			c := NewConverter()
+			got, err := c.ToAttachTagsResponse(tt.args.ctx, tt.args.from())
+			if diff := cmp.Diff(got, tt.want.result, protocmp.Transform()); diff != "" {
+				t.Errorf("ToAttachTagsResponse() = %v, want %v", got, tt.want)
+			}
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("ToAttachTagsResponse() error = %v, want %v", err, tt.want.err)
+			}
+		})
+	}
+}

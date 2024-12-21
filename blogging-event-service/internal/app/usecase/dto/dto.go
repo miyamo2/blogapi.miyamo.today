@@ -207,3 +207,51 @@ func NewUpdateArticleThumbnailOutDto(eventID, articleID string) UpdateArticleThu
 		articleID: articleID,
 	}
 }
+
+// AttachTagsInDto is an Input DTO for AttachTag use-case
+type AttachTagsInDto struct {
+	id       string
+	tagNames []string
+}
+
+// ID returns the ID of the article to attach tags
+func (i AttachTagsInDto) ID() string {
+	return i.id
+}
+
+// TagNames returns the tag names to attach
+func (i AttachTagsInDto) TagNames() []string {
+	return i.tagNames
+}
+
+// NewAttachTagsInDto is constructor of AttachTagsInDto.
+func NewAttachTagsInDto(id string, names []string) AttachTagsInDto {
+	return AttachTagsInDto{
+		id:       id,
+		tagNames: names,
+	}
+}
+
+// AttachTagsOutDto is an Output DTO for AttachTags use-case
+type AttachTagsOutDto struct {
+	eventID   string
+	articleID string
+}
+
+// EventID returns the ID of the event
+func (o AttachTagsOutDto) EventID() string {
+	return o.eventID
+}
+
+// ArticleID returns the ID of the article
+func (o AttachTagsOutDto) ArticleID() string {
+	return o.articleID
+}
+
+// NewAttachTagsOutDto is constructor of AttachTagsOutDto.
+func NewAttachTagsOutDto(eventID, articleID string) AttachTagsOutDto {
+	return AttachTagsOutDto{
+		eventID:   eventID,
+		articleID: articleID,
+	}
+}
