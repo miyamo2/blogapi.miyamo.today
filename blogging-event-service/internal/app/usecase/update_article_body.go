@@ -37,6 +37,7 @@ func (u *UpdateArticleBody) Execute(ctx context.Context, in *dto.UpdateArticleBo
 				slog.Group("return",
 					slog.Any("dto.UpdateArticleBody", nil),
 					slog.Any("error", err)))
+			return
 		}
 		logger.InfoContext(ctx, "END")
 	}()
