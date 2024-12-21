@@ -8,9 +8,10 @@ import (
 
 // compatibility check
 var (
-	_ presenters.ToCreateArticleResponse      = (*impl.Converter)(nil)
-	_ presenters.ToUpdateArticleTitleResponse = (*impl.Converter)(nil)
-	_ presenters.ToUpdateArticleBodyResponse  = (*impl.Converter)(nil)
+	_ presenters.ToCreateArticleResponse          = (*impl.Converter)(nil)
+	_ presenters.ToUpdateArticleTitleResponse     = (*impl.Converter)(nil)
+	_ presenters.ToUpdateArticleBodyResponse      = (*impl.Converter)(nil)
+	_ presenters.ToUpdateArticleThumbnailResponse = (*impl.Converter)(nil)
 )
 
 var PresenterSet = wire.NewSet(
@@ -18,4 +19,5 @@ var PresenterSet = wire.NewSet(
 	wire.Bind(new(presenters.ToCreateArticleResponse), new(*impl.Converter)),
 	wire.Bind(new(presenters.ToUpdateArticleTitleResponse), new(*impl.Converter)),
 	wire.Bind(new(presenters.ToUpdateArticleBodyResponse), new(*impl.Converter)),
+	wire.Bind(new(presenters.ToUpdateArticleThumbnailResponse), new(*impl.Converter)),
 )

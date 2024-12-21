@@ -11,4 +11,5 @@ type BloggingEventService interface {
 	CreateArticle(ctx context.Context, in model.CreateArticleEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement
 	UpdateArticleTitle(ctx context.Context, in model.UpdateArticleTitleEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement
 	UpdateArticleBody(ctx context.Context, command model.UpdateArticleBodyEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement
+	UpdateArticleThumbnail(ctx context.Context, command model.UpdateArticleThumbnailEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement
 }

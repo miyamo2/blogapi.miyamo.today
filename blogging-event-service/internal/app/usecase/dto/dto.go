@@ -1,5 +1,7 @@
 package dto
 
+import "net/url"
+
 // CreateArticleInDto is an Input DTO for CreateArticle use-case
 type CreateArticleInDto struct {
 	title        string
@@ -153,6 +155,54 @@ func (o UpdateArticleBodyOutDto) ArticleID() string {
 // NewUpdateArticleBodyOutDto is constructor of UpdateArticleBodyOutDto.
 func NewUpdateArticleBodyOutDto(eventID, articleID string) UpdateArticleBodyOutDto {
 	return UpdateArticleBodyOutDto{
+		eventID:   eventID,
+		articleID: articleID,
+	}
+}
+
+// UpdateArticleThumbnailInDto is an Input DTO for UpdateArticleThumbnail use-case
+type UpdateArticleThumbnailInDto struct {
+	id           string
+	thumbnailUrl url.URL
+}
+
+// ID returns the ID of the article to be updated
+func (i UpdateArticleThumbnailInDto) ID() string {
+	return i.id
+}
+
+// ThumbnailUrl returns the thumbnail URL of the article to be updated
+func (i UpdateArticleThumbnailInDto) ThumbnailUrl() url.URL {
+	return i.thumbnailUrl
+}
+
+// NewUpdateArticleThumbnailInDto is constructor of UpdateArticleThumbnailInDto.
+func NewUpdateArticleThumbnailInDto(id string, thumbnailUrl url.URL) UpdateArticleThumbnailInDto {
+	return UpdateArticleThumbnailInDto{
+		id:           id,
+		thumbnailUrl: thumbnailUrl,
+	}
+}
+
+// UpdateArticleThumbnailOutDto is an Output DTO for UpdateArticleThumbnail use-case
+type UpdateArticleThumbnailOutDto struct {
+	eventID   string
+	articleID string
+}
+
+// EventID returns the ID of the event
+func (o UpdateArticleThumbnailOutDto) EventID() string {
+	return o.eventID
+}
+
+// ArticleID returns the ID of the article
+func (o UpdateArticleThumbnailOutDto) ArticleID() string {
+	return o.articleID
+}
+
+// NewUpdateArticleThumbnailOutDto is constructor of UpdateArticleThumbnailOutDto.
+func NewUpdateArticleThumbnailOutDto(eventID, articleID string) UpdateArticleThumbnailOutDto {
+	return UpdateArticleThumbnailOutDto{
 		eventID:   eventID,
 		articleID: articleID,
 	}

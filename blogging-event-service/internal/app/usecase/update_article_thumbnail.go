@@ -14,13 +14,13 @@ import (
 	"log/slog"
 )
 
-// UpdateArticleBody is a use-case for updating an article body.
-type UpdateArticleBody struct {
+// UpdateArticleThumbnail is a use-case for updating an article thumbnail.
+type UpdateArticleThumbnail struct {
 	bloggingEventCommand command.BloggingEventService
 }
 
-// Execute executes the UpdateArticleBody use-case.
-func (u *UpdateArticleBody) Execute(ctx context.Context, in *dto.UpdateArticleBodyInDto) (*dto.UpdateArticleBodyOutDto, error) {
+// Execute executes the UpdateArticleThumbnail use-case.
+func (u *UpdateArticleThumbnail) Execute(ctx context.Context, in *dto.UpdateArticleThumbnailInDto) (*dto.UpdateArticleThumbnailOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
@@ -35,27 +35,27 @@ func (u *UpdateArticleBody) Execute(ctx context.Context, in *dto.UpdateArticleBo
 		if err != nil {
 			logger.WarnContext(ctx, "END",
 				slog.Group("return",
-					slog.Any("dto.UpdateArticleBody", nil),
+					slog.Any("dto.UpdateArticleThumbnail", nil),
 					slog.Any("error", err)))
 			return
 		}
 		logger.InfoContext(ctx, "END")
 	}()
 
-	command := model.NewUpdateArticleBodyEvent(in.ID(), in.Body())
+	command := model.NewUpdateArticleThumbnailEvent(in.ID(), in.ThumbnailUrl())
 	commandOut := db.NewSingleStatementResult[*model.BloggingEventKey]()
-	err = u.bloggingEventCommand.UpdateArticleBody(ctx, command, commandOut).Execute(ctx)
+	err = u.bloggingEventCommand.UpdateArticleThumbnail(ctx, command, commandOut).Execute(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		return nil, err
 	}
 
 	key := commandOut.StrictGet()
-	result := dto.NewUpdateArticleBodyOutDto(key.EventID(), key.ArticleID())
+	result := dto.NewUpdateArticleThumbnailOutDto(key.EventID(), key.ArticleID())
 	return &result, nil
 }
 
-// NewUpdateArticleBody is a constructor for UpdateArticleBody use-case.
-func NewUpdateArticleBody(bloggingEventCommand command.BloggingEventService) *UpdateArticleBody {
-	return &UpdateArticleBody{bloggingEventCommand: bloggingEventCommand}
+// NewUpdateArticleThumbnail is a constructor for UpdateArticleThumbnail use-case.
+func NewUpdateArticleThumbnail(bloggingEventCommand command.BloggingEventService) *UpdateArticleThumbnail {
+	return &UpdateArticleThumbnail{bloggingEventCommand: bloggingEventCommand}
 }

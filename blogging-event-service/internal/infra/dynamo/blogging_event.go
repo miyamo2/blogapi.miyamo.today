@@ -161,6 +161,44 @@ func (s *BloggingEventCommandService) UpdateArticleBody(ctx context.Context, in 
 	}, out)
 }
 
+type bloggingEventUpdateThumbnail struct {
+	EventID   string `gorm:"primaryKey"`
+	ArticleID string `gorm:"primaryKey"`
+	Thumbnail string
+}
+
+func (s *BloggingEventCommandService) UpdateArticleThumbnail(ctx context.Context, command model.UpdateArticleThumbnailEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleThumbnail").End()
+	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
+		nrtx := newrelic.FromContext(ctx)
+		defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleThumbnail").End()
+		logger := slog.Default()
+		logger.Info("START")
+
+		tx = tx.WithContext(ctx)
+
+		eventID := fmt.Sprintf("%s", s.ulidGen())
+		articleID := command.ArticleID()
+		thumbnail := command.Thumbnail()
+
+		event := bloggingEventUpdateThumbnail{
+			EventID:   eventID,
+			ArticleID: articleID,
+			Thumbnail: thumbnail.String(),
+		}
+		if err := tx.Create(&event).Error; err != nil {
+			err = errors.WithStack(err)
+			nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		}
+
+		key := model.NewBloggingEventKey(eventID, articleID)
+		out.Set(&key)
+		logger.Info("END")
+		return nil
+	}, out)
+}
+
 func NewBloggingEventCommandService(ulidGen *pkg.ULIDGenerator) *BloggingEventCommandService {
 	if ulidGen == nil {
 		return &BloggingEventCommandService{

@@ -18,6 +18,8 @@ func NewBloggingEventServiceServer(
 	updateArticleTitleConverter presenters.ToUpdateArticleTitleResponse,
 	updateArticleBodyUsecase usecase.UpdateArticleBody,
 	updateArticleBodyConverter presenters.ToUpdateArticleBodyResponse,
+	updateArticleThumbnailUsecase usecase.UpdateArticleThumbnail,
+	updateArticleThumbnailConverter presenters.ToUpdateArticleThumbnailResponse,
 ) *pb.BloggingEventServiceServer {
 	return pb.NewBloggingEventServiceServer(
 		pb.WithCreateArticleUsecase(createArticleUsecase),
@@ -25,7 +27,9 @@ func NewBloggingEventServiceServer(
 		pb.WithUpdateArticleTitleUsecase(updateArticleTitleUsecase),
 		pb.WithUpdateArticleTitleConverter(updateArticleTitleConverter),
 		pb.WithUpdateArticleBodyUsecase(updateArticleBodyUsecase),
-		pb.WithUpdateArticleBodyConverter(updateArticleBodyConverter))
+		pb.WithUpdateArticleBodyConverter(updateArticleBodyConverter),
+		pb.WithUpdateArticleThumbnailUsecase(updateArticleThumbnailUsecase),
+		pb.WithUpdateArticleThumbnailConverter(updateArticleThumbnailConverter))
 }
 
 var BloggingEventServiceServerSet = wire.NewSet(

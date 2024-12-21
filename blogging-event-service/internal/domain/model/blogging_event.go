@@ -1,5 +1,7 @@
 package model
 
+import "net/url"
+
 type CreateArticleEvent struct {
 	title     string
 	content   string
@@ -73,6 +75,30 @@ func NewUpdateArticleBodyEvent(id string, body string) UpdateArticleBodyEvent {
 	return UpdateArticleBodyEvent{
 		articleID: id,
 		body:      body,
+	}
+}
+
+// UpdateArticleThumbnailEvent is an event to update the article thumbnail.
+type UpdateArticleThumbnailEvent struct {
+	articleID string
+	thumbnail url.URL
+}
+
+// ArticleID returns the article id.
+func (u UpdateArticleThumbnailEvent) ArticleID() string {
+	return u.articleID
+}
+
+// Thumbnail returns the article thumbnail.
+func (u UpdateArticleThumbnailEvent) Thumbnail() url.URL {
+	return u.thumbnail
+}
+
+// NewUpdateArticleThumbnailEvent creates a new UpdateArticleThumbnailEvent.
+func NewUpdateArticleThumbnailEvent(id string, thumbnail url.URL) UpdateArticleThumbnailEvent {
+	return UpdateArticleThumbnailEvent{
+		articleID: id,
+		thumbnail: thumbnail,
 	}
 }
 

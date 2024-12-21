@@ -77,6 +77,27 @@ func (c Converter) ToUpdateArticleBodyResponse(ctx context.Context, from *dto.Up
 	return
 }
 
+func (c Converter) ToUpdateArticleThumbnailResponse(ctx context.Context, from *dto.UpdateArticleThumbnailOutDto) (response *grpc.BloggingEventResponse, err error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToUpdateArticleThumbnailResponse").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+		err = nil
+	}
+	logger.InfoContext(ctx, "BEGIN", slog.Group("parameters", slog.Any("from", *from)))
+	defer func() {
+		logger.InfoContext(ctx, "END", slog.Group("return", slog.Any("response", *response)))
+	}()
+	response = &grpc.BloggingEventResponse{
+		EventId:   from.EventID(),
+		ArticleId: from.ArticleID(),
+	}
+	return
+}
+
 func NewConverter() *Converter {
 	return &Converter{}
 }

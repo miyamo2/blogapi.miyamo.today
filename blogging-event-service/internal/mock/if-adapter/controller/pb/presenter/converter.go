@@ -134,3 +134,42 @@ func (mr *MockToUpdateArticleBodyResponseMockRecorder) ToUpdateArticleBodyRespon
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleBodyResponse", reflect.TypeOf((*MockToUpdateArticleBodyResponse)(nil).ToUpdateArticleBodyResponse), ctx, from)
 }
+
+// MockToUpdateArticleThumbnailResponse is a mock of ToUpdateArticleThumbnailResponse interface.
+type MockToUpdateArticleThumbnailResponse struct {
+	ctrl     *gomock.Controller
+	recorder *MockToUpdateArticleThumbnailResponseMockRecorder
+	isgomock struct{}
+}
+
+// MockToUpdateArticleThumbnailResponseMockRecorder is the mock recorder for MockToUpdateArticleThumbnailResponse.
+type MockToUpdateArticleThumbnailResponseMockRecorder struct {
+	mock *MockToUpdateArticleThumbnailResponse
+}
+
+// NewMockToUpdateArticleThumbnailResponse creates a new mock instance.
+func NewMockToUpdateArticleThumbnailResponse(ctrl *gomock.Controller) *MockToUpdateArticleThumbnailResponse {
+	mock := &MockToUpdateArticleThumbnailResponse{ctrl: ctrl}
+	mock.recorder = &MockToUpdateArticleThumbnailResponseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockToUpdateArticleThumbnailResponse) EXPECT() *MockToUpdateArticleThumbnailResponseMockRecorder {
+	return m.recorder
+}
+
+// ToUpdateArticleThumbnailResponse mocks base method.
+func (m *MockToUpdateArticleThumbnailResponse) ToUpdateArticleThumbnailResponse(ctx context.Context, from *dto.UpdateArticleThumbnailOutDto) (*grpc.BloggingEventResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToUpdateArticleThumbnailResponse", ctx, from)
+	ret0, _ := ret[0].(*grpc.BloggingEventResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToUpdateArticleThumbnailResponse indicates an expected call of ToUpdateArticleThumbnailResponse.
+func (mr *MockToUpdateArticleThumbnailResponseMockRecorder) ToUpdateArticleThumbnailResponse(ctx, from any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleThumbnailResponse", reflect.TypeOf((*MockToUpdateArticleThumbnailResponse)(nil).ToUpdateArticleThumbnailResponse), ctx, from)
+}

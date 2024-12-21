@@ -9,9 +9,10 @@ import (
 
 // compatibility check
 var (
-	_ usecase.CreateArticle      = (*impl.CreateArticle)(nil)
-	_ usecase.UpdateArticleTitle = (*impl.UpdateArticleTitle)(nil)
-	_ usecase.UpdateArticleBody  = (*impl.UpdateArticleBody)(nil)
+	_ usecase.CreateArticle          = (*impl.CreateArticle)(nil)
+	_ usecase.UpdateArticleTitle     = (*impl.UpdateArticleTitle)(nil)
+	_ usecase.UpdateArticleBody      = (*impl.UpdateArticleBody)(nil)
+	_ usecase.UpdateArticleThumbnail = (*impl.UpdateArticleThumbnail)(nil)
 )
 
 func CreateArticleUsecase(bloggingEventCommand command.BloggingEventService) *impl.CreateArticle {
@@ -26,6 +27,10 @@ func UpdateArticleBodyUsecase(bloggingEventCommand command.BloggingEventService)
 	return impl.NewUpdateArticleBody(bloggingEventCommand)
 }
 
+func UpdateArticleThumbnailUsecase(bloggingEventCommand command.BloggingEventService) *impl.UpdateArticleThumbnail {
+	return impl.NewUpdateArticleThumbnail(bloggingEventCommand)
+}
+
 var UsecaseSet = wire.NewSet(
 	CreateArticleUsecase,
 	wire.Bind(new(usecase.CreateArticle), new(*impl.CreateArticle)),
@@ -33,4 +38,6 @@ var UsecaseSet = wire.NewSet(
 	wire.Bind(new(usecase.UpdateArticleTitle), new(*impl.UpdateArticleTitle)),
 	UpdateArticleBodyUsecase,
 	wire.Bind(new(usecase.UpdateArticleBody), new(*impl.UpdateArticleBody)),
+	UpdateArticleThumbnailUsecase,
+	wire.Bind(new(usecase.UpdateArticleThumbnail), new(*impl.UpdateArticleThumbnail)),
 )
