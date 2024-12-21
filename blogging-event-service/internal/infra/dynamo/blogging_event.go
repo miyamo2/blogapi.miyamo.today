@@ -167,6 +167,10 @@ type bloggingEventUpdateThumbnail struct {
 	Thumbnail string
 }
 
+func (b bloggingEventUpdateThumbnail) TableName() string {
+	return os.Getenv("BLOGGING_EVENTS_TABLE_NAME")
+}
+
 func (s *BloggingEventCommandService) UpdateArticleThumbnail(ctx context.Context, command model.UpdateArticleThumbnailEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleThumbnail").End()
@@ -203,6 +207,10 @@ type bloggingEventAttachTags struct {
 	EventID    string `gorm:"primaryKey"`
 	ArticleID  string `gorm:"primaryKey"`
 	AttachTags sqldav.Set[string]
+}
+
+func (b bloggingEventAttachTags) TableName() string {
+	return os.Getenv("BLOGGING_EVENTS_TABLE_NAME")
 }
 
 func (s *BloggingEventCommandService) AttachTags(ctx context.Context, command model.AttachTagsEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
