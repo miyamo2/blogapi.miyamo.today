@@ -163,7 +163,7 @@ func (s *BloggingEventServiceServer) UpdateArticleThumbnail(ctx context.Context,
 	return response, nil
 }
 
-func (s *BloggingEventServiceServer) AttachTag(ctx context.Context, request *grpcgen.AttachTagsRequest) (*grpcgen.BloggingEventResponse, error) {
+func (s *BloggingEventServiceServer) AttachTags(ctx context.Context, request *grpcgen.AttachTagsRequest) (*grpcgen.BloggingEventResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("AttachTag").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -198,7 +198,7 @@ func (s *BloggingEventServiceServer) AttachTag(ctx context.Context, request *grp
 	return response, nil
 }
 
-func (s *BloggingEventServiceServer) DetachTag(ctx context.Context, request *grpcgen.DetachTagsRequest) (*grpcgen.BloggingEventResponse, error) {
+func (s *BloggingEventServiceServer) DetachTags(ctx context.Context, request *grpcgen.DetachTagsRequest) (*grpcgen.BloggingEventResponse, error) {
 	return s.UnimplementedBloggingEventServiceServer.DetachTags(ctx, request)
 }
 
