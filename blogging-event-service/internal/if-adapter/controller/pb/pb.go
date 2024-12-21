@@ -13,6 +13,7 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/grpc"
 	"log/slog"
+	"net/url"
 )
 
 var _ grpcgen.BloggingEventServiceServer = (*BloggingEventServiceServer)(nil)
@@ -124,7 +125,42 @@ func (s *BloggingEventServiceServer) UpdateArticleBody(ctx context.Context, requ
 }
 
 func (s *BloggingEventServiceServer) UpdateArticleThumbnail(ctx context.Context, request *grpcgen.UpdateArticleThumbnailRequest) (*grpcgen.BloggingEventResponse, error) {
-	return s.UnimplementedBloggingEventServiceServer.UpdateArticleThumbnail(ctx, request)
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("UpdateArticleThumbnail").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.String("article id", request.GetId()), slog.String("thumbnail", request.GetThumbnailUrl())))
+
+	thumbnailUrl, err := url.Parse(request.GetThumbnailUrl())
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		return nil, err
+	}
+	inDto := dto.NewUpdateArticleThumbnailInDto(request.GetId(), *thumbnailUrl)
+	outDto, err := s.updateArticleThumbnailUsecase.Execute(ctx, &inDto)
+	if err != nil {
+		return nil, err
+	}
+	response, err := s.updateArticleThumbnailConverter.ToUpdateArticleThumbnailResponse(ctx, outDto)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger.WarnContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("grpc.BloggingEventResponse", nil),
+				slog.Any("error", err)))
+		return nil, err
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("return",
+			slog.Any("grpc.BloggingEventResponse", *response)))
+	return response, nil
 }
 
 func (s *BloggingEventServiceServer) AttachTag(ctx context.Context, request *grpcgen.AttachTagRequest) (*grpcgen.BloggingEventResponse, error) {
@@ -142,12 +178,14 @@ func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStre
 func (s *BloggingEventServiceServer) mustEmbedUnimplementedBloggingEventServiceServer() {}
 
 type bloggingEventServiceServerConfig struct {
-	createArticleUsecase        usecase.CreateArticle
-	createArticleConverter      presenters.ToCreateArticleResponse
-	updateArticleTitleUsecase   usecase.UpdateArticleTitle
-	updateArticleTitleConverter presenters.ToUpdateArticleTitleResponse
-	updateArticleBodyUsecase    usecase.UpdateArticleBody
-	updateArticleBodyConverter  presenters.ToUpdateArticleBodyResponse
+	createArticleUsecase            usecase.CreateArticle
+	createArticleConverter          presenters.ToCreateArticleResponse
+	updateArticleTitleUsecase       usecase.UpdateArticleTitle
+	updateArticleTitleConverter     presenters.ToUpdateArticleTitleResponse
+	updateArticleBodyUsecase        usecase.UpdateArticleBody
+	updateArticleBodyConverter      presenters.ToUpdateArticleBodyResponse
+	updateArticleThumbnailUsecase   usecase.UpdateArticleThumbnail
+	updateArticleThumbnailConverter presenters.ToUpdateArticleThumbnailResponse
 }
 
 type BloggingEventServiceServerOption func(*bloggingEventServiceServerConfig)
@@ -185,6 +223,18 @@ func WithUpdateArticleBodyUsecase(updateArticleBodyUsecase usecase.UpdateArticle
 func WithUpdateArticleBodyConverter(updateArticleBodyConverter presenters.ToUpdateArticleBodyResponse) BloggingEventServiceServerOption {
 	return func(c *bloggingEventServiceServerConfig) {
 		c.updateArticleBodyConverter = updateArticleBodyConverter
+	}
+}
+
+func WithUpdateArticleThumbnailUsecase(updateArticleThumbnailUsecase usecase.UpdateArticleThumbnail) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.updateArticleThumbnailUsecase = updateArticleThumbnailUsecase
+	}
+}
+
+func WithUpdateArticleThumbnailConverter(updateArticleThumbnailConverter presenters.ToUpdateArticleThumbnailResponse) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.updateArticleThumbnailConverter = updateArticleThumbnailConverter
 	}
 }
 

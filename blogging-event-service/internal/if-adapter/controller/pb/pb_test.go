@@ -8,6 +8,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
 	mpresenter "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/mock/if-adapter/controller/pb/presenter"
 	musecase "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/mock/if-adapter/controller/pb/usecase"
+	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/testing/protocmp"
 	"testing"
@@ -370,6 +371,127 @@ func TestBloggingEventServiceServer_UpdateArticleBody(t *testing.T) {
 			tt.setupConverter(out, response, conv)
 			s := NewBloggingEventServiceServer(WithUpdateArticleBodyUsecase(u), WithUpdateArticleBodyConverter(conv))
 			got, err := s.UpdateArticleBody(tt.args.ctx, tt.args.in)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
+			}
+			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
+			}
+		})
+	}
+}
+
+func TestBloggingEventServiceServer_UpdateArticleThumbnail(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		in  *grpc.UpdateArticleThumbnailRequest
+	}
+	type want struct {
+		response *grpc.BloggingEventResponse
+		err      error
+	}
+	type testCase struct {
+		outDto         dto.UpdateArticleThumbnailOutDto
+		setupUsecase   func(out dto.UpdateArticleThumbnailOutDto, u *musecase.MockUpdateArticleThumbnail)
+		setupConverter func(from dto.UpdateArticleThumbnailOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToUpdateArticleThumbnailResponse)
+		args           args
+		want           want
+	}
+
+	errInUsecase := errors.New("error in usecase")
+	errInConverter := errors.New("error in converter")
+
+	tests := map[string]testCase{
+		"happy_path": {
+			outDto: dto.NewUpdateArticleThumbnailOutDto("eventID", "articleID"),
+			setupUsecase: func(out dto.UpdateArticleThumbnailOutDto, u *musecase.MockUpdateArticleThumbnail) {
+				in := dto.NewUpdateArticleThumbnailInDto("articleID", *pkg.MustParseURL("https://example.com/example.jpg"))
+				u.EXPECT().
+					Execute(gomock.Any(), &in).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.UpdateArticleThumbnailOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToUpdateArticleThumbnailResponse) {
+				conv.EXPECT().ToUpdateArticleThumbnailResponse(gomock.Any(), &from).
+					Return(res, nil).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: &grpc.UpdateArticleThumbnailRequest{
+					Id:           "articleID",
+					ThumbnailUrl: "https://example.com/example.jpg",
+				},
+			},
+			want: want{
+				response: &grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"},
+			},
+		},
+		"unhappy_path/usecase-returns-error": {
+			outDto: dto.NewUpdateArticleThumbnailOutDto("", ""),
+			setupUsecase: func(out dto.UpdateArticleThumbnailOutDto, u *musecase.MockUpdateArticleThumbnail) {
+				in := dto.NewUpdateArticleThumbnailInDto("articleID", *pkg.MustParseURL("https://example.com/example.jpg"))
+				u.EXPECT().
+					Execute(gomock.Any(), &in).
+					Return(&out, errInUsecase).
+					Times(1)
+			},
+			setupConverter: func(from dto.UpdateArticleThumbnailOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToUpdateArticleThumbnailResponse) {
+				conv.EXPECT().
+					ToUpdateArticleThumbnailResponse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: &grpc.UpdateArticleThumbnailRequest{
+					Id:           "articleID",
+					ThumbnailUrl: "https://example.com/example.jpg",
+				},
+			},
+			want: want{
+				err: errInUsecase,
+			},
+		},
+		"unhappy_path/converter-returns-error": {
+			outDto: dto.NewUpdateArticleThumbnailOutDto("eventID", "articleID"),
+			setupUsecase: func(out dto.UpdateArticleThumbnailOutDto, u *musecase.MockUpdateArticleThumbnail) {
+				in := dto.NewUpdateArticleThumbnailInDto("articleID", *pkg.MustParseURL("https://example.com/example.jpg"))
+				u.EXPECT().
+					Execute(gomock.Any(), &in).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.UpdateArticleThumbnailOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToUpdateArticleThumbnailResponse) {
+				conv.EXPECT().
+					ToUpdateArticleThumbnailResponse(gomock.Any(), &from).
+					Return(nil, errInConverter).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: &grpc.UpdateArticleThumbnailRequest{
+					Id:           "articleID",
+					ThumbnailUrl: "https://example.com/example.jpg",
+				},
+			},
+			want: want{
+				err: errInConverter,
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			out := tt.outDto
+			u := musecase.NewMockUpdateArticleThumbnail(ctrl)
+			tt.setupUsecase(out, u)
+			response := tt.want.response
+			conv := mpresenter.NewMockToUpdateArticleThumbnailResponse(ctrl)
+			tt.setupConverter(out, response, conv)
+			s := NewBloggingEventServiceServer(WithUpdateArticleThumbnailUsecase(u), WithUpdateArticleThumbnailConverter(conv))
+			got, err := s.UpdateArticleThumbnail(tt.args.ctx, tt.args.in)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
 			}

@@ -22,3 +22,8 @@ type ToUpdateArticleBodyResponse interface {
 	// ToUpdateArticleBodyResponse converts from UpdateArticleBody use-case's dto to pb response.
 	ToUpdateArticleBodyResponse(ctx context.Context, from *dto.UpdateArticleBodyOutDto) (response *grpc.BloggingEventResponse, err error)
 }
+
+type ToUpdateArticleThumbnailResponse interface {
+	// ToUpdateArticleThumbnailResponse converts from UpdateArticleThumbnail use-case's dto to pb response.
+	ToUpdateArticleThumbnailResponse(ctx context.Context, from *dto.UpdateArticleThumbnailOutDto) (response *grpc.BloggingEventResponse, err error)
+}
