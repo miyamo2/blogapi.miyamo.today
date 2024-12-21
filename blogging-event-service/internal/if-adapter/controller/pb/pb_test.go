@@ -501,3 +501,124 @@ func TestBloggingEventServiceServer_UpdateArticleThumbnail(t *testing.T) {
 		})
 	}
 }
+
+func TestBloggingEventServiceServer_AttachTags(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		in  *grpc.AttachTagsRequest
+	}
+	type want struct {
+		response *grpc.BloggingEventResponse
+		err      error
+	}
+	type testCase struct {
+		outDto         dto.AttachTagsOutDto
+		setupUsecase   func(out dto.AttachTagsOutDto, u *musecase.MockAttachTags)
+		setupConverter func(from dto.AttachTagsOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToAttachTagsResponse)
+		args           args
+		want           want
+	}
+
+	errInUsecase := errors.New("error in usecase")
+	errInConverter := errors.New("error in converter")
+
+	tests := map[string]testCase{
+		"happy_path": {
+			outDto: dto.NewAttachTagsOutDto("eventID", "articleID"),
+			setupUsecase: func(out dto.AttachTagsOutDto, u *musecase.MockAttachTags) {
+				in := dto.NewAttachTagsInDto("articleID", []string{"tag1", "tag2"})
+				u.EXPECT().
+					Execute(gomock.Any(), &in).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.AttachTagsOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToAttachTagsResponse) {
+				conv.EXPECT().ToAttachTagsResponse(gomock.Any(), &from).
+					Return(res, nil).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: &grpc.AttachTagsRequest{
+					Id:       "articleID",
+					TagNames: []string{"tag1", "tag2"},
+				},
+			},
+			want: want{
+				response: &grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"},
+			},
+		},
+		"unhappy_path/usecase-returns-error": {
+			outDto: dto.NewAttachTagsOutDto("", ""),
+			setupUsecase: func(out dto.AttachTagsOutDto, u *musecase.MockAttachTags) {
+				in := dto.NewAttachTagsInDto("articleID", []string{"tag1", "tag2"})
+				u.EXPECT().
+					Execute(gomock.Any(), &in).
+					Return(&out, errInUsecase).
+					Times(1)
+			},
+			setupConverter: func(from dto.AttachTagsOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToAttachTagsResponse) {
+				conv.EXPECT().
+					ToAttachTagsResponse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: &grpc.AttachTagsRequest{
+					Id:       "articleID",
+					TagNames: []string{"tag1", "tag2"},
+				},
+			},
+			want: want{
+				err: errInUsecase,
+			},
+		},
+		"unhappy_path/converter-returns-error": {
+			outDto: dto.NewAttachTagsOutDto("eventID", "articleID"),
+			setupUsecase: func(out dto.AttachTagsOutDto, u *musecase.MockAttachTags) {
+				in := dto.NewAttachTagsInDto("articleID", []string{"tag1", "tag2"})
+				u.EXPECT().
+					Execute(gomock.Any(), &in).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.AttachTagsOutDto, res *grpc.BloggingEventResponse, conv *mpresenter.MockToAttachTagsResponse) {
+				conv.EXPECT().
+					ToAttachTagsResponse(gomock.Any(), &from).
+					Return(nil, errInConverter).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: &grpc.AttachTagsRequest{
+					Id:       "articleID",
+					TagNames: []string{"tag1", "tag2"},
+				},
+			},
+			want: want{
+				err: errInConverter,
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			out := tt.outDto
+			u := musecase.NewMockAttachTags(ctrl)
+			tt.setupUsecase(out, u)
+			response := tt.want.response
+			conv := mpresenter.NewMockToAttachTagsResponse(ctrl)
+			tt.setupConverter(out, response, conv)
+			s := NewBloggingEventServiceServer(WithAttachTagsUsecase(u), WithAttachTagsConverter(conv))
+			got, err := s.AttachTags(tt.args.ctx, tt.args.in)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
+			}
+			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
+			}
+		})
+	}
+}

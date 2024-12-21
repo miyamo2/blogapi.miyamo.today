@@ -23,8 +23,8 @@ const (
 	BloggingEventService_UpdateArticleTitle_FullMethodName     = "/blogging_event.BloggingEventService/UpdateArticleTitle"
 	BloggingEventService_UpdateArticleBody_FullMethodName      = "/blogging_event.BloggingEventService/UpdateArticleBody"
 	BloggingEventService_UpdateArticleThumbnail_FullMethodName = "/blogging_event.BloggingEventService/UpdateArticleThumbnail"
-	BloggingEventService_AttachTag_FullMethodName              = "/blogging_event.BloggingEventService/AttachTag"
-	BloggingEventService_DetachTag_FullMethodName              = "/blogging_event.BloggingEventService/DetachTag"
+	BloggingEventService_AttachTags_FullMethodName             = "/blogging_event.BloggingEventService/AttachTags"
+	BloggingEventService_DetachTags_FullMethodName             = "/blogging_event.BloggingEventService/DetachTags"
 	BloggingEventService_UploadImage_FullMethodName            = "/blogging_event.BloggingEventService/UploadImage"
 )
 
@@ -36,8 +36,8 @@ type BloggingEventServiceClient interface {
 	UpdateArticleTitle(ctx context.Context, in *UpdateArticleTitleRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error)
 	UpdateArticleBody(ctx context.Context, in *UpdateArticleBodyRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error)
 	UpdateArticleThumbnail(ctx context.Context, in *UpdateArticleThumbnailRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error)
-	AttachTag(ctx context.Context, in *AttachTagRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error)
-	DetachTag(ctx context.Context, in *DetachTagRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error)
+	AttachTags(ctx context.Context, in *AttachTagsRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error)
+	DetachTags(ctx context.Context, in *DetachTagsRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error)
 	UploadImage(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[UploadImageRequest, UploadImageResponse], error)
 }
 
@@ -89,20 +89,20 @@ func (c *bloggingEventServiceClient) UpdateArticleThumbnail(ctx context.Context,
 	return out, nil
 }
 
-func (c *bloggingEventServiceClient) AttachTag(ctx context.Context, in *AttachTagRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error) {
+func (c *bloggingEventServiceClient) AttachTags(ctx context.Context, in *AttachTagsRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(BloggingEventResponse)
-	err := c.cc.Invoke(ctx, BloggingEventService_AttachTag_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, BloggingEventService_AttachTags_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *bloggingEventServiceClient) DetachTag(ctx context.Context, in *DetachTagRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error) {
+func (c *bloggingEventServiceClient) DetachTags(ctx context.Context, in *DetachTagsRequest, opts ...grpc.CallOption) (*BloggingEventResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(BloggingEventResponse)
-	err := c.cc.Invoke(ctx, BloggingEventService_DetachTag_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, BloggingEventService_DetachTags_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -130,8 +130,8 @@ type BloggingEventServiceServer interface {
 	UpdateArticleTitle(context.Context, *UpdateArticleTitleRequest) (*BloggingEventResponse, error)
 	UpdateArticleBody(context.Context, *UpdateArticleBodyRequest) (*BloggingEventResponse, error)
 	UpdateArticleThumbnail(context.Context, *UpdateArticleThumbnailRequest) (*BloggingEventResponse, error)
-	AttachTag(context.Context, *AttachTagRequest) (*BloggingEventResponse, error)
-	DetachTag(context.Context, *DetachTagRequest) (*BloggingEventResponse, error)
+	AttachTags(context.Context, *AttachTagsRequest) (*BloggingEventResponse, error)
+	DetachTags(context.Context, *DetachTagsRequest) (*BloggingEventResponse, error)
 	UploadImage(grpc.ClientStreamingServer[UploadImageRequest, UploadImageResponse]) error
 	mustEmbedUnimplementedBloggingEventServiceServer()
 }
@@ -155,11 +155,11 @@ func (UnimplementedBloggingEventServiceServer) UpdateArticleBody(context.Context
 func (UnimplementedBloggingEventServiceServer) UpdateArticleThumbnail(context.Context, *UpdateArticleThumbnailRequest) (*BloggingEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateArticleThumbnail not implemented")
 }
-func (UnimplementedBloggingEventServiceServer) AttachTag(context.Context, *AttachTagRequest) (*BloggingEventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AttachTag not implemented")
+func (UnimplementedBloggingEventServiceServer) AttachTags(context.Context, *AttachTagsRequest) (*BloggingEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AttachTags not implemented")
 }
-func (UnimplementedBloggingEventServiceServer) DetachTag(context.Context, *DetachTagRequest) (*BloggingEventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DetachTag not implemented")
+func (UnimplementedBloggingEventServiceServer) DetachTags(context.Context, *DetachTagsRequest) (*BloggingEventResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DetachTags not implemented")
 }
 func (UnimplementedBloggingEventServiceServer) UploadImage(grpc.ClientStreamingServer[UploadImageRequest, UploadImageResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method UploadImage not implemented")
@@ -257,38 +257,38 @@ func _BloggingEventService_UpdateArticleThumbnail_Handler(srv interface{}, ctx c
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BloggingEventService_AttachTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AttachTagRequest)
+func _BloggingEventService_AttachTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AttachTagsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BloggingEventServiceServer).AttachTag(ctx, in)
+		return srv.(BloggingEventServiceServer).AttachTags(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: BloggingEventService_AttachTag_FullMethodName,
+		FullMethod: BloggingEventService_AttachTags_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BloggingEventServiceServer).AttachTag(ctx, req.(*AttachTagRequest))
+		return srv.(BloggingEventServiceServer).AttachTags(ctx, req.(*AttachTagsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BloggingEventService_DetachTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DetachTagRequest)
+func _BloggingEventService_DetachTags_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DetachTagsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BloggingEventServiceServer).DetachTag(ctx, in)
+		return srv.(BloggingEventServiceServer).DetachTags(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: BloggingEventService_DetachTag_FullMethodName,
+		FullMethod: BloggingEventService_DetachTags_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BloggingEventServiceServer).DetachTag(ctx, req.(*DetachTagRequest))
+		return srv.(BloggingEventServiceServer).DetachTags(ctx, req.(*DetachTagsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -324,12 +324,12 @@ var BloggingEventService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _BloggingEventService_UpdateArticleThumbnail_Handler,
 		},
 		{
-			MethodName: "AttachTag",
-			Handler:    _BloggingEventService_AttachTag_Handler,
+			MethodName: "AttachTags",
+			Handler:    _BloggingEventService_AttachTags_Handler,
 		},
 		{
-			MethodName: "DetachTag",
-			Handler:    _BloggingEventService_DetachTag_Handler,
+			MethodName: "DetachTags",
+			Handler:    _BloggingEventService_DetachTags_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

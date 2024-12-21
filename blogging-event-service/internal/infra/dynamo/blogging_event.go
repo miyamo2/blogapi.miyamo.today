@@ -167,6 +167,10 @@ type bloggingEventUpdateThumbnail struct {
 	Thumbnail string
 }
 
+func (b bloggingEventUpdateThumbnail) TableName() string {
+	return os.Getenv("BLOGGING_EVENTS_TABLE_NAME")
+}
+
 func (s *BloggingEventCommandService) UpdateArticleThumbnail(ctx context.Context, command model.UpdateArticleThumbnailEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleThumbnail").End()
@@ -186,6 +190,47 @@ func (s *BloggingEventCommandService) UpdateArticleThumbnail(ctx context.Context
 			EventID:   eventID,
 			ArticleID: articleID,
 			Thumbnail: thumbnail.String(),
+		}
+		if err := tx.Create(&event).Error; err != nil {
+			err = errors.WithStack(err)
+			nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		}
+
+		key := model.NewBloggingEventKey(eventID, articleID)
+		out.Set(&key)
+		logger.Info("END")
+		return nil
+	}, out)
+}
+
+type bloggingEventAttachTags struct {
+	EventID    string `gorm:"primaryKey"`
+	ArticleID  string `gorm:"primaryKey"`
+	AttachTags sqldav.Set[string]
+}
+
+func (b bloggingEventAttachTags) TableName() string {
+	return os.Getenv("BLOGGING_EVENTS_TABLE_NAME")
+}
+
+func (s *BloggingEventCommandService) AttachTags(ctx context.Context, command model.AttachTagsEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("BloggingEventCommandService#AttachTags").End()
+	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
+		nrtx := newrelic.FromContext(ctx)
+		defer nrtx.StartSegment("BloggingEventCommandService#AttachTags").End()
+		logger := slog.Default()
+		logger.Info("START")
+
+		tx = tx.WithContext(ctx)
+
+		eventID := fmt.Sprintf("%s", s.ulidGen())
+		articleID := command.ArticleID()
+
+		event := bloggingEventAttachTags{
+			EventID:    eventID,
+			ArticleID:  articleID,
+			AttachTags: sqldav.Set[string](command.Tags()),
 		}
 		if err := tx.Create(&event).Error; err != nil {
 			err = errors.WithStack(err)
