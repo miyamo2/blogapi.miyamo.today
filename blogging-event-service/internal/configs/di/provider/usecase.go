@@ -35,6 +35,10 @@ func AttachTagsUsecase(bloggingEventCommand command.BloggingEventService) *impl.
 	return impl.NewAttachTags(bloggingEventCommand)
 }
 
+func DetachTagsUsecase(bloggingEventCommand command.BloggingEventService) *impl.DetachTags {
+	return impl.NewDetachTags(bloggingEventCommand)
+}
+
 var UsecaseSet = wire.NewSet(
 	CreateArticleUsecase,
 	wire.Bind(new(usecase.CreateArticle), new(*impl.CreateArticle)),
@@ -46,4 +50,6 @@ var UsecaseSet = wire.NewSet(
 	wire.Bind(new(usecase.UpdateArticleThumbnail), new(*impl.UpdateArticleThumbnail)),
 	AttachTagsUsecase,
 	wire.Bind(new(usecase.AttachTags), new(*impl.AttachTags)),
+	DetachTagsUsecase,
+	wire.Bind(new(usecase.DetachTags), new(*impl.DetachTags)),
 )

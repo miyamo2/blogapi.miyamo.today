@@ -126,6 +126,30 @@ func NewAttachTagsEvent(articleID string, tags []string) AttachTagsEvent {
 	}
 }
 
+// DetachTagsEvent is an event to detach tags from the article.
+type DetachTagsEvent struct {
+	articleID string
+	tags      []string
+}
+
+// ArticleID returns the article id.
+func (d DetachTagsEvent) ArticleID() string {
+	return d.articleID
+}
+
+// Tags returns the tags.
+func (d DetachTagsEvent) Tags() []string {
+	return d.tags
+}
+
+// NewDetachTagsEvent creates a new DetachTagsEvent.
+func NewDetachTagsEvent(articleID string, tags []string) DetachTagsEvent {
+	return DetachTagsEvent{
+		articleID: articleID,
+		tags:      tags,
+	}
+}
+
 type BloggingEventKey struct {
 	eventID   string
 	articleID string

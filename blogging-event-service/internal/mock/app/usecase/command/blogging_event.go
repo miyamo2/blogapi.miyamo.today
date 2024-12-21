@@ -70,6 +70,20 @@ func (mr *MockBloggingEventServiceMockRecorder) CreateArticle(ctx, in, out any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArticle", reflect.TypeOf((*MockBloggingEventService)(nil).CreateArticle), ctx, in, out)
 }
 
+// DetachTags mocks base method.
+func (m *MockBloggingEventService) DetachTags(ctx context.Context, command model.DetachTagsEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DetachTags", ctx, command, out)
+	ret0, _ := ret[0].(db.Statement)
+	return ret0
+}
+
+// DetachTags indicates an expected call of DetachTags.
+func (mr *MockBloggingEventServiceMockRecorder) DetachTags(ctx, command, out any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetachTags", reflect.TypeOf((*MockBloggingEventService)(nil).DetachTags), ctx, command, out)
+}
+
 // UpdateArticleBody mocks base method.
 func (m *MockBloggingEventService) UpdateArticleBody(ctx context.Context, command model.UpdateArticleBodyEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
 	m.ctrl.T.Helper()

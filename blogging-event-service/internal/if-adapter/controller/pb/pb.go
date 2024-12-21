@@ -199,7 +199,38 @@ func (s *BloggingEventServiceServer) AttachTags(ctx context.Context, request *gr
 }
 
 func (s *BloggingEventServiceServer) DetachTags(ctx context.Context, request *grpcgen.DetachTagsRequest) (*grpcgen.BloggingEventResponse, error) {
-	return s.UnimplementedBloggingEventServiceServer.DetachTags(ctx, request)
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("DetachTag").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.String("article id", request.GetId()), slog.Any("detach_tag", request.GetTagNames())))
+
+	inDto := dto.NewDetachTagsInDto(request.GetId(), request.GetTagNames())
+	outDto, err := s.detachTagUsecase.Execute(ctx, &inDto)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		return nil, err
+	}
+	response, err := s.detachTagConverter.ToDetachTagsResponse(ctx, outDto)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger.WarnContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("grpc.BloggingEventResponse", nil),
+				slog.Any("error", err)))
+		return nil, err
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("return",
+			slog.Any("grpc.BloggingEventResponse", *response)))
+	return response, nil
 }
 
 func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStreamingServer[grpcgen.UploadImageRequest, grpcgen.UploadImageResponse]) error {
@@ -219,6 +250,8 @@ type bloggingEventServiceServerConfig struct {
 	updateArticleThumbnailConverter presenters.ToUpdateArticleThumbnailResponse
 	attachTagUsecase                usecase.AttachTags
 	attachTagConverter              presenters.ToAttachTagsResponse
+	detachTagUsecase                usecase.DetachTags
+	detachTagConverter              presenters.ToDetachTagsResponse
 }
 
 type BloggingEventServiceServerOption func(*bloggingEventServiceServerConfig)
@@ -280,6 +313,18 @@ func WithAttachTagsUsecase(attachTagUsecase usecase.AttachTags) BloggingEventSer
 func WithAttachTagsConverter(attachTagConverter presenters.ToAttachTagsResponse) BloggingEventServiceServerOption {
 	return func(c *bloggingEventServiceServerConfig) {
 		c.attachTagConverter = attachTagConverter
+	}
+}
+
+func WithDetachTagsUsecase(detachTagUsecase usecase.DetachTags) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.detachTagUsecase = detachTagUsecase
+	}
+}
+
+func WithDetachTagsConverter(detachTagConverter presenters.ToDetachTagsResponse) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.detachTagConverter = detachTagConverter
 	}
 }
 

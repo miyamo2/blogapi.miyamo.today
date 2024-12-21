@@ -13,6 +13,7 @@ var (
 	_ presenters.ToUpdateArticleBodyResponse      = (*impl.Converter)(nil)
 	_ presenters.ToUpdateArticleThumbnailResponse = (*impl.Converter)(nil)
 	_ presenters.ToAttachTagsResponse             = (*impl.Converter)(nil)
+	_ presenters.ToDetachTagsResponse             = (*impl.Converter)(nil)
 )
 
 var PresenterSet = wire.NewSet(
@@ -22,4 +23,5 @@ var PresenterSet = wire.NewSet(
 	wire.Bind(new(presenters.ToUpdateArticleBodyResponse), new(*impl.Converter)),
 	wire.Bind(new(presenters.ToUpdateArticleThumbnailResponse), new(*impl.Converter)),
 	wire.Bind(new(presenters.ToAttachTagsResponse), new(*impl.Converter)),
+	wire.Bind(new(presenters.ToDetachTagsResponse), new(*impl.Converter)),
 )
