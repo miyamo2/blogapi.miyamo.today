@@ -215,3 +215,44 @@ func TestConverter_ToAttachTagsResponse(t *testing.T) {
 		})
 	}
 }
+
+func TestConverter_ToDetachTagsResponse(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		from func() *dto.DetachTagsOutDto
+	}
+	type want struct {
+		result *grpc.BloggingEventResponse
+		err    error
+	}
+	type testCase struct {
+		args args
+		want want
+	}
+	tests := map[string]testCase{
+		"happy_path/single": {
+			args: args{
+				ctx: context.Background(),
+				from: func() *dto.DetachTagsOutDto {
+					o := dto.NewDetachTagsOutDto("abc", "def")
+					return &o
+				},
+			},
+			want: want{
+				result: &grpc.BloggingEventResponse{EventId: "abc", ArticleId: "def"},
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			c := NewConverter()
+			got, err := c.ToDetachTagsResponse(tt.args.ctx, tt.args.from())
+			if diff := cmp.Diff(got, tt.want.result, protocmp.Transform()); diff != "" {
+				t.Errorf("ToDetachTagsResponse() = %v, want %v", got, tt.want)
+			}
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("ToDetachTagsResponse() error = %v, want %v", err, tt.want.err)
+			}
+		})
+	}
+}

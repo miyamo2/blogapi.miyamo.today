@@ -49,7 +49,7 @@ func (s *BloggingEventCommandService) CreateArticle(ctx context.Context, in mode
 	defer nrtx.StartSegment("BloggingEventCommandService#AllEventsWithArticleID").End()
 	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
 		nrtx := newrelic.FromContext(ctx)
-		defer nrtx.StartSegment("BloggingEventCommandService#AllEventsWithArticleID").End()
+		defer nrtx.StartSegment("BloggingEventCommandService#AllEventsWithArticleID#Execute").End()
 		logger := slog.Default()
 		logger.Info("START")
 
@@ -94,7 +94,7 @@ func (s *BloggingEventCommandService) UpdateArticleTitle(ctx context.Context, in
 	defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleTitle").End()
 	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
 		nrtx := newrelic.FromContext(ctx)
-		defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleTitle").End()
+		defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleTitle#Execute").End()
 		logger := slog.Default()
 		logger.Info("START")
 
@@ -135,7 +135,7 @@ func (s *BloggingEventCommandService) UpdateArticleBody(ctx context.Context, in 
 	defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleBody").End()
 	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
 		nrtx := newrelic.FromContext(ctx)
-		defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleBody").End()
+		defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleBody#Execute").End()
 		logger := slog.Default()
 		logger.Info("START")
 
@@ -176,7 +176,7 @@ func (s *BloggingEventCommandService) UpdateArticleThumbnail(ctx context.Context
 	defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleThumbnail").End()
 	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
 		nrtx := newrelic.FromContext(ctx)
-		defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleThumbnail").End()
+		defer nrtx.StartSegment("BloggingEventCommandService#UpdateArticleThumbnail#Execute").End()
 		logger := slog.Default()
 		logger.Info("START")
 
@@ -218,7 +218,7 @@ func (s *BloggingEventCommandService) AttachTags(ctx context.Context, command mo
 	defer nrtx.StartSegment("BloggingEventCommandService#AttachTags").End()
 	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
 		nrtx := newrelic.FromContext(ctx)
-		defer nrtx.StartSegment("BloggingEventCommandService#AttachTags").End()
+		defer nrtx.StartSegment("BloggingEventCommandService#AttachTags#Execute").End()
 		logger := slog.Default()
 		logger.Info("START")
 
@@ -231,6 +231,47 @@ func (s *BloggingEventCommandService) AttachTags(ctx context.Context, command mo
 			EventID:    eventID,
 			ArticleID:  articleID,
 			AttachTags: sqldav.Set[string](command.Tags()),
+		}
+		if err := tx.Create(&event).Error; err != nil {
+			err = errors.WithStack(err)
+			nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		}
+
+		key := model.NewBloggingEventKey(eventID, articleID)
+		out.Set(&key)
+		logger.Info("END")
+		return nil
+	}, out)
+}
+
+type bloggingEventDetachTags struct {
+	EventID    string `gorm:"primaryKey"`
+	ArticleID  string `gorm:"primaryKey"`
+	DetachTags sqldav.Set[string]
+}
+
+func (b bloggingEventDetachTags) TableName() string {
+	return os.Getenv("BLOGGING_EVENTS_TABLE_NAME")
+}
+
+func (s *BloggingEventCommandService) DetachTags(ctx context.Context, command model.DetachTagsEvent, out *db.SingleStatementResult[*model.BloggingEventKey]) db.Statement {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("BloggingEventCommandService#DetachTags").End()
+	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
+		nrtx := newrelic.FromContext(ctx)
+		defer nrtx.StartSegment("BloggingEventCommandService#DetachTags#Execute").End()
+		logger := slog.Default()
+		logger.Info("START")
+
+		tx = tx.WithContext(ctx)
+
+		eventID := fmt.Sprintf("%s", s.ulidGen())
+		articleID := command.ArticleID()
+
+		event := bloggingEventDetachTags{
+			EventID:    eventID,
+			ArticleID:  articleID,
+			DetachTags: sqldav.Set[string](command.Tags()),
 		}
 		if err := tx.Create(&event).Error; err != nil {
 			err = errors.WithStack(err)

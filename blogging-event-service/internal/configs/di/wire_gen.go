@@ -24,7 +24,8 @@ func GetDependencies() *Dependencies {
 	updateArticleBody := provider.UpdateArticleBodyUsecase(bloggingEventCommandService)
 	updateArticleThumbnail := provider.UpdateArticleThumbnailUsecase(bloggingEventCommandService)
 	attachTags := provider.AttachTagsUsecase(bloggingEventCommandService)
-	bloggingEventServiceServer := provider.NewBloggingEventServiceServer(createArticle, converter, updateArticleTitle, converter, updateArticleBody, converter, updateArticleThumbnail, converter, attachTags, converter)
+	detachTags := provider.DetachTagsUsecase(bloggingEventCommandService)
+	bloggingEventServiceServer := provider.NewBloggingEventServiceServer(createArticle, converter, updateArticleTitle, converter, updateArticleBody, converter, updateArticleThumbnail, converter, attachTags, converter, detachTags, converter)
 	dialector := provider.GormDialector(config)
 	dependencies := NewDependencies(config, server, application, bloggingEventServiceServer, dialector)
 	return dependencies

@@ -255,3 +255,51 @@ func NewAttachTagsOutDto(eventID, articleID string) AttachTagsOutDto {
 		articleID: articleID,
 	}
 }
+
+// DetachTagsInDto is an Input DTO for DetachTags use-case
+type DetachTagsInDto struct {
+	id       string
+	tagNames []string
+}
+
+// ID returns the ID of the article to detach tags
+func (i DetachTagsInDto) ID() string {
+	return i.id
+}
+
+// TagNames returns the tag names to detach
+func (i DetachTagsInDto) TagNames() []string {
+	return i.tagNames
+}
+
+// NewDetachTagsInDto is constructor of DetachTagsInDto.
+func NewDetachTagsInDto(id string, names []string) DetachTagsInDto {
+	return DetachTagsInDto{
+		id:       id,
+		tagNames: names,
+	}
+}
+
+// DetachTagsOutDto is an Output DTO for DetachTags use-case
+type DetachTagsOutDto struct {
+	eventID   string
+	articleID string
+}
+
+// EventID returns the ID of the event
+func (o DetachTagsOutDto) EventID() string {
+	return o.eventID
+}
+
+// ArticleID returns the ID of the article
+func (o DetachTagsOutDto) ArticleID() string {
+	return o.articleID
+}
+
+// NewDetachTagsOutDto is constructor of DetachTagsOutDto.
+func NewDetachTagsOutDto(eventID, articleID string) DetachTagsOutDto {
+	return DetachTagsOutDto{
+		eventID:   eventID,
+		articleID: articleID,
+	}
+}
