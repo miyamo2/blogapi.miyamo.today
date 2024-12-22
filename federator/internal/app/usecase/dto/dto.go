@@ -854,3 +854,64 @@ func NewUpdateArticleThumbnailOutDTO(eventID, articleID, clientMutationID string
 		clientMutationID: clientMutationID,
 	}
 }
+
+type AttachTagsInDTO struct {
+	id               string
+	tagNames         []string
+	clientMutationID string
+}
+
+// ID returns id.
+func (a AttachTagsInDTO) ID() string {
+	return a.id
+}
+
+// TagNames returns tag names.
+func (a AttachTagsInDTO) TagNames() []string {
+	return a.tagNames
+}
+
+// ClientMutationID returns client mutation id.
+func (a AttachTagsInDTO) ClientMutationID() string {
+	return a.clientMutationID
+}
+
+// NewAttachTagsInDTO constructor of AttachTagsInDTO.
+func NewAttachTagsInDTO(id string, tagNames []string, clientMutationID string) AttachTagsInDTO {
+	return AttachTagsInDTO{
+		id:               id,
+		tagNames:         tagNames,
+		clientMutationID: clientMutationID,
+	}
+}
+
+// AttachTagsOutDTO is a dto for attaching tags to an article.
+type AttachTagsOutDTO struct {
+	eventID          string
+	articleID        string
+	clientMutationID string
+}
+
+// EventID returns event id.
+func (a AttachTagsOutDTO) EventID() string {
+	return a.eventID
+}
+
+// ArticleID returns article id.
+func (a AttachTagsOutDTO) ArticleID() string {
+	return a.articleID
+}
+
+// ClientMutationID returns client mutation id.
+func (a AttachTagsOutDTO) ClientMutationID() string {
+	return a.clientMutationID
+}
+
+// NewAttachTagsOutDTO constructor of AttachTagsOutDTO.
+func NewAttachTagsOutDTO(eventID, articleID, clientMutationID string) AttachTagsOutDTO {
+	return AttachTagsOutDTO{
+		eventID:          eventID,
+		articleID:        articleID,
+		clientMutationID: clientMutationID,
+	}
+}

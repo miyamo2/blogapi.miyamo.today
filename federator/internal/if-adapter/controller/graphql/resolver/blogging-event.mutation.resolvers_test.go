@@ -816,3 +816,5 @@ func (m *UpdateArticleThumbnailInputMatcher) Matches(x interface{}) bool {
 func (m *UpdateArticleThumbnailInputMatcher) String() string {
 	return fmt.Sprintf("is equal to %+v", m.expect)
 }
+
+func Test_mutationResolver_AttachTags(t *testing.T) {}

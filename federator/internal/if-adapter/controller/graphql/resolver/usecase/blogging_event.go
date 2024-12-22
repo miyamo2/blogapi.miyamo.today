@@ -29,3 +29,9 @@ type UpdateArticleThumbnail interface {
 	// Execute updates an article thumbnail.
 	Execute(ctx context.Context, in dto.UpdateArticleThumbnailInDTO) (dto.UpdateArticleThumbnailOutDTO, error)
 }
+
+// AttachTags is a use-case for attaching tags to an article.
+type AttachTags interface {
+	// Execute attaches tags to an article.
+	Execute(ctx context.Context, in dto.AttachTagsInDTO) (dto.AttachTagsOutDTO, error)
+}

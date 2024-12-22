@@ -29,7 +29,6 @@ func TestUpdateArticleThumbnail_Execute(t *testing.T) {
 		args                       args
 		expectedReq                *grpc.UpdateArticleThumbnailRequest
 		want                       want
-		wantErr                    bool
 	}
 	errTestUpdateArticleThumbnail := errors.New("test error")
 	mockBlogAPIContext := func() context.Context {

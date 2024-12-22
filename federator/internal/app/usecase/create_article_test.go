@@ -29,7 +29,6 @@ func TestCreateArticle_Execute(t *testing.T) {
 		args                       args
 		expectedReq                *grpc.CreateArticleRequest
 		want                       want
-		wantErr                    bool
 	}
 	errTestCreateArticle := errors.New("test error")
 	mockBlogAPIContext := func() context.Context {

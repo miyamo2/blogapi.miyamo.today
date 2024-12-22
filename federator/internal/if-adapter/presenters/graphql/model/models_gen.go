@@ -51,6 +51,18 @@ type ArticleTagNode struct {
 	Name string `json:"name"`
 }
 
+type AttachTagsInput struct {
+	ArticleID        string   `json:"articleId"`
+	TagNames         []string `json:"tagNames"`
+	ClientMutationID *string  `json:"clientMutationId,omitempty"`
+}
+
+type AttachTagsPayload struct {
+	ArticleID        string  `json:"articleId"`
+	EventID          string  `json:"eventID"`
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
 type CreateArticleInput struct {
 	Title            string        `json:"title"`
 	Content          string        `json:"content"`

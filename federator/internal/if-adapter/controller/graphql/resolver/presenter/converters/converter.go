@@ -55,3 +55,9 @@ type UpdateArticleThumbnailConverter interface {
 	// ToUpdateArticleThumbnail converts updating an article thumbnail.
 	ToUpdateArticleThumbnail(ctx context.Context, from dto.UpdateArticleThumbnailOutDTO) (*model.UpdateArticleThumbnailPayload, error)
 }
+
+// AttachTagsConverter is the converter for attaching tags.
+type AttachTagsConverter interface {
+	// ToAttachTags converts attaching tags.
+	ToAttachTags(ctx context.Context, from dto.AttachTagsOutDTO) (*model.AttachTagsPayload, error)
+}

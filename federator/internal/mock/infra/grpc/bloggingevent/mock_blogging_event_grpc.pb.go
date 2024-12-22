@@ -42,24 +42,24 @@ func (m *MockBloggingEventServiceClient) EXPECT() *MockBloggingEventServiceClien
 	return m.recorder
 }
 
-// AttachTag mocks base method.
-func (m *MockBloggingEventServiceClient) AttachTag(ctx context.Context, in *bloggingevent.AttachTagRequest, opts ...grpc.CallOption) (*bloggingevent.BloggingEventResponse, error) {
+// AttachTags mocks base method.
+func (m *MockBloggingEventServiceClient) AttachTags(ctx context.Context, in *bloggingevent.AttachTagsRequest, opts ...grpc.CallOption) (*bloggingevent.BloggingEventResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "AttachTag", varargs...)
+	ret := m.ctrl.Call(m, "AttachTags", varargs...)
 	ret0, _ := ret[0].(*bloggingevent.BloggingEventResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AttachTag indicates an expected call of AttachTag.
-func (mr *MockBloggingEventServiceClientMockRecorder) AttachTag(ctx, in any, opts ...any) *gomock.Call {
+// AttachTags indicates an expected call of AttachTags.
+func (mr *MockBloggingEventServiceClientMockRecorder) AttachTags(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachTag", reflect.TypeOf((*MockBloggingEventServiceClient)(nil).AttachTag), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachTags", reflect.TypeOf((*MockBloggingEventServiceClient)(nil).AttachTags), varargs...)
 }
 
 // CreateArticle mocks base method.
@@ -82,24 +82,24 @@ func (mr *MockBloggingEventServiceClientMockRecorder) CreateArticle(ctx, in any,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArticle", reflect.TypeOf((*MockBloggingEventServiceClient)(nil).CreateArticle), varargs...)
 }
 
-// DetachTag mocks base method.
-func (m *MockBloggingEventServiceClient) DetachTag(ctx context.Context, in *bloggingevent.DetachTagRequest, opts ...grpc.CallOption) (*bloggingevent.BloggingEventResponse, error) {
+// DetachTags mocks base method.
+func (m *MockBloggingEventServiceClient) DetachTags(ctx context.Context, in *bloggingevent.DetachTagsRequest, opts ...grpc.CallOption) (*bloggingevent.BloggingEventResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "DetachTag", varargs...)
+	ret := m.ctrl.Call(m, "DetachTags", varargs...)
 	ret0, _ := ret[0].(*bloggingevent.BloggingEventResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DetachTag indicates an expected call of DetachTag.
-func (mr *MockBloggingEventServiceClientMockRecorder) DetachTag(ctx, in any, opts ...any) *gomock.Call {
+// DetachTags indicates an expected call of DetachTags.
+func (mr *MockBloggingEventServiceClientMockRecorder) DetachTags(ctx, in any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetachTag", reflect.TypeOf((*MockBloggingEventServiceClient)(nil).DetachTag), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetachTags", reflect.TypeOf((*MockBloggingEventServiceClient)(nil).DetachTags), varargs...)
 }
 
 // UpdateArticleBody mocks base method.
@@ -206,19 +206,19 @@ func (m *MockBloggingEventServiceServer) EXPECT() *MockBloggingEventServiceServe
 	return m.recorder
 }
 
-// AttachTag mocks base method.
-func (m *MockBloggingEventServiceServer) AttachTag(arg0 context.Context, arg1 *bloggingevent.AttachTagRequest) (*bloggingevent.BloggingEventResponse, error) {
+// AttachTags mocks base method.
+func (m *MockBloggingEventServiceServer) AttachTags(arg0 context.Context, arg1 *bloggingevent.AttachTagsRequest) (*bloggingevent.BloggingEventResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AttachTag", arg0, arg1)
+	ret := m.ctrl.Call(m, "AttachTags", arg0, arg1)
 	ret0, _ := ret[0].(*bloggingevent.BloggingEventResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AttachTag indicates an expected call of AttachTag.
-func (mr *MockBloggingEventServiceServerMockRecorder) AttachTag(arg0, arg1 any) *gomock.Call {
+// AttachTags indicates an expected call of AttachTags.
+func (mr *MockBloggingEventServiceServerMockRecorder) AttachTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachTag", reflect.TypeOf((*MockBloggingEventServiceServer)(nil).AttachTag), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AttachTags", reflect.TypeOf((*MockBloggingEventServiceServer)(nil).AttachTags), arg0, arg1)
 }
 
 // CreateArticle mocks base method.
@@ -236,19 +236,19 @@ func (mr *MockBloggingEventServiceServerMockRecorder) CreateArticle(arg0, arg1 a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArticle", reflect.TypeOf((*MockBloggingEventServiceServer)(nil).CreateArticle), arg0, arg1)
 }
 
-// DetachTag mocks base method.
-func (m *MockBloggingEventServiceServer) DetachTag(arg0 context.Context, arg1 *bloggingevent.DetachTagRequest) (*bloggingevent.BloggingEventResponse, error) {
+// DetachTags mocks base method.
+func (m *MockBloggingEventServiceServer) DetachTags(arg0 context.Context, arg1 *bloggingevent.DetachTagsRequest) (*bloggingevent.BloggingEventResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DetachTag", arg0, arg1)
+	ret := m.ctrl.Call(m, "DetachTags", arg0, arg1)
 	ret0, _ := ret[0].(*bloggingevent.BloggingEventResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// DetachTag indicates an expected call of DetachTag.
-func (mr *MockBloggingEventServiceServerMockRecorder) DetachTag(arg0, arg1 any) *gomock.Call {
+// DetachTags indicates an expected call of DetachTags.
+func (mr *MockBloggingEventServiceServerMockRecorder) DetachTags(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetachTag", reflect.TypeOf((*MockBloggingEventServiceServer)(nil).DetachTag), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetachTags", reflect.TypeOf((*MockBloggingEventServiceServer)(nil).DetachTags), arg0, arg1)
 }
 
 // UpdateArticleBody mocks base method.

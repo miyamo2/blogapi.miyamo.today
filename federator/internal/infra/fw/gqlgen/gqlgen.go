@@ -85,6 +85,12 @@ type ComplexityRoot struct {
 		Name func(childComplexity int) int
 	}
 
+	AttachTagsPayload struct {
+		ArticleID        func(childComplexity int) int
+		ClientMutationID func(childComplexity int) int
+		EventID          func(childComplexity int) int
+	}
+
 	CreateArticlePayload struct {
 		ArticleID        func(childComplexity int) int
 		ClientMutationID func(childComplexity int) int
@@ -92,6 +98,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		AttachTags             func(childComplexity int, input model.AttachTagsInput) int
 		CreateArticle          func(childComplexity int, input model.CreateArticleInput) int
 		Noop                   func(childComplexity int, input *model.NoopInput) int
 		UpdateArticleBody      func(childComplexity int, input model.UpdateArticleBodyInput) int
@@ -179,6 +186,7 @@ type MutationResolver interface {
 	UpdateArticleTitle(ctx context.Context, input model.UpdateArticleTitleInput) (*model.UpdateArticleTitlePayload, error)
 	UpdateArticleBody(ctx context.Context, input model.UpdateArticleBodyInput) (*model.UpdateArticleBodyPayload, error)
 	UpdateArticleThumbnail(ctx context.Context, input model.UpdateArticleThumbnailInput) (*model.UpdateArticleThumbnailPayload, error)
+	AttachTags(ctx context.Context, input model.AttachTagsInput) (*model.AttachTagsPayload, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (model.Node, error)
@@ -345,6 +353,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ArticleTagNode.Name(childComplexity), true
 
+	case "AttachTagsPayload.articleId":
+		if e.complexity.AttachTagsPayload.ArticleID == nil {
+			break
+		}
+
+		return e.complexity.AttachTagsPayload.ArticleID(childComplexity), true
+
+	case "AttachTagsPayload.clientMutationId":
+		if e.complexity.AttachTagsPayload.ClientMutationID == nil {
+			break
+		}
+
+		return e.complexity.AttachTagsPayload.ClientMutationID(childComplexity), true
+
+	case "AttachTagsPayload.eventID":
+		if e.complexity.AttachTagsPayload.EventID == nil {
+			break
+		}
+
+		return e.complexity.AttachTagsPayload.EventID(childComplexity), true
+
 	case "CreateArticlePayload.articleId":
 		if e.complexity.CreateArticlePayload.ArticleID == nil {
 			break
@@ -365,6 +394,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.CreateArticlePayload.EventID(childComplexity), true
+
+	case "Mutation.attachTags":
+		if e.complexity.Mutation.AttachTags == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_attachTags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.AttachTags(childComplexity, args["input"].(model.AttachTagsInput)), true
 
 	case "Mutation.createArticle":
 		if e.complexity.Mutation.CreateArticle == nil {
@@ -723,6 +764,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	opCtx := graphql.GetOperationContext(ctx)
 	ec := executionContext{opCtx, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAttachTagsInput,
 		ec.unmarshalInputCreateArticleInput,
 		ec.unmarshalInputNoopInput,
 		ec.unmarshalInputUpdateArticleBodyInput,
@@ -957,12 +999,25 @@ type UpdateArticleThumbnailPayload {
   articleId: ID!
   eventID: ID!
   clientMutationId: String
+}
+
+input AttachTagsInput {
+  articleId: ID!
+  tagNames: [String!]!
+  clientMutationId: String
+}
+
+type AttachTagsPayload {
+  articleId: ID!
+  eventID: ID!
+  clientMutationId: String
 }`, BuiltIn: false},
 	{Name: "../../../../.api/blogging_event/blogging-event.mutation.graphqls", Input: `extend type Mutation {
     createArticle(input: CreateArticleInput!): CreateArticlePayload!
     updateArticleTitle(input: UpdateArticleTitleInput!): UpdateArticleTitlePayload!
     updateArticleBody(input: UpdateArticleBodyInput!): UpdateArticleBodyPayload!
     updateArticleThumbnail(input: UpdateArticleThumbnailInput!): UpdateArticleThumbnailPayload!
+    attachTags(input: AttachTagsInput!): AttachTagsPayload!
 }`, BuiltIn: false},
 	{Name: "../../../../.api/blogging_event/blogging-event.schema.graphqls", Input: `extend schema {
   mutation: Mutation
@@ -1134,6 +1189,38 @@ func (ec *executionContext) field_ArticleNode_tags_argsLast(
 	}
 
 	var zeroVal *int
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_attachTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_attachTags_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_attachTags_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.AttachTagsInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.AttachTagsInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNAttachTagsInput2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐAttachTagsInput(ctx, tmp)
+	}
+
+	var zeroVal model.AttachTagsInput
 	return zeroVal, nil
 }
 
@@ -2745,6 +2832,135 @@ func (ec *executionContext) fieldContext_ArticleTagNode_name(_ context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _AttachTagsPayload_articleId(ctx context.Context, field graphql.CollectedField, obj *model.AttachTagsPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AttachTagsPayload_articleId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ArticleID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AttachTagsPayload_articleId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AttachTagsPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AttachTagsPayload_eventID(ctx context.Context, field graphql.CollectedField, obj *model.AttachTagsPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AttachTagsPayload_eventID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AttachTagsPayload_eventID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AttachTagsPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AttachTagsPayload_clientMutationId(ctx context.Context, field graphql.CollectedField, obj *model.AttachTagsPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AttachTagsPayload_clientMutationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClientMutationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AttachTagsPayload_clientMutationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AttachTagsPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _CreateArticlePayload_articleId(ctx context.Context, field graphql.CollectedField, obj *model.CreateArticlePayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_CreateArticlePayload_articleId(ctx, field)
 	if err != nil {
@@ -3176,6 +3392,69 @@ func (ec *executionContext) fieldContext_Mutation_updateArticleThumbnail(ctx con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateArticleThumbnail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_attachTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_attachTags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().AttachTags(rctx, fc.Args["input"].(model.AttachTagsInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.AttachTagsPayload)
+	fc.Result = res
+	return ec.marshalNAttachTagsPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐAttachTagsPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_attachTags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "articleId":
+				return ec.fieldContext_AttachTagsPayload_articleId(ctx, field)
+			case "eventID":
+				return ec.fieldContext_AttachTagsPayload_eventID(ctx, field)
+			case "clientMutationId":
+				return ec.fieldContext_AttachTagsPayload_clientMutationId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AttachTagsPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_attachTags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6851,6 +7130,47 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(_ context.Context
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAttachTagsInput(ctx context.Context, obj interface{}) (model.AttachTagsInput, error) {
+	var it model.AttachTagsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"articleId", "tagNames", "clientMutationId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "articleId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("articleId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ArticleID = data
+		case "tagNames":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tagNames"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TagNames = data
+		case "clientMutationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clientMutationId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClientMutationID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCreateArticleInput(ctx context.Context, obj interface{}) (model.CreateArticleInput, error) {
 	var it model.CreateArticleInput
 	asMap := map[string]interface{}{}
@@ -7386,6 +7706,52 @@ func (ec *executionContext) _ArticleTagNode(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var attachTagsPayloadImplementors = []string{"AttachTagsPayload"}
+
+func (ec *executionContext) _AttachTagsPayload(ctx context.Context, sel ast.SelectionSet, obj *model.AttachTagsPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, attachTagsPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AttachTagsPayload")
+		case "articleId":
+			out.Values[i] = ec._AttachTagsPayload_articleId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "eventID":
+			out.Values[i] = ec._AttachTagsPayload_eventID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "clientMutationId":
+			out.Values[i] = ec._AttachTagsPayload_clientMutationId(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var createArticlePayloadImplementors = []string{"CreateArticlePayload"}
 
 func (ec *executionContext) _CreateArticlePayload(ctx context.Context, sel ast.SelectionSet, obj *model.CreateArticlePayload) graphql.Marshaler {
@@ -7479,6 +7845,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updateArticleThumbnail":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateArticleThumbnail(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "attachTags":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_attachTags(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -8649,6 +9022,25 @@ func (ec *executionContext) marshalNArticleTagNode2ᚖgithubᚗcomᚋmiyamo2ᚋb
 		return graphql.Null
 	}
 	return ec._ArticleTagNode(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNAttachTagsInput2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐAttachTagsInput(ctx context.Context, v interface{}) (model.AttachTagsInput, error) {
+	res, err := ec.unmarshalInputAttachTagsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAttachTagsPayload2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐAttachTagsPayload(ctx context.Context, sel ast.SelectionSet, v model.AttachTagsPayload) graphql.Marshaler {
+	return ec._AttachTagsPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAttachTagsPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐAttachTagsPayload(ctx context.Context, sel ast.SelectionSet, v *model.AttachTagsPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AttachTagsPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
