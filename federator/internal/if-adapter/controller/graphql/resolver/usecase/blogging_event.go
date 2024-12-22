@@ -30,8 +30,8 @@ type UpdateArticleThumbnail interface {
 	Execute(ctx context.Context, in dto.UpdateArticleThumbnailInDTO) (dto.UpdateArticleThumbnailOutDTO, error)
 }
 
-// AttachTags is the usecase for updating an article title.
+// AttachTags is a use-case for attaching tags to an article.
 type AttachTags interface {
-	// Execute updates an article title.
+	// Execute attaches tags to an article.
 	Execute(ctx context.Context, in dto.AttachTagsInDTO) (dto.AttachTagsOutDTO, error)
 }

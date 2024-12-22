@@ -13,13 +13,13 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
-// AttachTags is a use-case for updating an article title.
+// AttachTags is a use-case for attaching tags to an article.
 type AttachTags struct {
 	// bloggingEventServiceClient is a client of article service.
 	bloggingEventServiceClient grpc.BloggingEventServiceClient
 }
 
-// Execute updates an article title.
+// Execute attaches tags to an article.
 func (u *AttachTags) Execute(ctx context.Context, in dto.AttachTagsInDTO) (dto.AttachTagsOutDTO, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("AttachTags#Execute").End()
