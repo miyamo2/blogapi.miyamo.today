@@ -197,7 +197,12 @@ func (r *mutationResolver) UploadImage(ctx context.Context, input model.UploadIm
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.String("input", fmt.Sprintf("%+v", input))))
 
-	outDTO, err := r.usecases.uploadImage.Execute(ctx, dto.NewUploadImageInDTO(input.Image.File, input.Image.Filename))
+	var clientMutationID string
+	if input.ClientMutationID != nil {
+		clientMutationID = *input.ClientMutationID
+	}
+
+	outDTO, err := r.usecases.uploadImage.Execute(ctx, dto.NewUploadImageInDTO(input.Image.File, input.Image.Filename, clientMutationID))
 	if err != nil {
 		return nil, err
 	}

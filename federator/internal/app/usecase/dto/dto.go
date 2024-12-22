@@ -980,13 +980,13 @@ func NewDetachTagsOutDTO(eventID, articleID, clientMutationID string) DetachTags
 
 // UploadImageInDTO is a dto for uploading an image.
 type UploadImageInDTO struct {
-	data             io.Reader
+	data             io.ReadSeeker
 	filename         string
 	clientMutationID string
 }
 
 // Data returns data.
-func (u UploadImageInDTO) Data() io.Reader {
+func (u UploadImageInDTO) Data() io.ReadSeeker {
 	return u.data
 }
 
@@ -1001,7 +1001,7 @@ func (u UploadImageInDTO) ClientMutationID() string {
 }
 
 // NewUploadImageInDTO constructor of UploadImageInDTO.
-func NewUploadImageInDTO(data io.Reader, filename, clientMutationID string) UploadImageInDTO {
+func NewUploadImageInDTO(data io.ReadSeeker, filename, clientMutationID string) UploadImageInDTO {
 	return UploadImageInDTO{
 		data:             data,
 		filename:         filename,
