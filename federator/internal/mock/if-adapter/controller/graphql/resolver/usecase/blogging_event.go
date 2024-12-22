@@ -250,3 +250,42 @@ func (mr *MockDetachTagsMockRecorder) Execute(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockDetachTags)(nil).Execute), ctx, in)
 }
+
+// MockUploadImage is a mock of UploadImage interface.
+type MockUploadImage struct {
+	ctrl     *gomock.Controller
+	recorder *MockUploadImageMockRecorder
+	isgomock struct{}
+}
+
+// MockUploadImageMockRecorder is the mock recorder for MockUploadImage.
+type MockUploadImageMockRecorder struct {
+	mock *MockUploadImage
+}
+
+// NewMockUploadImage creates a new mock instance.
+func NewMockUploadImage(ctrl *gomock.Controller) *MockUploadImage {
+	mock := &MockUploadImage{ctrl: ctrl}
+	mock.recorder = &MockUploadImageMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUploadImage) EXPECT() *MockUploadImageMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockUploadImage) Execute(ctx context.Context, in dto.UploadImageInDTO) (dto.UploadImageOutDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx, in)
+	ret0, _ := ret[0].(dto.UploadImageOutDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockUploadImageMockRecorder) Execute(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockUploadImage)(nil).Execute), ctx, in)
+}

@@ -3,6 +3,7 @@
 package model
 
 import (
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 )
 
@@ -183,4 +184,14 @@ type UpdateArticleTitlePayload struct {
 	ArticleID        string  `json:"articleId"`
 	EventID          string  `json:"eventID"`
 	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
+type UploadImageInput struct {
+	Image            graphql.Upload `json:"image"`
+	ClientMutationID *string        `json:"clientMutationId,omitempty"`
+}
+
+type UploadImagePayload struct {
+	ImageURL         gqlscalar.URL `json:"imageURL"`
+	ClientMutationID *string       `json:"clientMutationId,omitempty"`
 }

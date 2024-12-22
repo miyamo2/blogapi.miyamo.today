@@ -1,8 +1,10 @@
 package resolver
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
@@ -12,6 +14,8 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"go.uber.org/mock/gomock"
+	"io"
+	"reflect"
 	"testing"
 )
 
@@ -1200,5 +1204,215 @@ func (m *DetachTagsInputMatcher) Matches(x interface{}) bool {
 }
 
 func (m *DetachTagsInputMatcher) String() string {
+	return fmt.Sprintf("is equal to %+v", m.expect)
+}
+
+func Test_mutationResolver_UploadImage(t *testing.T) {
+	type args struct {
+		ctx   context.Context
+		input model.UploadImageInput
+	}
+	type want struct {
+		out *model.UploadImagePayload
+		err error
+	}
+	type usecaseResult struct {
+		out dto.UploadImageOutDTO
+		err error
+	}
+	type converterResult struct {
+		out *model.UploadImagePayload
+		err error
+	}
+	type testCase struct {
+		sut                func(resolver *Resolver) *mutationResolver
+		updateArticleInDTO dto.UploadImageInDTO
+		setupMockUsecase   func(uc *musecase.MockUploadImage, input dto.UploadImageInDTO, usecaseResult usecaseResult)
+		usecaseResult      usecaseResult
+		setupMockConverter func(converter *mconverter.MockUploadImageConverter, from dto.UploadImageOutDTO, converterResult converterResult)
+		converterResult    converterResult
+		args               args
+		want               want
+		wantErr            bool
+	}
+
+	errFailedToUsecase := errors.New("failed to usecase")
+	errFailedToConverter := errors.New("failed to converter")
+	tests := map[string]testCase{
+		"happy_path": {
+			sut: func(resolver *Resolver) *mutationResolver {
+				return &mutationResolver{resolver}
+			},
+			updateArticleInDTO: dto.NewUploadImageInDTO(bytes.NewReader([]byte("abc")), "example.png", "Mutation1"),
+			setupMockUsecase: func(uc *musecase.MockUploadImage, input dto.UploadImageInDTO, usecaseResult usecaseResult) {
+				uc.EXPECT().
+					Execute(gomock.Any(), NewUploadImageInputMatcher(input)).
+					Return(usecaseResult.out, usecaseResult.err).
+					Times(1)
+			},
+			usecaseResult: usecaseResult{
+				out: dto.NewUploadImageOutDTO(utils.MustURLParse("https://example.com/example.png"), "Mutation1"),
+			},
+			setupMockConverter: func(converter *mconverter.MockUploadImageConverter, from dto.UploadImageOutDTO, converterResult converterResult) {
+				converter.EXPECT().
+					ToUploadImage(gomock.Any(), from).
+					Return(converterResult.out, converterResult.err).
+					Times(1)
+			},
+			converterResult: converterResult{
+				out: &model.UploadImagePayload{
+					ImageURL:         gqlscalar.URL(utils.MustURLParse("https://example.com/example.png")),
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				input: model.UploadImageInput{
+					Image: graphql.Upload{
+						Filename: "example.png",
+						File:     bytes.NewReader([]byte("abc")),
+					},
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			want: want{
+				out: &model.UploadImagePayload{
+					ImageURL:         gqlscalar.URL(utils.MustURLParse("https://example.com/example.png")),
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+		},
+		"unhappy_path:usecase-returns-error": {
+			sut: func(resolver *Resolver) *mutationResolver {
+				return &mutationResolver{resolver}
+			},
+			updateArticleInDTO: dto.NewUploadImageInDTO(bytes.NewReader([]byte("abc")), "example.png", "Mutation1"),
+			setupMockUsecase: func(uc *musecase.MockUploadImage, input dto.UploadImageInDTO, usecaseResult usecaseResult) {
+				uc.EXPECT().
+					Execute(gomock.Any(), NewUploadImageInputMatcher(input)).
+					Return(usecaseResult.out, usecaseResult.err).
+					Times(1)
+			},
+			usecaseResult: usecaseResult{
+				err: errFailedToUsecase,
+			},
+			setupMockConverter: func(converter *mconverter.MockUploadImageConverter, from dto.UploadImageOutDTO, converterResult converterResult) {
+				converter.EXPECT().
+					ToUploadImage(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+				input: model.UploadImageInput{
+					Image: graphql.Upload{
+						Filename: "example.png",
+						File:     bytes.NewReader([]byte("abc")),
+					},
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			want: want{
+				err: errFailedToUsecase,
+			},
+		},
+		"unhappy_path:converter-returns-error": {
+			sut: func(resolver *Resolver) *mutationResolver {
+				return &mutationResolver{resolver}
+			},
+			updateArticleInDTO: dto.NewUploadImageInDTO(bytes.NewReader([]byte("abc")), "example.png", "Mutation1"),
+			setupMockUsecase: func(uc *musecase.MockUploadImage, input dto.UploadImageInDTO, usecaseResult usecaseResult) {
+				uc.EXPECT().
+					Execute(gomock.Any(), NewUploadImageInputMatcher(input)).
+					Return(usecaseResult.out, usecaseResult.err).
+					Times(1)
+			},
+			usecaseResult: usecaseResult{
+				out: dto.UploadImageOutDTO{},
+				err: nil,
+			},
+			setupMockConverter: func(converter *mconverter.MockUploadImageConverter, from dto.UploadImageOutDTO, converterResult converterResult) {
+				converter.EXPECT().
+					ToUploadImage(gomock.Any(), from).
+					Return(converterResult.out, converterResult.err).
+					Times(1)
+			},
+			converterResult: converterResult{
+				err: errFailedToConverter,
+			},
+			args: args{
+				ctx: context.Background(),
+				input: model.UploadImageInput{
+					Image: graphql.Upload{
+						Filename: "example.png",
+						File:     bytes.NewReader([]byte("abc")),
+					},
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			want: want{
+				err: errFailedToConverter,
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			uc := musecase.NewMockUploadImage(ctrl)
+			tt.setupMockUsecase(uc, tt.updateArticleInDTO, tt.usecaseResult)
+
+			converter := mconverter.NewMockUploadImageConverter(ctrl)
+			tt.setupMockConverter(converter, tt.usecaseResult.out, tt.converterResult)
+
+			sut := tt.sut(NewResolver(NewUsecases(WithUploadImageUsecase(uc)), NewConverters(WithUploadImageConverter(converter))))
+			got, err := sut.UploadImage(tt.args.ctx, tt.args.input)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("UploadImage() got = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
+				t.Error(diff)
+				return
+			}
+		})
+	}
+}
+
+type UploadImageInputMatcher struct {
+	gomock.Matcher
+	expect dto.UploadImageInDTO
+}
+
+func NewUploadImageInputMatcher(expect dto.UploadImageInDTO) gomock.Matcher {
+	return &UploadImageInputMatcher{
+		expect: expect,
+	}
+}
+
+func (m *UploadImageInputMatcher) Matches(x interface{}) bool {
+	switch x := x.(type) {
+	case dto.UploadImageInDTO:
+		if x.Filename() != m.expect.Filename() {
+			return false
+		}
+		if x.ClientMutationID() != m.expect.ClientMutationID() {
+			return false
+		}
+		expectBody, err := io.ReadAll(m.expect.Data())
+		if err != nil {
+			return false
+		}
+		xBody, err := io.ReadAll(x.Data())
+		if err != nil {
+			return false
+		}
+		return reflect.DeepEqual(xBody, expectBody)
+	}
+	return false
+}
+
+func (m *UploadImageInputMatcher) String() string {
 	return fmt.Sprintf("is equal to %+v", m.expect)
 }

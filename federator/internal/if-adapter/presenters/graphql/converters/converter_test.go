@@ -2774,3 +2774,51 @@ func TestConverter_ToDetachTags(t *testing.T) {
 		})
 	}
 }
+
+func TestConverter_ToUploadImage(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		from dto.UploadImageOutDTO
+	}
+	type want struct {
+		out *model.UploadImagePayload
+		err error
+	}
+	type testCase struct {
+		sut  func() *Converter
+		args args
+		want want
+	}
+	tests := map[string]testCase{
+		"happy_path": {
+			sut: NewConverter,
+			args: args{
+				ctx:  context.Background(),
+				from: dto.NewUploadImageOutDTO(utils.MustURLParse("example.com/example.png"), "client_mutation_id"),
+			},
+			want: want{
+				out: &model.UploadImagePayload{
+					ImageURL: gqlscalar.URL(utils.MustURLParse("example.com/example.png")),
+					ClientMutationID: func() *string {
+						v := "client_mutation_id"
+						return &v
+					}(),
+				},
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			c := tt.sut()
+			got, err := c.ToUploadImage(tt.args.ctx, tt.args.from)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("ToUploadImage() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
+				t.Error(diff)
+				return
+			}
+		})
+	}
+}

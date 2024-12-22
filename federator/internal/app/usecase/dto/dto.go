@@ -4,6 +4,7 @@ import (
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"github.com/cockroachdb/errors"
+	"io"
 	"net/url"
 )
 
@@ -973,6 +974,61 @@ func NewDetachTagsOutDTO(eventID, articleID, clientMutationID string) DetachTags
 	return DetachTagsOutDTO{
 		eventID:          eventID,
 		articleID:        articleID,
+		clientMutationID: clientMutationID,
+	}
+}
+
+// UploadImageInDTO is a dto for uploading an image.
+type UploadImageInDTO struct {
+	data             io.ReadSeeker
+	filename         string
+	clientMutationID string
+}
+
+// Data returns data.
+func (u UploadImageInDTO) Data() io.ReadSeeker {
+	return u.data
+}
+
+// Filename returns filename.
+func (u UploadImageInDTO) Filename() string {
+	return u.filename
+}
+
+// ClientMutationID returns client mutation id.
+func (u UploadImageInDTO) ClientMutationID() string {
+	return u.clientMutationID
+}
+
+// NewUploadImageInDTO constructor of UploadImageInDTO.
+func NewUploadImageInDTO(data io.ReadSeeker, filename, clientMutationID string) UploadImageInDTO {
+	return UploadImageInDTO{
+		data:             data,
+		filename:         filename,
+		clientMutationID: clientMutationID,
+	}
+}
+
+// UploadImageOutDTO is a dto for uploading an image.
+type UploadImageOutDTO struct {
+	imageURL         url.URL
+	clientMutationID string
+}
+
+// ImageURL returns image url.
+func (u UploadImageOutDTO) ImageURL() url.URL {
+	return u.imageURL
+}
+
+// ClientMutationID returns client mutation id.
+func (u UploadImageOutDTO) ClientMutationID() string {
+	return u.clientMutationID
+}
+
+// NewUploadImageOutDTO constructor of UploadImageOutDTO.
+func NewUploadImageOutDTO(imageURL url.URL, clientMutationID string) UploadImageOutDTO {
+	return UploadImageOutDTO{
+		imageURL:         imageURL,
 		clientMutationID: clientMutationID,
 	}
 }

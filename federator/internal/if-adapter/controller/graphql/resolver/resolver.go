@@ -25,6 +25,7 @@ type Usecases struct {
 	updateArticleThumbnail usecase.UpdateArticleThumbnail
 	attachTags             usecase.AttachTags
 	detachTags             usecase.DetachTags
+	uploadImage            usecase.UploadImage
 }
 
 type UsecasesOption func(*Usecases)
@@ -99,6 +100,13 @@ func WithDetachTagsUsecase(detachTags usecase.DetachTags) UsecasesOption {
 	}
 }
 
+// WithUploadImageUsecase option for Usecases.
+func WithUploadImageUsecase(uploadImage usecase.UploadImage) UsecasesOption {
+	return func(u *Usecases) {
+		u.uploadImage = uploadImage
+	}
+}
+
 // NewUsecases constructor of Usecases.
 func NewUsecases(options ...UsecasesOption) *Usecases {
 	u := &Usecases{}
@@ -119,6 +127,7 @@ type Converters struct {
 	updateArticleThumbnail converters.UpdateArticleThumbnailConverter
 	attachTags             converters.AttachTagsConverter
 	detachTags             converters.DetachTagsConverter
+	uploadImage            converters.UploadImageConverter
 }
 
 type ConvertersOption func(*Converters)
@@ -190,6 +199,13 @@ func WithAttachTagsConverter(attachTags converters.AttachTagsConverter) Converte
 func WithDetachTagsConverter(detachTags converters.DetachTagsConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.detachTags = detachTags
+	}
+}
+
+// WithUploadImageConverter option for Converters.
+func WithUploadImageConverter(uploadImage converters.UploadImageConverter) ConvertersOption {
+	return func(c *Converters) {
+		c.uploadImage = uploadImage
 	}
 }
 

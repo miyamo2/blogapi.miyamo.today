@@ -182,3 +182,30 @@ func (r *mutationResolver) DetachTags(ctx context.Context, input model.DetachTag
 
 	return r.converters.detachTags.ToDetachTags(ctx, outDTO)
 }
+
+// UploadImage is the resolver for the uploadImage field.
+func (r *mutationResolver) UploadImage(ctx context.Context, input model.UploadImageInput) (*model.UploadImagePayload, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("UploadImage").End()
+
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = ErrorWithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.String("input", fmt.Sprintf("%+v", input))))
+
+	var clientMutationID string
+	if input.ClientMutationID != nil {
+		clientMutationID = *input.ClientMutationID
+	}
+
+	outDTO, err := r.usecases.uploadImage.Execute(ctx, dto.NewUploadImageInDTO(input.Image.File, input.Image.Filename, clientMutationID))
+	if err != nil {
+		return nil, err
+	}
+
+	return r.converters.uploadImage.ToUploadImage(ctx, outDTO)
+}

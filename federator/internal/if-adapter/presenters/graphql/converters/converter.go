@@ -483,6 +483,33 @@ func (c Converter) ToDetachTags(ctx context.Context, from dto.DetachTagsOutDTO) 
 	return &payload, nil
 }
 
+func (c Converter) ToUploadImage(ctx context.Context, from dto.UploadImageOutDTO) (*model.UploadImagePayload, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToUploadImage").End()
+
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.Any("from", from)))
+	var clientMutationID *string
+	if v := from.ClientMutationID(); len(v) > 0 {
+		clientMutationID = &v
+	}
+	payload := model.UploadImagePayload{
+		ImageURL:         gqlscalar.URL(from.ImageURL()),
+		ClientMutationID: clientMutationID,
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("returns",
+			slog.Any("*model.UploadImagePayload", payload),
+			slog.Any("error", nil)))
+	return &payload, nil
+}
+
 func NewConverter() *Converter {
 	return &Converter{}
 }
