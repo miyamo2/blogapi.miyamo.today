@@ -329,3 +329,42 @@ func (mr *MockUpdateArticleThumbnailConverterMockRecorder) ToUpdateArticleThumbn
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleThumbnail", reflect.TypeOf((*MockUpdateArticleThumbnailConverter)(nil).ToUpdateArticleThumbnail), ctx, from)
 }
+
+// MockAttachTagsConverter is a mock of AttachTagsConverter interface.
+type MockAttachTagsConverter struct {
+	ctrl     *gomock.Controller
+	recorder *MockAttachTagsConverterMockRecorder
+	isgomock struct{}
+}
+
+// MockAttachTagsConverterMockRecorder is the mock recorder for MockAttachTagsConverter.
+type MockAttachTagsConverterMockRecorder struct {
+	mock *MockAttachTagsConverter
+}
+
+// NewMockAttachTagsConverter creates a new mock instance.
+func NewMockAttachTagsConverter(ctrl *gomock.Controller) *MockAttachTagsConverter {
+	mock := &MockAttachTagsConverter{ctrl: ctrl}
+	mock.recorder = &MockAttachTagsConverterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAttachTagsConverter) EXPECT() *MockAttachTagsConverterMockRecorder {
+	return m.recorder
+}
+
+// ToAttachTags mocks base method.
+func (m *MockAttachTagsConverter) ToAttachTags(ctx context.Context, from dto.AttachTagsOutDTO) (*model.AttachTagsPayload, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToAttachTags", ctx, from)
+	ret0, _ := ret[0].(*model.AttachTagsPayload)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToAttachTags indicates an expected call of ToAttachTags.
+func (mr *MockAttachTagsConverterMockRecorder) ToAttachTags(ctx, from any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToAttachTags", reflect.TypeOf((*MockAttachTagsConverter)(nil).ToAttachTags), ctx, from)
+}

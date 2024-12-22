@@ -28,7 +28,6 @@ func TestUpdateArticleBody_Execute(t *testing.T) {
 		args                       args
 		expectedReq                *grpc.UpdateArticleBodyRequest
 		want                       want
-		wantErr                    bool
 	}
 	errTestUpdateArticleBody := errors.New("test error")
 	mockBlogAPIContext := func() context.Context {
