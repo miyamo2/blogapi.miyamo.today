@@ -254,13 +254,13 @@ func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStre
 	)
 	buf := bytes.NewBuffer(binary)
 
-STREAMING:
-	for {
+	streamOngoing := true
+	for streamOngoing {
 		req, streamingErr := streamingServer.Recv()
 		switch {
 		case errors.Is(streamingErr, io.EOF):
 			logger.InfoContext(ctx, "Stream EOF")
-			break STREAMING
+			streamOngoing = false
 		case streamingErr != nil:
 			err = streamingErr
 			err = errors.WithStack(err)
@@ -271,6 +271,9 @@ STREAMING:
 					slog.Any("grpc.UploadImageResponse", nil),
 					slog.Any("error", err)))
 			return
+		}
+		if req == nil {
+			continue
 		}
 		if data := req.GetData(); len(data) > 0 {
 			logger.InfoContext(ctx, "Received data", slog.Group("data", slog.String("data", string(data))))
