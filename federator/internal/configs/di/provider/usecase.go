@@ -8,13 +8,14 @@ import (
 
 // compatibility check
 var (
-	_ abstract.Article            = (*usecase.Article)(nil)
-	_ abstract.Articles           = (*usecase.Articles)(nil)
-	_ abstract.Tag                = (*usecase.Tag)(nil)
-	_ abstract.Tags               = (*usecase.Tags)(nil)
-	_ abstract.CreateArticle      = (*usecase.CreateArticle)(nil)
-	_ abstract.UpdateArticleTitle = (*usecase.UpdateArticleTitle)(nil)
-	_ abstract.UpdateArticleBody  = (*usecase.UpdateArticleBody)(nil)
+	_ abstract.Article                = (*usecase.Article)(nil)
+	_ abstract.Articles               = (*usecase.Articles)(nil)
+	_ abstract.Tag                    = (*usecase.Tag)(nil)
+	_ abstract.Tags                   = (*usecase.Tags)(nil)
+	_ abstract.CreateArticle          = (*usecase.CreateArticle)(nil)
+	_ abstract.UpdateArticleTitle     = (*usecase.UpdateArticleTitle)(nil)
+	_ abstract.UpdateArticleBody      = (*usecase.UpdateArticleBody)(nil)
+	_ abstract.UpdateArticleThumbnail = (*usecase.UpdateArticleThumbnail)(nil)
 )
 
 var UsecaseSet = wire.NewSet(
@@ -32,4 +33,6 @@ var UsecaseSet = wire.NewSet(
 	wire.Bind(new(abstract.UpdateArticleTitle), new(*usecase.UpdateArticleTitle)),
 	usecase.NewUpdateArticleBody,
 	wire.Bind(new(abstract.UpdateArticleBody), new(*usecase.UpdateArticleBody)),
+	usecase.NewUpdateArticleThumbnail,
+	wire.Bind(new(abstract.UpdateArticleThumbnail), new(*usecase.UpdateArticleThumbnail)),
 )

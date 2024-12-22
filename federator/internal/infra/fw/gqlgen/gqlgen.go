@@ -92,10 +92,11 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateArticle      func(childComplexity int, input model.CreateArticleInput) int
-		Noop               func(childComplexity int, input *model.NoopInput) int
-		UpdateArticleBody  func(childComplexity int, input model.UpdateArticleBodyInput) int
-		UpdateArticleTitle func(childComplexity int, input model.UpdateArticleTitleInput) int
+		CreateArticle          func(childComplexity int, input model.CreateArticleInput) int
+		Noop                   func(childComplexity int, input *model.NoopInput) int
+		UpdateArticleBody      func(childComplexity int, input model.UpdateArticleBodyInput) int
+		UpdateArticleThumbnail func(childComplexity int, input model.UpdateArticleThumbnailInput) int
+		UpdateArticleTitle     func(childComplexity int, input model.UpdateArticleTitleInput) int
 	}
 
 	NoopPayload struct {
@@ -159,6 +160,12 @@ type ComplexityRoot struct {
 		EventID          func(childComplexity int) int
 	}
 
+	UpdateArticleThumbnailPayload struct {
+		ArticleID        func(childComplexity int) int
+		ClientMutationID func(childComplexity int) int
+		EventID          func(childComplexity int) int
+	}
+
 	UpdateArticleTitlePayload struct {
 		ArticleID        func(childComplexity int) int
 		ClientMutationID func(childComplexity int) int
@@ -171,6 +178,7 @@ type MutationResolver interface {
 	CreateArticle(ctx context.Context, input model.CreateArticleInput) (*model.CreateArticlePayload, error)
 	UpdateArticleTitle(ctx context.Context, input model.UpdateArticleTitleInput) (*model.UpdateArticleTitlePayload, error)
 	UpdateArticleBody(ctx context.Context, input model.UpdateArticleBodyInput) (*model.UpdateArticleBodyPayload, error)
+	UpdateArticleThumbnail(ctx context.Context, input model.UpdateArticleThumbnailInput) (*model.UpdateArticleThumbnailPayload, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (model.Node, error)
@@ -393,6 +401,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateArticleBody(childComplexity, args["input"].(model.UpdateArticleBodyInput)), true
+
+	case "Mutation.updateArticleThumbnail":
+		if e.complexity.Mutation.UpdateArticleThumbnail == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateArticleThumbnail_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateArticleThumbnail(childComplexity, args["input"].(model.UpdateArticleThumbnailInput)), true
 
 	case "Mutation.updateArticleTitle":
 		if e.complexity.Mutation.UpdateArticleTitle == nil {
@@ -653,6 +673,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.UpdateArticleBodyPayload.EventID(childComplexity), true
 
+	case "UpdateArticleThumbnailPayload.articleId":
+		if e.complexity.UpdateArticleThumbnailPayload.ArticleID == nil {
+			break
+		}
+
+		return e.complexity.UpdateArticleThumbnailPayload.ArticleID(childComplexity), true
+
+	case "UpdateArticleThumbnailPayload.clientMutationId":
+		if e.complexity.UpdateArticleThumbnailPayload.ClientMutationID == nil {
+			break
+		}
+
+		return e.complexity.UpdateArticleThumbnailPayload.ClientMutationID(childComplexity), true
+
+	case "UpdateArticleThumbnailPayload.eventID":
+		if e.complexity.UpdateArticleThumbnailPayload.EventID == nil {
+			break
+		}
+
+		return e.complexity.UpdateArticleThumbnailPayload.EventID(childComplexity), true
+
 	case "UpdateArticleTitlePayload.articleId":
 		if e.complexity.UpdateArticleTitlePayload.ArticleID == nil {
 			break
@@ -685,6 +726,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateArticleInput,
 		ec.unmarshalInputNoopInput,
 		ec.unmarshalInputUpdateArticleBodyInput,
+		ec.unmarshalInputUpdateArticleThumbnailInput,
 		ec.unmarshalInputUpdateArticleTitleInput,
 	)
 	first := true
@@ -903,11 +945,24 @@ type UpdateArticleBodyPayload {
   articleId: ID!
   eventID: ID!
   clientMutationId: String
+}
+
+input UpdateArticleThumbnailInput {
+  articleId: ID!
+  thumbnailURL: URL!
+  clientMutationId: String
+}
+
+type UpdateArticleThumbnailPayload {
+  articleId: ID!
+  eventID: ID!
+  clientMutationId: String
 }`, BuiltIn: false},
 	{Name: "../../../../.api/blogging_event/blogging-event.mutation.graphqls", Input: `extend type Mutation {
     createArticle(input: CreateArticleInput!): CreateArticlePayload!
     updateArticleTitle(input: UpdateArticleTitleInput!): UpdateArticleTitlePayload!
     updateArticleBody(input: UpdateArticleBodyInput!): UpdateArticleBodyPayload!
+    updateArticleThumbnail(input: UpdateArticleThumbnailInput!): UpdateArticleThumbnailPayload!
 }`, BuiltIn: false},
 	{Name: "../../../../.api/blogging_event/blogging-event.schema.graphqls", Input: `extend schema {
   mutation: Mutation
@@ -1175,6 +1230,38 @@ func (ec *executionContext) field_Mutation_updateArticleBody_argsInput(
 	}
 
 	var zeroVal model.UpdateArticleBodyInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_updateArticleThumbnail_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_updateArticleThumbnail_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_updateArticleThumbnail_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.UpdateArticleThumbnailInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.UpdateArticleThumbnailInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNUpdateArticleThumbnailInput2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐUpdateArticleThumbnailInput(ctx, tmp)
+	}
+
+	var zeroVal model.UpdateArticleThumbnailInput
 	return zeroVal, nil
 }
 
@@ -3032,6 +3119,69 @@ func (ec *executionContext) fieldContext_Mutation_updateArticleBody(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_updateArticleThumbnail(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateArticleThumbnail(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateArticleThumbnail(rctx, fc.Args["input"].(model.UpdateArticleThumbnailInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.UpdateArticleThumbnailPayload)
+	fc.Result = res
+	return ec.marshalNUpdateArticleThumbnailPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐUpdateArticleThumbnailPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateArticleThumbnail(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "articleId":
+				return ec.fieldContext_UpdateArticleThumbnailPayload_articleId(ctx, field)
+			case "eventID":
+				return ec.fieldContext_UpdateArticleThumbnailPayload_eventID(ctx, field)
+			case "clientMutationId":
+				return ec.fieldContext_UpdateArticleThumbnailPayload_clientMutationId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type UpdateArticleThumbnailPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateArticleThumbnail_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _NoopPayload_clientMutationId(ctx context.Context, field graphql.CollectedField, obj *model.NoopPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_NoopPayload_clientMutationId(ctx, field)
 	if err != nil {
@@ -4660,6 +4810,135 @@ func (ec *executionContext) _UpdateArticleBodyPayload_clientMutationId(ctx conte
 func (ec *executionContext) fieldContext_UpdateArticleBodyPayload_clientMutationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "UpdateArticleBodyPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpdateArticleThumbnailPayload_articleId(ctx context.Context, field graphql.CollectedField, obj *model.UpdateArticleThumbnailPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UpdateArticleThumbnailPayload_articleId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ArticleID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UpdateArticleThumbnailPayload_articleId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdateArticleThumbnailPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpdateArticleThumbnailPayload_eventID(ctx context.Context, field graphql.CollectedField, obj *model.UpdateArticleThumbnailPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UpdateArticleThumbnailPayload_eventID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UpdateArticleThumbnailPayload_eventID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdateArticleThumbnailPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _UpdateArticleThumbnailPayload_clientMutationId(ctx context.Context, field graphql.CollectedField, obj *model.UpdateArticleThumbnailPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_UpdateArticleThumbnailPayload_clientMutationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClientMutationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_UpdateArticleThumbnailPayload_clientMutationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "UpdateArticleThumbnailPayload",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -6695,6 +6974,47 @@ func (ec *executionContext) unmarshalInputUpdateArticleBodyInput(ctx context.Con
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateArticleThumbnailInput(ctx context.Context, obj interface{}) (model.UpdateArticleThumbnailInput, error) {
+	var it model.UpdateArticleThumbnailInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"articleId", "thumbnailURL", "clientMutationId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "articleId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("articleId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ArticleID = data
+		case "thumbnailURL":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("thumbnailURL"))
+			data, err := ec.unmarshalNURL2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐURL(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ThumbnailURL = data
+		case "clientMutationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clientMutationId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClientMutationID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateArticleTitleInput(ctx context.Context, obj interface{}) (model.UpdateArticleTitleInput, error) {
 	var it model.UpdateArticleTitleInput
 	asMap := map[string]interface{}{}
@@ -7152,6 +7472,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updateArticleBody":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateArticleBody(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateArticleThumbnail":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateArticleThumbnail(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -7731,6 +8058,52 @@ func (ec *executionContext) _UpdateArticleBodyPayload(ctx context.Context, sel a
 			}
 		case "clientMutationId":
 			out.Values[i] = ec._UpdateArticleBodyPayload_clientMutationId(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var updateArticleThumbnailPayloadImplementors = []string{"UpdateArticleThumbnailPayload"}
+
+func (ec *executionContext) _UpdateArticleThumbnailPayload(ctx context.Context, sel ast.SelectionSet, obj *model.UpdateArticleThumbnailPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, updateArticleThumbnailPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("UpdateArticleThumbnailPayload")
+		case "articleId":
+			out.Values[i] = ec._UpdateArticleThumbnailPayload_articleId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "eventID":
+			out.Values[i] = ec._UpdateArticleThumbnailPayload_eventID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "clientMutationId":
+			out.Values[i] = ec._UpdateArticleThumbnailPayload_clientMutationId(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8603,6 +8976,25 @@ func (ec *executionContext) marshalNUpdateArticleBodyPayload2ᚖgithubᚗcomᚋm
 		return graphql.Null
 	}
 	return ec._UpdateArticleBodyPayload(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNUpdateArticleThumbnailInput2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐUpdateArticleThumbnailInput(ctx context.Context, v interface{}) (model.UpdateArticleThumbnailInput, error) {
+	res, err := ec.unmarshalInputUpdateArticleThumbnailInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUpdateArticleThumbnailPayload2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐUpdateArticleThumbnailPayload(ctx context.Context, sel ast.SelectionSet, v model.UpdateArticleThumbnailPayload) graphql.Marshaler {
+	return ec._UpdateArticleThumbnailPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUpdateArticleThumbnailPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐUpdateArticleThumbnailPayload(ctx context.Context, sel ast.SelectionSet, v *model.UpdateArticleThumbnailPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._UpdateArticleThumbnailPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUpdateArticleTitleInput2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐUpdateArticleTitleInput(ctx context.Context, v interface{}) (model.UpdateArticleTitleInput, error) {

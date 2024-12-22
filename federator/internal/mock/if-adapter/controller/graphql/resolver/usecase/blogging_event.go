@@ -133,3 +133,42 @@ func (mr *MockUpdateArticleBodyMockRecorder) Execute(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockUpdateArticleBody)(nil).Execute), ctx, in)
 }
+
+// MockUpdateArticleThumbnail is a mock of UpdateArticleThumbnail interface.
+type MockUpdateArticleThumbnail struct {
+	ctrl     *gomock.Controller
+	recorder *MockUpdateArticleThumbnailMockRecorder
+	isgomock struct{}
+}
+
+// MockUpdateArticleThumbnailMockRecorder is the mock recorder for MockUpdateArticleThumbnail.
+type MockUpdateArticleThumbnailMockRecorder struct {
+	mock *MockUpdateArticleThumbnail
+}
+
+// NewMockUpdateArticleThumbnail creates a new mock instance.
+func NewMockUpdateArticleThumbnail(ctrl *gomock.Controller) *MockUpdateArticleThumbnail {
+	mock := &MockUpdateArticleThumbnail{ctrl: ctrl}
+	mock.recorder = &MockUpdateArticleThumbnailMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUpdateArticleThumbnail) EXPECT() *MockUpdateArticleThumbnailMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockUpdateArticleThumbnail) Execute(ctx context.Context, in dto.UpdateArticleThumbnailInDTO) (dto.UpdateArticleThumbnailOutDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx, in)
+	ret0, _ := ret[0].(dto.UpdateArticleThumbnailOutDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockUpdateArticleThumbnailMockRecorder) Execute(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockUpdateArticleThumbnail)(nil).Execute), ctx, in)
+}

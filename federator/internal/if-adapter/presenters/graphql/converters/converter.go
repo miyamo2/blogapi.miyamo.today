@@ -399,6 +399,34 @@ func (c Converter) ToUpdateArticleBody(ctx context.Context, from dto.UpdateArtic
 	return &payload, nil
 }
 
+func (c Converter) ToUpdateArticleThumbnail(ctx context.Context, from dto.UpdateArticleThumbnailOutDTO) (*model.UpdateArticleThumbnailPayload, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToUpdateArticleThumbnail").End()
+
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.Any("from", from)))
+	var clientMutationID *string
+	if v := from.ClientMutationID(); len(v) > 0 {
+		clientMutationID = &v
+	}
+	payload := model.UpdateArticleThumbnailPayload{
+		ClientMutationID: clientMutationID,
+		EventID:          from.EventID(),
+		ArticleID:        from.ArticleID(),
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("returns",
+			slog.Any("*model.UpdateArticleThumbnailPayload", payload),
+			slog.Any("error", nil)))
+	return &payload, nil
+}
+
 func NewConverter() *Converter {
 	return &Converter{}
 }

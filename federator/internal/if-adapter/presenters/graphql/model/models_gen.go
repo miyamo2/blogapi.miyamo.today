@@ -137,6 +137,18 @@ type UpdateArticleBodyPayload struct {
 	ClientMutationID *string `json:"clientMutationId,omitempty"`
 }
 
+type UpdateArticleThumbnailInput struct {
+	ArticleID        string        `json:"articleId"`
+	ThumbnailURL     gqlscalar.URL `json:"thumbnailURL"`
+	ClientMutationID *string       `json:"clientMutationId,omitempty"`
+}
+
+type UpdateArticleThumbnailPayload struct {
+	ArticleID        string  `json:"articleId"`
+	EventID          string  `json:"eventID"`
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
 type UpdateArticleTitleInput struct {
 	ArticleID        string  `json:"articleId"`
 	Title            string  `json:"title"`

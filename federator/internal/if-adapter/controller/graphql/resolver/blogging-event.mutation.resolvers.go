@@ -101,3 +101,30 @@ func (r *mutationResolver) UpdateArticleBody(ctx context.Context, input model.Up
 
 	return r.converters.updateArticleBody.ToUpdateArticleBody(ctx, outDTO)
 }
+
+// UpdateArticleThumbnail is the resolver for the updateArticleThumbnail field.
+func (r *mutationResolver) UpdateArticleThumbnail(ctx context.Context, input model.UpdateArticleThumbnailInput) (*model.UpdateArticleThumbnailPayload, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("UpdateArticleBody").End()
+
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = ErrorWithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.String("input", fmt.Sprintf("%+v", input))))
+
+	var clientMutationID string
+	if input.ClientMutationID != nil {
+		clientMutationID = *input.ClientMutationID
+	}
+
+	outDTO, err := r.usecases.updateArticleThumbnail.Execute(ctx, dto.NewUpdateArticleThumbnailInDTO(input.ArticleID, url.URL(input.ThumbnailURL), clientMutationID))
+	if err != nil {
+		return nil, err
+	}
+
+	return r.converters.updateArticleThumbnail.ToUpdateArticleThumbnail(ctx, outDTO)
+}
