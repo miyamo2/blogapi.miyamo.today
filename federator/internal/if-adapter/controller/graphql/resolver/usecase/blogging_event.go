@@ -41,3 +41,9 @@ type DetachTags interface {
 	// Execute detaches tags from an article.
 	Execute(ctx context.Context, in dto.DetachTagsInDTO) (dto.DetachTagsOutDTO, error)
 }
+
+// UploadImage is a use-case for uploading an image.
+type UploadImage interface {
+	// Execute uploads an image.
+	Execute(ctx context.Context, in dto.UploadImageInDTO) (dto.UploadImageOutDTO, error)
+}

@@ -67,3 +67,9 @@ type DetachTagsConverter interface {
 	// ToDetachTags converts detaching tags.
 	ToDetachTags(ctx context.Context, from dto.DetachTagsOutDTO) (*model.DetachTagsPayload, error)
 }
+
+// UploadImageConverter is the converter for uploading an image.
+type UploadImageConverter interface {
+	// ToUploadImage converts uploading an image.
+	ToUploadImage(ctx context.Context, from dto.UploadImageOutDTO) (*model.UploadImagePayload, error)
+}

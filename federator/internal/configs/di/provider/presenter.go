@@ -18,6 +18,7 @@ var (
 	_ abstract.UpdateArticleThumbnailConverter = (*converters.Converter)(nil)
 	_ abstract.AttachTagsConverter             = (*converters.Converter)(nil)
 	_ abstract.DetachTagsConverter             = (*converters.Converter)(nil)
+	_ abstract.UploadImageConverter            = (*converters.Converter)(nil)
 )
 
 var PresenterSet = wire.NewSet(
@@ -32,4 +33,5 @@ var PresenterSet = wire.NewSet(
 	wire.Bind(new(abstract.UpdateArticleThumbnailConverter), new(*converters.Converter)),
 	wire.Bind(new(abstract.AttachTagsConverter), new(*converters.Converter)),
 	wire.Bind(new(abstract.DetachTagsConverter), new(*converters.Converter)),
+	wire.Bind(new(abstract.UploadImageConverter), new(*converters.Converter)),
 )

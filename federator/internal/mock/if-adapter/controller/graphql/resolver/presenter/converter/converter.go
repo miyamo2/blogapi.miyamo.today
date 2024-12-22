@@ -407,3 +407,42 @@ func (mr *MockDetachTagsConverterMockRecorder) ToDetachTags(ctx, from any) *gomo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToDetachTags", reflect.TypeOf((*MockDetachTagsConverter)(nil).ToDetachTags), ctx, from)
 }
+
+// MockUploadImageConverter is a mock of UploadImageConverter interface.
+type MockUploadImageConverter struct {
+	ctrl     *gomock.Controller
+	recorder *MockUploadImageConverterMockRecorder
+	isgomock struct{}
+}
+
+// MockUploadImageConverterMockRecorder is the mock recorder for MockUploadImageConverter.
+type MockUploadImageConverterMockRecorder struct {
+	mock *MockUploadImageConverter
+}
+
+// NewMockUploadImageConverter creates a new mock instance.
+func NewMockUploadImageConverter(ctrl *gomock.Controller) *MockUploadImageConverter {
+	mock := &MockUploadImageConverter{ctrl: ctrl}
+	mock.recorder = &MockUploadImageConverterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUploadImageConverter) EXPECT() *MockUploadImageConverterMockRecorder {
+	return m.recorder
+}
+
+// ToUploadImage mocks base method.
+func (m *MockUploadImageConverter) ToUploadImage(ctx context.Context, from dto.UploadImageOutDTO) (*model.UploadImagePayload, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToUploadImage", ctx, from)
+	ret0, _ := ret[0].(*model.UploadImagePayload)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToUploadImage indicates an expected call of ToUploadImage.
+func (mr *MockUploadImageConverterMockRecorder) ToUploadImage(ctx, from any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUploadImage", reflect.TypeOf((*MockUploadImageConverter)(nil).ToUploadImage), ctx, from)
+}
