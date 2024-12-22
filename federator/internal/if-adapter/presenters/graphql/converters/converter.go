@@ -455,6 +455,34 @@ func (c Converter) ToAttachTags(ctx context.Context, from dto.AttachTagsOutDTO) 
 	return &payload, nil
 }
 
+func (c Converter) ToDetachTags(ctx context.Context, from dto.DetachTagsOutDTO) (*model.DetachTagsPayload, error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToDetachTags").End()
+
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.Any("from", from)))
+	var clientMutationID *string
+	if v := from.ClientMutationID(); len(v) > 0 {
+		clientMutationID = &v
+	}
+	payload := model.DetachTagsPayload{
+		ClientMutationID: clientMutationID,
+		EventID:          from.EventID(),
+		ArticleID:        from.ArticleID(),
+	}
+	logger.InfoContext(ctx, "END",
+		slog.Group("returns",
+			slog.Any("*model.DetachTagsPayload", payload),
+			slog.Any("error", nil)))
+	return &payload, nil
+}
+
 func NewConverter() *Converter {
 	return &Converter{}
 }

@@ -368,3 +368,42 @@ func (mr *MockAttachTagsConverterMockRecorder) ToAttachTags(ctx, from any) *gomo
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToAttachTags", reflect.TypeOf((*MockAttachTagsConverter)(nil).ToAttachTags), ctx, from)
 }
+
+// MockDetachTagsConverter is a mock of DetachTagsConverter interface.
+type MockDetachTagsConverter struct {
+	ctrl     *gomock.Controller
+	recorder *MockDetachTagsConverterMockRecorder
+	isgomock struct{}
+}
+
+// MockDetachTagsConverterMockRecorder is the mock recorder for MockDetachTagsConverter.
+type MockDetachTagsConverterMockRecorder struct {
+	mock *MockDetachTagsConverter
+}
+
+// NewMockDetachTagsConverter creates a new mock instance.
+func NewMockDetachTagsConverter(ctrl *gomock.Controller) *MockDetachTagsConverter {
+	mock := &MockDetachTagsConverter{ctrl: ctrl}
+	mock.recorder = &MockDetachTagsConverterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDetachTagsConverter) EXPECT() *MockDetachTagsConverterMockRecorder {
+	return m.recorder
+}
+
+// ToDetachTags mocks base method.
+func (m *MockDetachTagsConverter) ToDetachTags(ctx context.Context, from dto.DetachTagsOutDTO) (*model.DetachTagsPayload, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToDetachTags", ctx, from)
+	ret0, _ := ret[0].(*model.DetachTagsPayload)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToDetachTags indicates an expected call of ToDetachTags.
+func (mr *MockDetachTagsConverterMockRecorder) ToDetachTags(ctx, from any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToDetachTags", reflect.TypeOf((*MockDetachTagsConverter)(nil).ToDetachTags), ctx, from)
+}

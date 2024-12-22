@@ -61,3 +61,9 @@ type AttachTagsConverter interface {
 	// ToAttachTags converts attaching tags.
 	ToAttachTags(ctx context.Context, from dto.AttachTagsOutDTO) (*model.AttachTagsPayload, error)
 }
+
+// DetachTagsConverter is the converter for detaching tags.
+type DetachTagsConverter interface {
+	// ToDetachTags converts detaching tags.
+	ToDetachTags(ctx context.Context, from dto.DetachTagsOutDTO) (*model.DetachTagsPayload, error)
+}

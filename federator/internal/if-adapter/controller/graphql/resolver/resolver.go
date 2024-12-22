@@ -24,6 +24,7 @@ type Usecases struct {
 	updateArticleBody      usecase.UpdateArticleBody
 	updateArticleThumbnail usecase.UpdateArticleThumbnail
 	attachTags             usecase.AttachTags
+	detachTags             usecase.DetachTags
 }
 
 type UsecasesOption func(*Usecases)
@@ -91,6 +92,13 @@ func WithAttachTagsUsecase(attachTags usecase.AttachTags) UsecasesOption {
 	}
 }
 
+// WithDetachTagsUsecase option for Usecases.
+func WithDetachTagsUsecase(detachTags usecase.DetachTags) UsecasesOption {
+	return func(u *Usecases) {
+		u.detachTags = detachTags
+	}
+}
+
 // NewUsecases constructor of Usecases.
 func NewUsecases(options ...UsecasesOption) *Usecases {
 	u := &Usecases{}
@@ -110,6 +118,7 @@ type Converters struct {
 	updateArticleBody      converters.UpdateArticleBodyConverter
 	updateArticleThumbnail converters.UpdateArticleThumbnailConverter
 	attachTags             converters.AttachTagsConverter
+	detachTags             converters.DetachTagsConverter
 }
 
 type ConvertersOption func(*Converters)
@@ -174,6 +183,13 @@ func WithUpdateArticleThumbnailConverter(updateArticleThumbnail converters.Updat
 func WithAttachTagsConverter(attachTags converters.AttachTagsConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.attachTags = attachTags
+	}
+}
+
+// WithDetachTagsConverter option for Converters.
+func WithDetachTagsConverter(detachTags converters.DetachTagsConverter) ConvertersOption {
+	return func(c *Converters) {
+		c.detachTags = detachTags
 	}
 }
 

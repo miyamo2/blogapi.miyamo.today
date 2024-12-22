@@ -77,6 +77,18 @@ type CreateArticlePayload struct {
 	ClientMutationID *string `json:"clientMutationId,omitempty"`
 }
 
+type DetachTagsInput struct {
+	ArticleID        string   `json:"articleId"`
+	TagNames         []string `json:"tagNames"`
+	ClientMutationID *string  `json:"clientMutationId,omitempty"`
+}
+
+type DetachTagsPayload struct {
+	ArticleID        string  `json:"articleId"`
+	EventID          string  `json:"eventID"`
+	ClientMutationID *string `json:"clientMutationId,omitempty"`
+}
+
 type Mutation struct {
 }
 

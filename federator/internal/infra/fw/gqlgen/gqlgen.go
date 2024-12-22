@@ -97,9 +97,16 @@ type ComplexityRoot struct {
 		EventID          func(childComplexity int) int
 	}
 
+	DetachTagsPayload struct {
+		ArticleID        func(childComplexity int) int
+		ClientMutationID func(childComplexity int) int
+		EventID          func(childComplexity int) int
+	}
+
 	Mutation struct {
 		AttachTags             func(childComplexity int, input model.AttachTagsInput) int
 		CreateArticle          func(childComplexity int, input model.CreateArticleInput) int
+		DetachTags             func(childComplexity int, input model.DetachTagsInput) int
 		Noop                   func(childComplexity int, input *model.NoopInput) int
 		UpdateArticleBody      func(childComplexity int, input model.UpdateArticleBodyInput) int
 		UpdateArticleThumbnail func(childComplexity int, input model.UpdateArticleThumbnailInput) int
@@ -187,6 +194,7 @@ type MutationResolver interface {
 	UpdateArticleBody(ctx context.Context, input model.UpdateArticleBodyInput) (*model.UpdateArticleBodyPayload, error)
 	UpdateArticleThumbnail(ctx context.Context, input model.UpdateArticleThumbnailInput) (*model.UpdateArticleThumbnailPayload, error)
 	AttachTags(ctx context.Context, input model.AttachTagsInput) (*model.AttachTagsPayload, error)
+	DetachTags(ctx context.Context, input model.DetachTagsInput) (*model.DetachTagsPayload, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (model.Node, error)
@@ -395,6 +403,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateArticlePayload.EventID(childComplexity), true
 
+	case "DetachTagsPayload.articleId":
+		if e.complexity.DetachTagsPayload.ArticleID == nil {
+			break
+		}
+
+		return e.complexity.DetachTagsPayload.ArticleID(childComplexity), true
+
+	case "DetachTagsPayload.clientMutationId":
+		if e.complexity.DetachTagsPayload.ClientMutationID == nil {
+			break
+		}
+
+		return e.complexity.DetachTagsPayload.ClientMutationID(childComplexity), true
+
+	case "DetachTagsPayload.eventID":
+		if e.complexity.DetachTagsPayload.EventID == nil {
+			break
+		}
+
+		return e.complexity.DetachTagsPayload.EventID(childComplexity), true
+
 	case "Mutation.attachTags":
 		if e.complexity.Mutation.AttachTags == nil {
 			break
@@ -418,6 +447,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateArticle(childComplexity, args["input"].(model.CreateArticleInput)), true
+
+	case "Mutation.detachTags":
+		if e.complexity.Mutation.DetachTags == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_detachTags_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DetachTags(childComplexity, args["input"].(model.DetachTagsInput)), true
 
 	case "Mutation.noop":
 		if e.complexity.Mutation.Noop == nil {
@@ -766,6 +807,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputAttachTagsInput,
 		ec.unmarshalInputCreateArticleInput,
+		ec.unmarshalInputDetachTagsInput,
 		ec.unmarshalInputNoopInput,
 		ec.unmarshalInputUpdateArticleBodyInput,
 		ec.unmarshalInputUpdateArticleThumbnailInput,
@@ -1011,6 +1053,18 @@ type AttachTagsPayload {
   articleId: ID!
   eventID: ID!
   clientMutationId: String
+}
+
+input DetachTagsInput {
+  articleId: ID!
+  tagNames: [String!]!
+  clientMutationId: String
+}
+
+type DetachTagsPayload {
+  articleId: ID!
+  eventID: ID!
+  clientMutationId: String
 }`, BuiltIn: false},
 	{Name: "../../../../.api/blogging_event/blogging-event.mutation.graphqls", Input: `extend type Mutation {
     createArticle(input: CreateArticleInput!): CreateArticlePayload!
@@ -1018,6 +1072,7 @@ type AttachTagsPayload {
     updateArticleBody(input: UpdateArticleBodyInput!): UpdateArticleBodyPayload!
     updateArticleThumbnail(input: UpdateArticleThumbnailInput!): UpdateArticleThumbnailPayload!
     attachTags(input: AttachTagsInput!): AttachTagsPayload!
+    detachTags(input: DetachTagsInput!): DetachTagsPayload!
 }`, BuiltIn: false},
 	{Name: "../../../../.api/blogging_event/blogging-event.schema.graphqls", Input: `extend schema {
   mutation: Mutation
@@ -1253,6 +1308,38 @@ func (ec *executionContext) field_Mutation_createArticle_argsInput(
 	}
 
 	var zeroVal model.CreateArticleInput
+	return zeroVal, nil
+}
+
+func (ec *executionContext) field_Mutation_detachTags_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	arg0, err := ec.field_Mutation_detachTags_argsInput(ctx, rawArgs)
+	if err != nil {
+		return nil, err
+	}
+	args["input"] = arg0
+	return args, nil
+}
+func (ec *executionContext) field_Mutation_detachTags_argsInput(
+	ctx context.Context,
+	rawArgs map[string]interface{},
+) (model.DetachTagsInput, error) {
+	// We won't call the directive if the argument is null.
+	// Set call_argument_directives_with_null to true to call directives
+	// even if the argument is null.
+	_, ok := rawArgs["input"]
+	if !ok {
+		var zeroVal model.DetachTagsInput
+		return zeroVal, nil
+	}
+
+	ctx = graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+	if tmp, ok := rawArgs["input"]; ok {
+		return ec.unmarshalNDetachTagsInput2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐDetachTagsInput(ctx, tmp)
+	}
+
+	var zeroVal model.DetachTagsInput
 	return zeroVal, nil
 }
 
@@ -3090,6 +3177,135 @@ func (ec *executionContext) fieldContext_CreateArticlePayload_clientMutationId(_
 	return fc, nil
 }
 
+func (ec *executionContext) _DetachTagsPayload_articleId(ctx context.Context, field graphql.CollectedField, obj *model.DetachTagsPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DetachTagsPayload_articleId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ArticleID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DetachTagsPayload_articleId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DetachTagsPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DetachTagsPayload_eventID(ctx context.Context, field graphql.CollectedField, obj *model.DetachTagsPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DetachTagsPayload_eventID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.EventID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DetachTagsPayload_eventID(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DetachTagsPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DetachTagsPayload_clientMutationId(ctx context.Context, field graphql.CollectedField, obj *model.DetachTagsPayload) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DetachTagsPayload_clientMutationId(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ClientMutationID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DetachTagsPayload_clientMutationId(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DetachTagsPayload",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_noop(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_noop(ctx, field)
 	if err != nil {
@@ -3455,6 +3671,69 @@ func (ec *executionContext) fieldContext_Mutation_attachTags(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_attachTags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_detachTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_detachTags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DetachTags(rctx, fc.Args["input"].(model.DetachTagsInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.DetachTagsPayload)
+	fc.Result = res
+	return ec.marshalNDetachTagsPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐDetachTagsPayload(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_detachTags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "articleId":
+				return ec.fieldContext_DetachTagsPayload_articleId(ctx, field)
+			case "eventID":
+				return ec.fieldContext_DetachTagsPayload_eventID(ctx, field)
+			case "clientMutationId":
+				return ec.fieldContext_DetachTagsPayload_clientMutationId(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DetachTagsPayload", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_detachTags_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -7226,6 +7505,47 @@ func (ec *executionContext) unmarshalInputCreateArticleInput(ctx context.Context
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDetachTagsInput(ctx context.Context, obj interface{}) (model.DetachTagsInput, error) {
+	var it model.DetachTagsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"articleId", "tagNames", "clientMutationId"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "articleId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("articleId"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ArticleID = data
+		case "tagNames":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tagNames"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TagNames = data
+		case "clientMutationId":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clientMutationId"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClientMutationID = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNoopInput(ctx context.Context, obj interface{}) (model.NoopInput, error) {
 	var it model.NoopInput
 	asMap := map[string]interface{}{}
@@ -7798,6 +8118,52 @@ func (ec *executionContext) _CreateArticlePayload(ctx context.Context, sel ast.S
 	return out
 }
 
+var detachTagsPayloadImplementors = []string{"DetachTagsPayload"}
+
+func (ec *executionContext) _DetachTagsPayload(ctx context.Context, sel ast.SelectionSet, obj *model.DetachTagsPayload) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, detachTagsPayloadImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DetachTagsPayload")
+		case "articleId":
+			out.Values[i] = ec._DetachTagsPayload_articleId(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "eventID":
+			out.Values[i] = ec._DetachTagsPayload_eventID(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "clientMutationId":
+			out.Values[i] = ec._DetachTagsPayload_clientMutationId(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -7852,6 +8218,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "attachTags":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_attachTags(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "detachTags":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_detachTags(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -9085,6 +9458,25 @@ func (ec *executionContext) unmarshalNDateTime2githubᚗcomᚋmiyamo2ᚋblogapi�
 
 func (ec *executionContext) marshalNDateTime2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋpkgᚋgqlscalarᚐUTC(ctx context.Context, sel ast.SelectionSet, v gqlscalar.UTC) graphql.Marshaler {
 	return v
+}
+
+func (ec *executionContext) unmarshalNDetachTagsInput2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐDetachTagsInput(ctx context.Context, v interface{}) (model.DetachTagsInput, error) {
+	res, err := ec.unmarshalInputDetachTagsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDetachTagsPayload2githubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐDetachTagsPayload(ctx context.Context, sel ast.SelectionSet, v model.DetachTagsPayload) graphql.Marshaler {
+	return ec._DetachTagsPayload(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDetachTagsPayload2ᚖgithubᚗcomᚋmiyamo2ᚋblogapiᚗmiyamoᚗtodayᚋfederatorᚋinternalᚋifᚑadapterᚋpresentersᚋgraphqlᚋmodelᚐDetachTagsPayload(ctx context.Context, sel ast.SelectionSet, v *model.DetachTagsPayload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DetachTagsPayload(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v interface{}) (string, error) {
