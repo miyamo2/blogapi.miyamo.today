@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"bytes"
 	"context"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
@@ -12,6 +13,7 @@ import (
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/grpc"
+	"io"
 	"log/slog"
 	"net/url"
 )
@@ -233,8 +235,77 @@ func (s *BloggingEventServiceServer) DetachTags(ctx context.Context, request *gr
 	return response, nil
 }
 
-func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStreamingServer[grpcgen.UploadImageRequest, grpcgen.UploadImageResponse]) error {
-	return s.UnimplementedBloggingEventServiceServer.UploadImage(streamingServer)
+func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStreamingServer[grpcgen.UploadImageRequest, grpcgen.UploadImageResponse]) (err error) {
+	ctx := streamingServer.Context()
+
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("DetachTag").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+	}
+	logger.InfoContext(ctx, "BEGIN")
+
+	var (
+		binary   []byte
+		fileName string
+	)
+	buf := bytes.NewBuffer(binary)
+
+STREAMING:
+	for {
+		req, streamingErr := streamingServer.Recv()
+		switch {
+		case errors.Is(streamingErr, io.EOF):
+			logger.InfoContext(ctx, "Stream EOF")
+			break STREAMING
+		case streamingErr != nil:
+			err = streamingErr
+			err = errors.WithStack(err)
+			nrtx.NoticeError(nrpkgerrors.Wrap(err))
+			streamingServer.SendAndClose(&grpcgen.UploadImageResponse{})
+			logger.WarnContext(ctx, "END",
+				slog.Group("return",
+					slog.Any("grpc.UploadImageResponse", nil),
+					slog.Any("error", err)))
+			return
+		}
+		if data := req.GetData(); len(data) > 0 {
+			logger.InfoContext(ctx, "Received data", slog.Group("data", slog.String("data", string(data))))
+			buf.Write(data)
+		}
+		if meta := req.GetMeta(); meta != nil && len(fileName) == 0 {
+			logger.InfoContext(ctx, "Received meta", slog.Group("meta", slog.String("name", meta.GetName())))
+			fileName = meta.GetName()
+		}
+	}
+
+	inDto := dto.NewUploadImageInDto(fileName, buf.Bytes())
+	outDto, err := s.uploadImageUsecase.Execute(ctx, &inDto)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		streamingServer.SendAndClose(&grpcgen.UploadImageResponse{})
+		logger.WarnContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("grpc.UploadImageResponse", nil),
+				slog.Any("error", err)))
+		return
+	}
+	response, err := s.uploadImageConverter.ToUploadImageResponse(ctx, outDto)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger.WarnContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("grpc.UploadImageResponse", nil),
+				slog.Any("error", err)))
+		streamingServer.SendAndClose(&grpcgen.UploadImageResponse{})
+		return
+	}
+	return streamingServer.SendAndClose(response)
 }
 
 func (s *BloggingEventServiceServer) mustEmbedUnimplementedBloggingEventServiceServer() {}
@@ -252,6 +323,8 @@ type bloggingEventServiceServerConfig struct {
 	attachTagConverter              presenters.ToAttachTagsResponse
 	detachTagUsecase                usecase.DetachTags
 	detachTagConverter              presenters.ToDetachTagsResponse
+	uploadImageUsecase              usecase.UploadImage
+	uploadImageConverter            presenters.ToUploadImageResponse
 }
 
 type BloggingEventServiceServerOption func(*bloggingEventServiceServerConfig)
@@ -325,6 +398,18 @@ func WithDetachTagsUsecase(detachTagUsecase usecase.DetachTags) BloggingEventSer
 func WithDetachTagsConverter(detachTagConverter presenters.ToDetachTagsResponse) BloggingEventServiceServerOption {
 	return func(c *bloggingEventServiceServerConfig) {
 		c.detachTagConverter = detachTagConverter
+	}
+}
+
+func WithUploadImageUsecase(uploadImageUsecase usecase.UploadImage) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.uploadImageUsecase = uploadImageUsecase
+	}
+}
+
+func WithUploadImageConverter(uploadImageConverter presenters.ToUploadImageResponse) BloggingEventServiceServerOption {
+	return func(c *bloggingEventServiceServerConfig) {
+		c.uploadImageConverter = uploadImageConverter
 	}
 }
 

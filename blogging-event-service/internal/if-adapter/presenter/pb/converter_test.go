@@ -5,6 +5,7 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
+	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -252,6 +253,52 @@ func TestConverter_ToDetachTagsResponse(t *testing.T) {
 			}
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("ToDetachTagsResponse() error = %v, want %v", err, tt.want.err)
+			}
+		})
+	}
+}
+
+func TestConverter_ToUploadImageResponse(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		from func() *dto.UploadImageOutDto
+	}
+	type want struct {
+		result *grpc.UploadImageResponse
+		err    error
+	}
+	type testCase struct {
+		args args
+		want want
+	}
+	tests := map[string]testCase{
+		"happy_path/single": {
+			args: args{
+				ctx: context.Background(),
+				from: func() *dto.UploadImageOutDto {
+					o := dto.NewUploadImageOutDto(*pkg.MustParseURL("http://example.com/example.png"))
+					return &o
+				},
+			},
+			want: want{
+				result: &grpc.UploadImageResponse{
+					Success: true,
+					Url: func() *string {
+						v := "http://example.com/example.png"
+						return &v
+					}()},
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			c := NewConverter()
+			got, err := c.ToUploadImageResponse(tt.args.ctx, tt.args.from())
+			if diff := cmp.Diff(got, tt.want.result, protocmp.Transform()); diff != "" {
+				t.Errorf("ToUploadImageResponse() = %v, want %v", got, tt.want)
+			}
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("ToUploadImageResponse() error = %v, want %v", err, tt.want.err)
 			}
 		})
 	}

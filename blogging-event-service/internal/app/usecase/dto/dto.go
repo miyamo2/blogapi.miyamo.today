@@ -1,6 +1,8 @@
 package dto
 
-import "net/url"
+import (
+	"net/url"
+)
 
 // CreateArticleInDto is an Input DTO for CreateArticle use-case
 type CreateArticleInDto struct {
@@ -301,5 +303,46 @@ func NewDetachTagsOutDto(eventID, articleID string) DetachTagsOutDto {
 	return DetachTagsOutDto{
 		eventID:   eventID,
 		articleID: articleID,
+	}
+}
+
+// UploadImageInDto is an Input DTO for UploadImage use-case
+type UploadImageInDto struct {
+	name  string
+	bytes []byte
+}
+
+// Name returns the name of the image to be uploaded
+func (i UploadImageInDto) Name() string {
+	return i.name
+}
+
+// Bytes returns the bytes of the image to be uploaded
+func (i UploadImageInDto) Bytes() []byte {
+	return i.bytes
+}
+
+// NewUploadImageInDto is constructor of UploadImageInDto.
+func NewUploadImageInDto(name string, bytes []byte) UploadImageInDto {
+	return UploadImageInDto{
+		name:  name,
+		bytes: bytes,
+	}
+}
+
+// UploadImageOutDto is an Output DTO for UploadImage use-case
+type UploadImageOutDto struct {
+	uri url.URL
+}
+
+// URL returns the URL of the uploaded image
+func (o UploadImageOutDto) URL() url.URL {
+	return o.uri
+}
+
+// NewUploadImageOutDto is constructor of UploadImageOutDto.
+func NewUploadImageOutDto(uri url.URL) UploadImageOutDto {
+	return UploadImageOutDto{
+		uri: uri,
 	}
 }
