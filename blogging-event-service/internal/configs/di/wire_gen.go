@@ -9,6 +9,7 @@ package di
 import (
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/configs/di/provider"
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/presenter/pb"
+	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/s3"
 )
 
 // Injectors from wire.go:
@@ -25,7 +26,10 @@ func GetDependencies() *Dependencies {
 	updateArticleThumbnail := provider.UpdateArticleThumbnailUsecase(bloggingEventCommandService)
 	attachTags := provider.AttachTagsUsecase(bloggingEventCommandService)
 	detachTags := provider.DetachTagsUsecase(bloggingEventCommandService)
-	bloggingEventServiceServer := provider.NewBloggingEventServiceServer(createArticle, converter, updateArticleTitle, converter, updateArticleBody, converter, updateArticleThumbnail, converter, attachTags, converter, detachTags, converter)
+	client := provider.S3Client(config)
+	uploader := s3.NewUploader(client)
+	uploadImage := provider.UploadImageUsecase(uploader)
+	bloggingEventServiceServer := provider.NewBloggingEventServiceServer(createArticle, converter, updateArticleTitle, converter, updateArticleBody, converter, updateArticleThumbnail, converter, attachTags, converter, detachTags, converter, uploadImage, converter)
 	dialector := provider.GormDialector(config)
 	dependencies := NewDependencies(config, server, application, bloggingEventServiceServer, dialector)
 	return dependencies

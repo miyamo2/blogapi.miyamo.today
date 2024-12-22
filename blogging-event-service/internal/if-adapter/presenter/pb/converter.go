@@ -140,6 +140,32 @@ func (c Converter) ToDetachTagsResponse(ctx context.Context, from *dto.DetachTag
 	return
 }
 
+func (c Converter) ToUploadImageResponse(ctx context.Context, from *dto.UploadImageOutDto) (response *grpc.UploadImageResponse, err error) {
+	nrtx := newrelic.FromContext(ctx)
+	defer nrtx.StartSegment("ToUploadImageResponse").End()
+	logger, err := altnrslog.FromContext(ctx)
+	if err != nil {
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger = log.DefaultLogger()
+		err = nil
+	}
+	logger.InfoContext(ctx, "BEGIN", slog.Group("parameters", slog.Any("from", *from)))
+	defer func() {
+		logger.InfoContext(ctx, "END", slog.Group("return", slog.Any("response", *response)))
+	}()
+
+	uri := from.URL()
+	response = &grpc.UploadImageResponse{
+		Success: true,
+		Url: func() *string {
+			v := uri.String()
+			return &v
+		}(),
+	}
+	return
+}
+
 func NewConverter() *Converter {
 	return &Converter{}
 }

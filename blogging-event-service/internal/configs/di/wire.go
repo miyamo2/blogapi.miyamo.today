@@ -11,6 +11,7 @@ func GetDependencies() *Dependencies {
 	wire.Build(
 		provider.AWSSet,
 		provider.NewRelicSet,
+		provider.StorageSet,
 		provider.GormSet,
 		provider.CommandSet,
 		provider.PresenterSet,

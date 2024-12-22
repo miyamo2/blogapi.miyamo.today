@@ -4,6 +4,7 @@ import (
 	"github.com/google/wire"
 	impl "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase"
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/command"
+	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/storage"
 	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/usecase"
 )
 
@@ -39,6 +40,10 @@ func DetachTagsUsecase(bloggingEventCommand command.BloggingEventService) *impl.
 	return impl.NewDetachTags(bloggingEventCommand)
 }
 
+func UploadImageUsecase(uploader storage.Uploader) *impl.UploadImage {
+	return impl.NewUploadImage(uploader)
+}
+
 var UsecaseSet = wire.NewSet(
 	CreateArticleUsecase,
 	wire.Bind(new(usecase.CreateArticle), new(*impl.CreateArticle)),
@@ -52,4 +57,6 @@ var UsecaseSet = wire.NewSet(
 	wire.Bind(new(usecase.AttachTags), new(*impl.AttachTags)),
 	DetachTagsUsecase,
 	wire.Bind(new(usecase.DetachTags), new(*impl.DetachTags)),
+	UploadImageUsecase,
+	wire.Bind(new(usecase.UploadImage), new(*impl.UploadImage)),
 )

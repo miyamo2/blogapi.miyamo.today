@@ -42,3 +42,9 @@ type ToDetachTagsResponse interface {
 	// ToDetachTagsResponse converts from DetachTags use-case's dto to pb response.
 	ToDetachTagsResponse(ctx context.Context, from *dto.DetachTagsOutDto) (response *grpc.BloggingEventResponse, err error)
 }
+
+// ToUploadImageResponse is a converter interface for converting from UploadImage use-case's dto to pb response.
+type ToUploadImageResponse interface {
+	// ToUploadImageResponse converts from UploadImage use-case's dto to pb response.
+	ToUploadImageResponse(ctx context.Context, from *dto.UploadImageOutDto) (response *grpc.UploadImageResponse, err error)
+}
