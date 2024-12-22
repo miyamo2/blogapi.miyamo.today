@@ -792,3 +792,65 @@ func NewUpdateArticleBodyOutDTO(eventID, articleID, clientMutationID string) Upd
 		clientMutationID: clientMutationID,
 	}
 }
+
+// UpdateArticleThumbnailInDTO is a dto for updating an article thumbnail.
+type UpdateArticleThumbnailInDTO struct {
+	id               string
+	thumbnail        url.URL
+	clientMutationID string
+}
+
+// ID returns id.
+func (u UpdateArticleThumbnailInDTO) ID() string {
+	return u.id
+}
+
+// Thumbnail returns thumbnail.
+func (u UpdateArticleThumbnailInDTO) Thumbnail() url.URL {
+	return u.thumbnail
+}
+
+// ClientMutationID returns client mutation id.
+func (u UpdateArticleThumbnailInDTO) ClientMutationID() string {
+	return u.clientMutationID
+}
+
+// NewUpdateArticleThumbnailInDTO constructor of UpdateArticleThumbnailInDTO.
+func NewUpdateArticleThumbnailInDTO(id string, thumbnail url.URL, clientMutationID string) UpdateArticleThumbnailInDTO {
+	return UpdateArticleThumbnailInDTO{
+		id:               id,
+		thumbnail:        thumbnail,
+		clientMutationID: clientMutationID,
+	}
+}
+
+// UpdateArticleThumbnailOutDTO is a dto for updating an article thumbnail.
+type UpdateArticleThumbnailOutDTO struct {
+	eventID          string
+	articleID        string
+	clientMutationID string
+}
+
+// EventID returns event id.
+func (u UpdateArticleThumbnailOutDTO) EventID() string {
+	return u.eventID
+}
+
+// ArticleID returns article id.
+func (u UpdateArticleThumbnailOutDTO) ArticleID() string {
+	return u.articleID
+}
+
+// ClientMutationID returns client mutation id.
+func (u UpdateArticleThumbnailOutDTO) ClientMutationID() string {
+	return u.clientMutationID
+}
+
+// NewUpdateArticleThumbnailOutDTO constructor of UpdateArticleThumbnailOutDTO.
+func NewUpdateArticleThumbnailOutDTO(eventID, articleID, clientMutationID string) UpdateArticleThumbnailOutDTO {
+	return UpdateArticleThumbnailOutDTO{
+		eventID:          eventID,
+		articleID:        articleID,
+		clientMutationID: clientMutationID,
+	}
+}

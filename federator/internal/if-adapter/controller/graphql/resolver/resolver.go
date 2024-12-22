@@ -15,13 +15,14 @@ type Resolver struct {
 }
 
 type Usecases struct {
-	article            usecase.Article
-	articles           usecase.Articles
-	tag                usecase.Tag
-	tags               usecase.Tags
-	createArticle      usecase.CreateArticle
-	updateArticleTitle usecase.UpdateArticleTitle
-	updateArticleBody  usecase.UpdateArticleBody
+	article                usecase.Article
+	articles               usecase.Articles
+	tag                    usecase.Tag
+	tags                   usecase.Tags
+	createArticle          usecase.CreateArticle
+	updateArticleTitle     usecase.UpdateArticleTitle
+	updateArticleBody      usecase.UpdateArticleBody
+	updateArticleThumbnail usecase.UpdateArticleThumbnail
 }
 
 type UsecasesOption func(*Usecases)
@@ -75,6 +76,13 @@ func WithUpdateArticleBodyUsecase(updateArticleBody usecase.UpdateArticleBody) U
 	}
 }
 
+// WithUpdateArticleThumbnailUsecase option for Usecases.
+func WithUpdateArticleThumbnailUsecase(updateArticleThumbnail usecase.UpdateArticleThumbnail) UsecasesOption {
+	return func(u *Usecases) {
+		u.updateArticleThumbnail = updateArticleThumbnail
+	}
+}
+
 // NewUsecases constructor of Usecases.
 func NewUsecases(options ...UsecasesOption) *Usecases {
 	u := &Usecases{}
@@ -85,13 +93,14 @@ func NewUsecases(options ...UsecasesOption) *Usecases {
 }
 
 type Converters struct {
-	article            converters.ArticleConverter
-	articles           converters.ArticlesConverter
-	tag                converters.TagConverter
-	tags               converters.TagsConverter
-	createArticle      converters.CreateArticleConverter
-	updateArticleTitle converters.UpdateArticleTitleConverter
-	updateArticleBody  converters.UpdateArticleBodyConverter
+	article                converters.ArticleConverter
+	articles               converters.ArticlesConverter
+	tag                    converters.TagConverter
+	tags                   converters.TagsConverter
+	createArticle          converters.CreateArticleConverter
+	updateArticleTitle     converters.UpdateArticleTitleConverter
+	updateArticleBody      converters.UpdateArticleBodyConverter
+	updateArticleThumbnail converters.UpdateArticleThumbnailConverter
 }
 
 type ConvertersOption func(*Converters)
@@ -142,6 +151,13 @@ func WithUpdateArticleTitleConverter(updateArticleTitle converters.UpdateArticle
 func WithUpdateArticleBodyConverter(updateArticleBody converters.UpdateArticleBodyConverter) ConvertersOption {
 	return func(c *Converters) {
 		c.updateArticleBody = updateArticleBody
+	}
+}
+
+// WithUpdateArticleThumbnailConverter option for Converters.
+func WithUpdateArticleThumbnailConverter(updateArticleThumbnail converters.UpdateArticleThumbnailConverter) ConvertersOption {
+	return func(c *Converters) {
+		c.updateArticleThumbnail = updateArticleThumbnail
 	}
 }
 

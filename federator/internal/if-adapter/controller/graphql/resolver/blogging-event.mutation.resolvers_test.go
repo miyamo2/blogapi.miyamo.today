@@ -623,3 +623,196 @@ func (m *UpdateArticleBodyInputMatcher) Matches(x interface{}) bool {
 func (m *UpdateArticleBodyInputMatcher) String() string {
 	return fmt.Sprintf("is equal to %+v", m.expect)
 }
+
+func Test_mutationResolver_UpdateArticleThumbnail(t *testing.T) {
+	type args struct {
+		ctx   context.Context
+		input model.UpdateArticleThumbnailInput
+	}
+	type want struct {
+		out *model.UpdateArticleThumbnailPayload
+		err error
+	}
+	type usecaseResult struct {
+		out dto.UpdateArticleThumbnailOutDTO
+		err error
+	}
+	type converterResult struct {
+		out *model.UpdateArticleThumbnailPayload
+		err error
+	}
+	type testCase struct {
+		sut                func(resolver *Resolver) *mutationResolver
+		updateArticleInDTO dto.UpdateArticleThumbnailInDTO
+		setupMockUsecase   func(uc *musecase.MockUpdateArticleThumbnail, input dto.UpdateArticleThumbnailInDTO, usecaseResult usecaseResult)
+		usecaseResult      usecaseResult
+		setupMockConverter func(converter *mconverter.MockUpdateArticleThumbnailConverter, from dto.UpdateArticleThumbnailOutDTO, converterResult converterResult)
+		converterResult    converterResult
+		args               args
+		want               want
+		wantErr            bool
+	}
+	errFailedToUsecase := errors.New("failed to usecase")
+	errFailedToConverter := errors.New("failed to converter")
+	tests := map[string]testCase{
+		"happy_path": {
+			sut: func(resolver *Resolver) *mutationResolver {
+				return &mutationResolver{resolver}
+			},
+			updateArticleInDTO: dto.NewUpdateArticleThumbnailInDTO("Article1", utils.MustURLParse("https://example.com/example.png"), "Mutation1"),
+			setupMockUsecase: func(uc *musecase.MockUpdateArticleThumbnail, input dto.UpdateArticleThumbnailInDTO, usecaseResult usecaseResult) {
+				uc.EXPECT().
+					Execute(gomock.Any(), NewUpdateArticleThumbnailInputMatcher(input)).
+					Return(usecaseResult.out, usecaseResult.err).
+					Times(1)
+			},
+			usecaseResult: usecaseResult{
+				out: dto.NewUpdateArticleThumbnailOutDTO("Event1", "Article1", "Mutation1"),
+			},
+			setupMockConverter: func(converter *mconverter.MockUpdateArticleThumbnailConverter, from dto.UpdateArticleThumbnailOutDTO, converterResult converterResult) {
+				converter.EXPECT().
+					ToUpdateArticleThumbnail(gomock.Any(), from).
+					Return(converterResult.out, converterResult.err).
+					Times(1)
+			},
+			converterResult: converterResult{
+				out: &model.UpdateArticleThumbnailPayload{
+					EventID:          "Event1",
+					ArticleID:        "Article1",
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			args: args{
+				ctx: context.Background(),
+				input: model.UpdateArticleThumbnailInput{
+					ArticleID:        "Article1",
+					ThumbnailURL:     gqlscalar.URL(utils.MustURLParse("https://example.com/example.png")),
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			want: want{
+				out: &model.UpdateArticleThumbnailPayload{
+					EventID:          "Event1",
+					ArticleID:        "Article1",
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+		},
+		"unhappy_path:usecase-returns-error": {
+			sut: func(resolver *Resolver) *mutationResolver {
+				return &mutationResolver{resolver}
+			},
+			updateArticleInDTO: dto.NewUpdateArticleThumbnailInDTO("Article1", utils.MustURLParse("https://example.com/example.png"), "Mutation1"),
+			setupMockUsecase: func(uc *musecase.MockUpdateArticleThumbnail, input dto.UpdateArticleThumbnailInDTO, usecaseResult usecaseResult) {
+				uc.EXPECT().
+					Execute(gomock.Any(), NewUpdateArticleThumbnailInputMatcher(input)).
+					Return(usecaseResult.out, usecaseResult.err).
+					Times(1)
+			},
+			usecaseResult: usecaseResult{
+				err: errFailedToUsecase,
+			},
+			setupMockConverter: func(converter *mconverter.MockUpdateArticleThumbnailConverter, from dto.UpdateArticleThumbnailOutDTO, converterResult converterResult) {
+				converter.EXPECT().
+					ToUpdateArticleThumbnail(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+				input: model.UpdateArticleThumbnailInput{
+					ArticleID:        "Article1",
+					ThumbnailURL:     gqlscalar.URL(utils.MustURLParse("https://example.com/example.png")),
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			want: want{
+				err: errFailedToUsecase,
+			},
+		},
+		"unhappy_path:converter-returns-error": {
+			sut: func(resolver *Resolver) *mutationResolver {
+				return &mutationResolver{resolver}
+			},
+			updateArticleInDTO: dto.NewUpdateArticleThumbnailInDTO("Article1", utils.MustURLParse("https://example.com/example.png"), "Mutation1"),
+			setupMockUsecase: func(uc *musecase.MockUpdateArticleThumbnail, input dto.UpdateArticleThumbnailInDTO, usecaseResult usecaseResult) {
+				uc.EXPECT().
+					Execute(gomock.Any(), NewUpdateArticleThumbnailInputMatcher(input)).
+					Return(usecaseResult.out, usecaseResult.err).
+					Times(1)
+			},
+			usecaseResult: usecaseResult{
+				out: dto.UpdateArticleThumbnailOutDTO{},
+				err: nil,
+			},
+			setupMockConverter: func(converter *mconverter.MockUpdateArticleThumbnailConverter, from dto.UpdateArticleThumbnailOutDTO, converterResult converterResult) {
+				converter.EXPECT().
+					ToUpdateArticleThumbnail(gomock.Any(), from).
+					Return(converterResult.out, converterResult.err).
+					Times(1)
+			},
+			converterResult: converterResult{
+				err: errFailedToConverter,
+			},
+			args: args{
+				ctx: context.Background(),
+				input: model.UpdateArticleThumbnailInput{
+					ArticleID:        "Article1",
+					ThumbnailURL:     gqlscalar.URL(utils.MustURLParse("https://example.com/example.png")),
+					ClientMutationID: toPointerString("Mutation1"),
+				},
+			},
+			want: want{
+				err: errFailedToConverter,
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			uc := musecase.NewMockUpdateArticleThumbnail(ctrl)
+			tt.setupMockUsecase(uc, tt.updateArticleInDTO, tt.usecaseResult)
+
+			converter := mconverter.NewMockUpdateArticleThumbnailConverter(ctrl)
+			tt.setupMockConverter(converter, tt.usecaseResult.out, tt.converterResult)
+
+			sut := tt.sut(NewResolver(NewUsecases(WithUpdateArticleThumbnailUsecase(uc)), NewConverters(WithUpdateArticleThumbnailConverter(converter))))
+			got, err := sut.UpdateArticleThumbnail(tt.args.ctx, tt.args.input)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("UpdateArticleThumbnail() got = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
+				t.Error(diff)
+				return
+			}
+		})
+	}
+}
+
+type UpdateArticleThumbnailInputMatcher struct {
+	gomock.Matcher
+	expect dto.UpdateArticleThumbnailInDTO
+}
+
+func NewUpdateArticleThumbnailInputMatcher(expect dto.UpdateArticleThumbnailInDTO) gomock.Matcher {
+	return &UpdateArticleThumbnailInputMatcher{
+		expect: expect,
+	}
+}
+
+func (m *UpdateArticleThumbnailInputMatcher) Matches(x interface{}) bool {
+	switch x := x.(type) {
+	case dto.UpdateArticleThumbnailInDTO:
+		return cmp.Diff(x.ID(), m.expect.ID(), cmpOpts...) == "" &&
+			cmp.Diff(x.Thumbnail(), m.expect.Thumbnail(), cmpOpts...) == "" &&
+			cmp.Diff(x.ClientMutationID(), m.expect.ClientMutationID(), cmpOpts...) == ""
+	}
+	return false
+}
+
+func (m *UpdateArticleThumbnailInputMatcher) String() string {
+	return fmt.Sprintf("is equal to %+v", m.expect)
+}

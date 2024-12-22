@@ -2627,3 +2627,52 @@ func TestConverter_ToUpdateArticleBody(t *testing.T) {
 		})
 	}
 }
+
+func TestConverter_ToUpdateArticleThumbnail(t *testing.T) {
+	type args struct {
+		ctx  context.Context
+		from dto.UpdateArticleThumbnailOutDTO
+	}
+	type want struct {
+		out *model.UpdateArticleThumbnailPayload
+		err error
+	}
+	type testCase struct {
+		sut  func() *Converter
+		args args
+		want want
+	}
+	tests := map[string]testCase{
+		"happy_path": {
+			sut: NewConverter,
+			args: args{
+				ctx:  context.Background(),
+				from: dto.NewUpdateArticleThumbnailOutDTO("event_id", "article_id", "client_mutation_id"),
+			},
+			want: want{
+				out: &model.UpdateArticleThumbnailPayload{
+					ArticleID: "article_id",
+					EventID:   "event_id",
+					ClientMutationID: func() *string {
+						v := "client_mutation_id"
+						return &v
+					}(),
+				},
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			c := tt.sut()
+			got, err := c.ToUpdateArticleThumbnail(tt.args.ctx, tt.args.from)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("ToUpdateArticleThumbnail() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.out, cmpOpts...); diff != "" {
+				t.Error(diff)
+				return
+			}
+		})
+	}
+}

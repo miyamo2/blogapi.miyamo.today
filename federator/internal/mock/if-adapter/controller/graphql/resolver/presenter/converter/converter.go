@@ -290,3 +290,42 @@ func (mr *MockUpdateArticleBodyConverterMockRecorder) ToUpdateArticleBody(ctx, f
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleBody", reflect.TypeOf((*MockUpdateArticleBodyConverter)(nil).ToUpdateArticleBody), ctx, from)
 }
+
+// MockUpdateArticleThumbnailConverter is a mock of UpdateArticleThumbnailConverter interface.
+type MockUpdateArticleThumbnailConverter struct {
+	ctrl     *gomock.Controller
+	recorder *MockUpdateArticleThumbnailConverterMockRecorder
+	isgomock struct{}
+}
+
+// MockUpdateArticleThumbnailConverterMockRecorder is the mock recorder for MockUpdateArticleThumbnailConverter.
+type MockUpdateArticleThumbnailConverterMockRecorder struct {
+	mock *MockUpdateArticleThumbnailConverter
+}
+
+// NewMockUpdateArticleThumbnailConverter creates a new mock instance.
+func NewMockUpdateArticleThumbnailConverter(ctrl *gomock.Controller) *MockUpdateArticleThumbnailConverter {
+	mock := &MockUpdateArticleThumbnailConverter{ctrl: ctrl}
+	mock.recorder = &MockUpdateArticleThumbnailConverterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockUpdateArticleThumbnailConverter) EXPECT() *MockUpdateArticleThumbnailConverterMockRecorder {
+	return m.recorder
+}
+
+// ToUpdateArticleThumbnail mocks base method.
+func (m *MockUpdateArticleThumbnailConverter) ToUpdateArticleThumbnail(ctx context.Context, from dto.UpdateArticleThumbnailOutDTO) (*model.UpdateArticleThumbnailPayload, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ToUpdateArticleThumbnail", ctx, from)
+	ret0, _ := ret[0].(*model.UpdateArticleThumbnailPayload)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ToUpdateArticleThumbnail indicates an expected call of ToUpdateArticleThumbnail.
+func (mr *MockUpdateArticleThumbnailConverterMockRecorder) ToUpdateArticleThumbnail(ctx, from any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ToUpdateArticleThumbnail", reflect.TypeOf((*MockUpdateArticleThumbnailConverter)(nil).ToUpdateArticleThumbnail), ctx, from)
+}
