@@ -35,3 +35,9 @@ type AttachTags interface {
 	// Execute attaches tags to an article.
 	Execute(ctx context.Context, in dto.AttachTagsInDTO) (dto.AttachTagsOutDTO, error)
 }
+
+// DetachTags is a use-case for detaching tags from an article.
+type DetachTags interface {
+	// Execute detaches tags from an article.
+	Execute(ctx context.Context, in dto.DetachTagsInDTO) (dto.DetachTagsOutDTO, error)
+}

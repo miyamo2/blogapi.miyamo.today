@@ -915,3 +915,64 @@ func NewAttachTagsOutDTO(eventID, articleID, clientMutationID string) AttachTags
 		clientMutationID: clientMutationID,
 	}
 }
+
+type DetachTagsInDTO struct {
+	id               string
+	tagNames         []string
+	clientMutationID string
+}
+
+// ID returns id.
+func (a DetachTagsInDTO) ID() string {
+	return a.id
+}
+
+// TagNames returns tag names.
+func (a DetachTagsInDTO) TagNames() []string {
+	return a.tagNames
+}
+
+// ClientMutationID returns client mutation id.
+func (a DetachTagsInDTO) ClientMutationID() string {
+	return a.clientMutationID
+}
+
+// NewDetachTagsInDTO constructor of DetachTagsInDTO.
+func NewDetachTagsInDTO(id string, tagNames []string, clientMutationID string) DetachTagsInDTO {
+	return DetachTagsInDTO{
+		id:               id,
+		tagNames:         tagNames,
+		clientMutationID: clientMutationID,
+	}
+}
+
+// DetachTagsOutDTO is a dto for attaching tags to an article.
+type DetachTagsOutDTO struct {
+	eventID          string
+	articleID        string
+	clientMutationID string
+}
+
+// EventID returns event id.
+func (a DetachTagsOutDTO) EventID() string {
+	return a.eventID
+}
+
+// ArticleID returns article id.
+func (a DetachTagsOutDTO) ArticleID() string {
+	return a.articleID
+}
+
+// ClientMutationID returns client mutation id.
+func (a DetachTagsOutDTO) ClientMutationID() string {
+	return a.clientMutationID
+}
+
+// NewDetachTagsOutDTO constructor of DetachTagsOutDTO.
+func NewDetachTagsOutDTO(eventID, articleID, clientMutationID string) DetachTagsOutDTO {
+	return DetachTagsOutDTO{
+		eventID:          eventID,
+		articleID:        articleID,
+		clientMutationID: clientMutationID,
+	}
+}

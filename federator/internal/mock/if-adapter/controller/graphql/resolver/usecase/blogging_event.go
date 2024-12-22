@@ -211,3 +211,42 @@ func (mr *MockAttachTagsMockRecorder) Execute(ctx, in any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockAttachTags)(nil).Execute), ctx, in)
 }
+
+// MockDetachTags is a mock of DetachTags interface.
+type MockDetachTags struct {
+	ctrl     *gomock.Controller
+	recorder *MockDetachTagsMockRecorder
+	isgomock struct{}
+}
+
+// MockDetachTagsMockRecorder is the mock recorder for MockDetachTags.
+type MockDetachTagsMockRecorder struct {
+	mock *MockDetachTags
+}
+
+// NewMockDetachTags creates a new mock instance.
+func NewMockDetachTags(ctrl *gomock.Controller) *MockDetachTags {
+	mock := &MockDetachTags{ctrl: ctrl}
+	mock.recorder = &MockDetachTagsMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDetachTags) EXPECT() *MockDetachTagsMockRecorder {
+	return m.recorder
+}
+
+// Execute mocks base method.
+func (m *MockDetachTags) Execute(ctx context.Context, in dto.DetachTagsInDTO) (dto.DetachTagsOutDTO, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Execute", ctx, in)
+	ret0, _ := ret[0].(dto.DetachTagsOutDTO)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Execute indicates an expected call of Execute.
+func (mr *MockDetachTagsMockRecorder) Execute(ctx, in any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Execute", reflect.TypeOf((*MockDetachTags)(nil).Execute), ctx, in)
+}
