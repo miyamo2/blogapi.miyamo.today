@@ -47,6 +47,7 @@ jobs:
           sam package --output-template-file packaged.yaml --s3-bucket ${{ secrets.SAM_ARTIFACTS_BUCKET_NAME }}
           sam deploy --template-file packaged.yaml --stack-name miyamo-today-read-model-updater-prod --capabilities CAPABILITY_IAM \
             --parameter-overrides \
+            Env=prod \
             NewRelicAppName=miyamo-today-api-read-model-updater-prod \
             NewRelicLicenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
             BlogPublishEndpoint=${{ secrets.BLOG_PUBLISH_ENDPOINT }} \
