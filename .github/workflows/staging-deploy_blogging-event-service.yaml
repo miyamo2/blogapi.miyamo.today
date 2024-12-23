@@ -3,7 +3,7 @@ name: staging-deploy_blogging-event-service
 on:
   push:
     branches:
-      - main
+      - "develop"
     paths:
       - "blogging-event-service/**"
   workflow_dispatch:

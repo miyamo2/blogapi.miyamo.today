@@ -1,9 +1,9 @@
-name: staging-deploy_federator
+name: deploy_federator
 
 on:
   push:
     branches:
-      - "develop"
+      - "main"
     paths:
       - "federator/**"
   workflow_dispatch:
@@ -36,7 +36,7 @@ jobs:
       - name: Get ECR Repository Name
         id: ecr-repo
         env:
-          ENV_NAME: dev
+          ENV_NAME: prod
           REPO: ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
         run: |
           REPO_NAME=$(aws ssm get-parameters --names /miyamo-today/cicd/${{ env.ENV_NAME }}/ecr/federator/name --output text --query Parameters[0].Value)
@@ -44,7 +44,7 @@ jobs:
 
       - name: Build & Push Docker Image
         env:
-          ENV_NAME: dev
+          ENV_NAME: prod
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: ${{ steps.ecr-repo.outputs.repository }}
           TAG: ${{ github.sha }}
@@ -58,4 +58,4 @@ jobs:
         with:
           token: ${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }}
           repository: ${{ github.repository_owner }}/infra.miyamo.today
-          event-type: update_miyamo-today-api-federator_dev_ecr
+          event-type: update_miyamo-today-api-federator_ecr

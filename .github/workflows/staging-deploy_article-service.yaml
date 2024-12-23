@@ -3,7 +3,7 @@ name: staging-deploy_article-service
 on:
   push:
     branches:
-      - "main"
+      - "develop"
     paths:
       - "article-service/**"
   workflow_dispatch:
