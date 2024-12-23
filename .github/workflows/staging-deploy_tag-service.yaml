@@ -3,7 +3,7 @@ name: staging-deploy_tag-service
 on:
   push:
     branches:
-      - main
+      - "develop"
     paths:
       - "tag-service/**"
   workflow_dispatch:

@@ -1,9 +1,9 @@
-name: staging_deploy_read-model-updater
+name: deploy_read-model-updater
 
 on:
   push:
     branches:
-      - "develop"
+      - "main"
     paths:
       - "read-model-updater/**"
   workflow_dispatch:
@@ -44,12 +44,17 @@ jobs:
       - name: Deploy
         working-directory: ./read-model-updater/.deploy
         run: |
-          sam package --output-template-file packaged.yaml --s3-bucket ${{ secrets.SAM_ARTIFACTS_BUCKET_NAME_DEV }}
-          sam deploy --template-file packaged.yaml --stack-name miyamo-today-read-model-updater-dev --capabilities CAPABILITY_IAM \
+          sam package --output-template-file packaged.yaml --s3-bucket ${{ secrets.SAM_ARTIFACTS_BUCKET_NAME }}
+          sam deploy --template-file packaged.yaml --stack-name miyamo-today-read-model-updater-prod --capabilities CAPABILITY_IAM \
             --parameter-overrides \
-            NewRelicAppName=miyamo-today-api-read-model-updater-dev \
+            Env=prod \
+            NewRelicAppName=miyamo-today-api-read-model-updater-prod \
             NewRelicLicenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
             BlogPublishEndpoint=${{ secrets.BLOG_PUBLISH_ENDPOINT }} \
             GitHubToken=${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }} \
             NewRelicAccountId=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
+            BloggingEventsTableName=/miyamo-today/cicd/prod/dynamodb/blogging-events/name \
+            BloggingEventsStream=/miyamo-today/cicd/prod/dynamodb/blogging-events/stream \
+            CockroachDBDsnForArticle=/miyamo-today/cicd/prod/cockroachdb/dsn/article \
+            CockroachDBDsnForTag=/miyamo-today/cicd/prod/cockroachdb/dsn/tag \
             --no-fail-on-empty-changeset
