@@ -21,7 +21,7 @@ type Uploader struct {
 	client Client
 }
 
-func (s *Uploader) Upload(ctx context.Context, name string, data []byte) (url *url.URL, err error) {
+func (s *Uploader) Upload(ctx context.Context, name string, data []byte, contentType string) (url *url.URL, err error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Upload").End()
 
@@ -43,9 +43,10 @@ func (s *Uploader) Upload(ctx context.Context, name string, data []byte) (url *u
 	}()
 
 	_, err = s.client.PutObject(ctx, &s3sdk.PutObjectInput{
-		Bucket: aws.String(os.Getenv("S3_BUCKET")),
-		Key:    aws.String(name),
-		Body:   bytes.NewBuffer(data),
+		Bucket:      aws.String(os.Getenv("S3_BUCKET")),
+		Key:         aws.String(name),
+		Body:        bytes.NewBuffer(data),
+		ContentType: aws.String(contentType),
 	})
 	if err != nil {
 		err = errors.WithStack(err)

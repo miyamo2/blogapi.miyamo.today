@@ -249,8 +249,9 @@ func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStre
 	logger.InfoContext(ctx, "BEGIN")
 
 	var (
-		binary   []byte
-		fileName string
+		binary      []byte
+		fileName    string
+		contentType string
 	)
 	buf := bytes.NewBuffer(binary)
 
@@ -279,13 +280,14 @@ func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStre
 			logger.InfoContext(ctx, "Received data", slog.Group("data", slog.String("data", string(data))))
 			buf.Write(data)
 		}
-		if meta := req.GetMeta(); meta != nil && len(fileName) == 0 {
+		if meta := req.GetMeta(); meta != nil {
 			logger.InfoContext(ctx, "Received meta", slog.Group("meta", slog.String("name", meta.GetName())))
 			fileName = meta.GetName()
+			contentType = meta.GetContentType()
 		}
 	}
 
-	inDto := dto.NewUploadImageInDto(fileName, buf.Bytes())
+	inDto := dto.NewUploadImageInDto(fileName, buf.Bytes(), contentType)
 	outDto, err := s.uploadImageUsecase.Execute(ctx, &inDto)
 	if err != nil {
 		err = errors.WithStack(err)

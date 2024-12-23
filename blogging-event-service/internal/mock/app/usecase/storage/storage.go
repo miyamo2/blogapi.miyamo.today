@@ -42,16 +42,16 @@ func (m *MockUploader) EXPECT() *MockUploaderMockRecorder {
 }
 
 // Upload mocks base method.
-func (m *MockUploader) Upload(ctx context.Context, name string, bytes []byte) (*url.URL, error) {
+func (m *MockUploader) Upload(ctx context.Context, name string, bytes []byte, contentType string) (*url.URL, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Upload", ctx, name, bytes)
+	ret := m.ctrl.Call(m, "Upload", ctx, name, bytes, contentType)
 	ret0, _ := ret[0].(*url.URL)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Upload indicates an expected call of Upload.
-func (mr *MockUploaderMockRecorder) Upload(ctx, name, bytes any) *gomock.Call {
+func (mr *MockUploaderMockRecorder) Upload(ctx, name, bytes, contentType any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upload", reflect.TypeOf((*MockUploader)(nil).Upload), ctx, name, bytes)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Upload", reflect.TypeOf((*MockUploader)(nil).Upload), ctx, name, bytes, contentType)
 }

@@ -1243,7 +1243,7 @@ func Test_mutationResolver_UploadImage(t *testing.T) {
 			sut: func(resolver *Resolver) *mutationResolver {
 				return &mutationResolver{resolver}
 			},
-			updateArticleInDTO: dto.NewUploadImageInDTO(bytes.NewReader([]byte("abc")), "example.png", "Mutation1"),
+			updateArticleInDTO: dto.NewUploadImageInDTO(bytes.NewReader([]byte("abc")), "example.png", "image/png", "Mutation1"),
 			setupMockUsecase: func(uc *musecase.MockUploadImage, input dto.UploadImageInDTO, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), NewUploadImageInputMatcher(input)).
@@ -1286,7 +1286,7 @@ func Test_mutationResolver_UploadImage(t *testing.T) {
 			sut: func(resolver *Resolver) *mutationResolver {
 				return &mutationResolver{resolver}
 			},
-			updateArticleInDTO: dto.NewUploadImageInDTO(bytes.NewReader([]byte("abc")), "example.png", "Mutation1"),
+			updateArticleInDTO: dto.NewUploadImageInDTO(bytes.NewReader([]byte("abc")), "example.png", "image/png", "Mutation1"),
 			setupMockUsecase: func(uc *musecase.MockUploadImage, input dto.UploadImageInDTO, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), NewUploadImageInputMatcher(input)).
@@ -1319,7 +1319,7 @@ func Test_mutationResolver_UploadImage(t *testing.T) {
 			sut: func(resolver *Resolver) *mutationResolver {
 				return &mutationResolver{resolver}
 			},
-			updateArticleInDTO: dto.NewUploadImageInDTO(bytes.NewReader([]byte("abc")), "example.png", "Mutation1"),
+			updateArticleInDTO: dto.NewUploadImageInDTO(bytes.NewReader([]byte("abc")), "example.png", "image/png", "Mutation1"),
 			setupMockUsecase: func(uc *musecase.MockUploadImage, input dto.UploadImageInDTO, usecaseResult usecaseResult) {
 				uc.EXPECT().
 					Execute(gomock.Any(), NewUploadImageInputMatcher(input)).

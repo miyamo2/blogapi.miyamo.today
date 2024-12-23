@@ -982,6 +982,7 @@ func NewDetachTagsOutDTO(eventID, articleID, clientMutationID string) DetachTags
 type UploadImageInDTO struct {
 	data             io.ReadSeeker
 	filename         string
+	contentType      string
 	clientMutationID string
 }
 
@@ -995,16 +996,22 @@ func (u UploadImageInDTO) Filename() string {
 	return u.filename
 }
 
+// ContentType returns content type.
+func (u UploadImageInDTO) ContentType() string {
+	return u.contentType
+}
+
 // ClientMutationID returns client mutation id.
 func (u UploadImageInDTO) ClientMutationID() string {
 	return u.clientMutationID
 }
 
 // NewUploadImageInDTO constructor of UploadImageInDTO.
-func NewUploadImageInDTO(data io.ReadSeeker, filename, clientMutationID string) UploadImageInDTO {
+func NewUploadImageInDTO(data io.ReadSeeker, filename, contentType, clientMutationID string) UploadImageInDTO {
 	return UploadImageInDTO{
 		data:             data,
 		filename:         filename,
+		contentType:      contentType,
 		clientMutationID: clientMutationID,
 	}
 }

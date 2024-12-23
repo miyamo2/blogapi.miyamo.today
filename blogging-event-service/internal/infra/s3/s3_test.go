@@ -20,9 +20,10 @@ import (
 
 func TestUploader_Upload(t *testing.T) {
 	type args struct {
-		ctx  context.Context
-		name string
-		data []byte
+		ctx         context.Context
+		name        string
+		data        []byte
+		contentType string
 	}
 	type want struct {
 		uri *url.URL
@@ -66,7 +67,7 @@ func TestUploader_Upload(t *testing.T) {
 			tt.setupMockS3Client(client)
 
 			u := NewUploader(client)
-			uri, err := u.Upload(tt.args.ctx, tt.args.name, tt.args.data)
+			uri, err := u.Upload(tt.args.ctx, tt.args.name, tt.args.data, tt.args.contentType)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Upload() = %v, want %v", err, tt.want)
 			}

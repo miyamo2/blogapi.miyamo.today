@@ -47,7 +47,8 @@ func (u *UploadImage) Execute(ctx context.Context, in dto.UploadImageInDTO) (dto
 	stream.Send(&grpc.UploadImageRequest{
 		Value: &grpc.UploadImageRequest_Meta{
 			Meta: &grpc.Meta{
-				Name: in.Filename(),
+				Name:        in.Filename(),
+				ContentType: in.ContentType(),
 			},
 		},
 	})
@@ -64,7 +65,7 @@ func (u *UploadImage) Execute(ctx context.Context, in dto.UploadImageInDTO) (dto
 	var read int
 	reqOngoing := true
 	for reqOngoing {
-		end := read + 1024
+		end := read + chunkSize
 		if end > len(data) {
 			end = len(data)
 			reqOngoing = false
@@ -77,7 +78,7 @@ func (u *UploadImage) Execute(ctx context.Context, in dto.UploadImageInDTO) (dto
 		if err != nil {
 			return dto.UploadImageOutDTO{}, err
 		}
-		read += 1024
+		read += chunkSize
 	}
 
 	response, err := stream.CloseAndRecv()
@@ -109,3 +110,5 @@ func NewUploadImage(bloggingEventServiceClient grpc.BloggingEventServiceClient) 
 		bloggingEventServiceClient: bloggingEventServiceClient,
 	}
 }
+
+const chunkSize = 1022976

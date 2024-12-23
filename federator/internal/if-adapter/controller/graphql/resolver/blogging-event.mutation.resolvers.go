@@ -202,7 +202,7 @@ func (r *mutationResolver) UploadImage(ctx context.Context, input model.UploadIm
 		clientMutationID = *input.ClientMutationID
 	}
 
-	outDTO, err := r.usecases.uploadImage.Execute(ctx, dto.NewUploadImageInDTO(input.Image.File, input.Image.Filename, clientMutationID))
+	outDTO, err := r.usecases.uploadImage.Execute(ctx, dto.NewUploadImageInDTO(input.Image.File, input.Image.Filename, input.Image.ContentType, clientMutationID))
 	if err != nil {
 		return nil, err
 	}
