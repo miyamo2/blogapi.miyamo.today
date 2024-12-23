@@ -36,7 +36,7 @@ func (u *UploadImage) Execute(ctx context.Context, in *dto.UploadImageInDto) (*d
 		logger.InfoContext(ctx, "END")
 	}()
 
-	uri, err := u.uploader.Upload(ctx, in.Name(), in.Bytes())
+	uri, err := u.uploader.Upload(ctx, in.Name(), in.Bytes(), in.ContentType())
 	if err != nil {
 		return nil, err
 	}

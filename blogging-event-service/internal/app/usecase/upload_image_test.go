@@ -31,7 +31,7 @@ func TestUploadImage_Execute(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path": {
 			args: func() args {
-				in := dto.NewUploadImageInDto("example.png", []byte{})
+				in := dto.NewUploadImageInDto("example.png", []byte{}, "image/png")
 				return args{
 					ctx: context.Background(),
 					in:  &in,
@@ -45,14 +45,14 @@ func TestUploadImage_Execute(t *testing.T) {
 			}(),
 			setupMockUploader: func(u *storage.MockUploader) {
 				u.EXPECT().
-					Upload(gomock.Any(), "example.png", []byte{}).
+					Upload(gomock.Any(), "example.png", []byte{}, "image/png").
 					Return(pkg.MustParseURL("http://example.com/example.png"), nil).
 					Times(1)
 			},
 		},
 		"unhappy_path": {
 			args: func() args {
-				in := dto.NewUploadImageInDto("example.png", []byte{})
+				in := dto.NewUploadImageInDto("example.png", []byte{}, "image/png")
 				return args{
 					ctx: context.Background(),
 					in:  &in,
@@ -63,7 +63,7 @@ func TestUploadImage_Execute(t *testing.T) {
 			},
 			setupMockUploader: func(u *storage.MockUploader) {
 				u.EXPECT().
-					Upload(gomock.Any(), "example.png", []byte{}).
+					Upload(gomock.Any(), "example.png", []byte{}, "image/png").
 					Return(nil, errUnhappyPath).
 					Times(1)
 			},

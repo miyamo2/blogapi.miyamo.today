@@ -308,8 +308,9 @@ func NewDetachTagsOutDto(eventID, articleID string) DetachTagsOutDto {
 
 // UploadImageInDto is an Input DTO for UploadImage use-case
 type UploadImageInDto struct {
-	name  string
-	bytes []byte
+	name        string
+	bytes       []byte
+	contentType string
 }
 
 // Name returns the name of the image to be uploaded
@@ -322,11 +323,17 @@ func (i UploadImageInDto) Bytes() []byte {
 	return i.bytes
 }
 
+// ContentType returns the content type of the image to be uploaded
+func (i UploadImageInDto) ContentType() string {
+	return i.contentType
+}
+
 // NewUploadImageInDto is constructor of UploadImageInDto.
-func NewUploadImageInDto(name string, bytes []byte) UploadImageInDto {
+func NewUploadImageInDto(name string, bytes []byte, contentType string) UploadImageInDto {
 	return UploadImageInDto{
-		name:  name,
-		bytes: bytes,
+		name:        name,
+		bytes:       bytes,
+		contentType: contentType,
 	}
 }
 

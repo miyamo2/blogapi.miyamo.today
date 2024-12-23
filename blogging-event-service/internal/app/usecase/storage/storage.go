@@ -9,5 +9,5 @@ import (
 // Uploader is an interface for uploading files.
 type Uploader interface {
 	// Upload uploads a file.
-	Upload(ctx context.Context, name string, bytes []byte) (*url.URL, error)
+	Upload(ctx context.Context, name string, bytes []byte, contentType string) (*url.URL, error)
 }

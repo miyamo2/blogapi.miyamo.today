@@ -20,9 +20,10 @@ import (
 
 func TestUploader_Upload(t *testing.T) {
 	type args struct {
-		ctx  context.Context
-		name string
-		data []byte
+		ctx         context.Context
+		name        string
+		data        []byte
+		contentType string
 	}
 	type want struct {
 		uri *url.URL
@@ -36,9 +37,10 @@ func TestUploader_Upload(t *testing.T) {
 	tests := map[string]testCase{
 		"happy_path": {
 			args: args{
-				ctx:  context.Background(),
-				name: "example.png",
-				data: []byte("abcd"),
+				ctx:         context.Background(),
+				name:        "example.png",
+				data:        []byte("abcd"),
+				contentType: "image/png",
 			},
 			want: want{
 				uri: pkg.MustParseURL("https://example.com/example.png"),
@@ -47,9 +49,10 @@ func TestUploader_Upload(t *testing.T) {
 			setupMockS3Client: func(client *s3.MockClient) {
 				client.EXPECT().
 					PutObject(gomock.Any(), NewPutObjectInputMatcher(&awss3.PutObjectInput{
-						Bucket: aws.String("example"),
-						Key:    aws.String("example.png"),
-						Body:   bytes.NewBuffer([]byte("abcd")),
+						Bucket:      aws.String("example"),
+						Key:         aws.String("example.png"),
+						Body:        bytes.NewBuffer([]byte("abcd")),
+						ContentType: aws.String("image/png"),
 					}), gomock.Any()).
 					Return(nil, nil).
 					Times(1)
@@ -66,7 +69,7 @@ func TestUploader_Upload(t *testing.T) {
 			tt.setupMockS3Client(client)
 
 			u := NewUploader(client)
-			uri, err := u.Upload(tt.args.ctx, tt.args.name, tt.args.data)
+			uri, err := u.Upload(tt.args.ctx, tt.args.name, tt.args.data, tt.args.contentType)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("Upload() = %v, want %v", err, tt.want)
 			}
