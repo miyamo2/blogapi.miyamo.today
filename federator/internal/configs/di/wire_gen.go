@@ -32,7 +32,7 @@ func GetDependencies() *Dependencies {
 	uploadImage := usecase.NewUploadImage(bloggingEventServiceClient)
 	usecases := provider.Usecases(article, articles, tag, tags, createArticle, updateArticleTitle, updateArticleBody, updateArticleThumbnail, attachTags, detachTags, uploadImage)
 	converter := converters.NewConverter()
-	resolverConverters := provider.Converters(converter, converter, converter, converter, converter, converter, converter, converter, converter, converter)
+	resolverConverters := provider.Converters(converter, converter, converter, converter, converter, converter, converter, converter, converter, converter, converter)
 	resolverResolver := resolver.NewResolver(usecases, resolverConverters)
 	config := provider.GqlgenConfig(resolverResolver)
 	executableSchema := provider.GqlgenExecutableSchema(config)
