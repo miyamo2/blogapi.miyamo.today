@@ -7,6 +7,7 @@ import (
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
 	mgrpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/infra/grpc/article"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"reflect"
 	"testing"
 
@@ -54,8 +55,8 @@ func TestArticle_Execute(t *testing.T) {
 							Title:        "happy_path/single_tag",
 							Body:         "## happy_path/single_tag",
 							ThumbnailUrl: "example.com/example.png",
-							CreatedAt:    "2020-01-01T00:00:00.000000Z",
-							UpdatedAt:    "2020-01-01T00:00:00.000000Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "Tag1",
@@ -97,8 +98,8 @@ func TestArticle_Execute(t *testing.T) {
 							Title:        "happy_path/multiple_tags",
 							Body:         "## happy_path/multiple_tags",
 							ThumbnailUrl: "example.com/example.png",
-							CreatedAt:    "2020-01-01T00:00:00.000000Z",
-							UpdatedAt:    "2020-01-01T00:00:00.000000Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "Tag1",
@@ -151,8 +152,8 @@ func TestArticle_Execute(t *testing.T) {
 							Title:        "happy_path/no_tags",
 							Body:         "## happy_path/no_tags",
 							ThumbnailUrl: "example.com/example.png",
-							CreatedAt:    "2020-01-01T00:00:00.000000Z",
-							UpdatedAt:    "2020-01-01T00:00:00.000000Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 						},
 					}, nil).
 					Times(1)

@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"reflect"
 	"testing"
 
@@ -64,8 +66,8 @@ func TestGetById_Execute(t *testing.T) {
 							"happy_path",
 							"## happy_path",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							query.WithTagsSize(2))
 						a.AddTag(query.NewTag("1", "tag1"))
 						a.AddTag(query.NewTag("2", "tag2"))
@@ -79,8 +81,8 @@ func TestGetById_Execute(t *testing.T) {
 					"happy_path",
 					"## happy_path",
 					"thumbnail",
-					"2020-01-01T00:00:00Z",
-					"2020-01-01T00:00:00Z",
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					[]dto.Tag{
 						dto.NewTag("1", "tag1"),
 						dto.NewTag("2", "tag2"),
@@ -114,8 +116,8 @@ func TestGetById_Execute(t *testing.T) {
 							"happy_path",
 							"## happy_path",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z")
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
 						out.Set(&a)
 						return stmt
 					}).Times(1)
@@ -126,8 +128,8 @@ func TestGetById_Execute(t *testing.T) {
 					"happy_path",
 					"## happy_path",
 					"thumbnail",
-					"2020-01-01T00:00:00Z",
-					"2020-01-01T00:00:00Z",
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					make([]dto.Tag, 0))
 				return want{out: &o, err: nil}
 			}(),
@@ -178,8 +180,8 @@ func TestGetById_Execute(t *testing.T) {
 							"unhappy_path/transaction_execute_statement_returns_error",
 							"## unhappy_path/transaction_execute_statement_returns_error",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							query.WithTagsSize(2))
 						a.AddTag(query.NewTag("1", "tag1"))
 						a.AddTag(query.NewTag("2", "tag2"))
@@ -218,8 +220,8 @@ func TestGetById_Execute(t *testing.T) {
 							"happy_path/transaction_commit_returns_error",
 							"## happy_path/transaction_commit_returns_error",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							query.WithTagsSize(2))
 						a.AddTag(query.NewTag("1", "tag1"))
 						a.AddTag(query.NewTag("2", "tag2"))
@@ -233,8 +235,8 @@ func TestGetById_Execute(t *testing.T) {
 					"happy_path/transaction_commit_returns_error",
 					"## happy_path/transaction_commit_returns_error",
 					"thumbnail",
-					"2020-01-01T00:00:00Z",
-					"2020-01-01T00:00:00Z",
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					[]dto.Tag{
 						dto.NewTag("1", "tag1"),
 						dto.NewTag("2", "tag2"),
@@ -268,8 +270,8 @@ func TestGetById_Execute(t *testing.T) {
 							"happy_path/transaction_subscribe_error_receive_error",
 							"## happy_path/transaction_subscribe_error_receive_error",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z",
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							query.WithTagsSize(2))
 						a.AddTag(query.NewTag("1", "tag1"))
 						a.AddTag(query.NewTag("2", "tag2"))
@@ -283,8 +285,8 @@ func TestGetById_Execute(t *testing.T) {
 					"happy_path/transaction_subscribe_error_receive_error",
 					"## happy_path/transaction_subscribe_error_receive_error",
 					"thumbnail",
-					"2020-01-01T00:00:00Z",
-					"2020-01-01T00:00:00Z",
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 					[]dto.Tag{
 						dto.NewTag("1", "tag1"),
 						dto.NewTag("2", "tag2"),

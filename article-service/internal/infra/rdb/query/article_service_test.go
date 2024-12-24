@@ -2,6 +2,8 @@ package query
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"reflect"
 	"regexp"
 	"testing"
@@ -54,8 +56,8 @@ func TestArticleService_GetById(t *testing.T) {
 						"happy_path",
 						"## happy_path",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -63,8 +65,8 @@ func TestArticleService_GetById(t *testing.T) {
 						"happy_path",
 						"## happy_path",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"test")
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
@@ -90,8 +92,8 @@ func TestArticleService_GetById(t *testing.T) {
 					"happy_path",
 					"## happy_path",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 					WithTagsSize(1))
 				article.AddTag(NewTag("tag1", "test"))
 				out := db.NewSingleStatementResult[*Article]()
@@ -115,8 +117,8 @@ func TestArticleService_GetById(t *testing.T) {
 					"happy_path",
 					"## happy_path",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 					nil,
 					nil)
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
@@ -142,8 +144,8 @@ func TestArticleService_GetById(t *testing.T) {
 					"happy_path",
 					"## happy_path",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00")
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				out := db.NewSingleStatementResult[*Article]()
 				out.Set(&article)
 				return out
@@ -250,8 +252,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_out_paging",
 						"## with_out_paging",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -259,8 +261,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_out_paging_2",
 						"## with_out_paging_2",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -268,8 +270,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_out_paging_2",
 						"## with_out_paging_2",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"test")
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
@@ -296,8 +298,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_out_paging",
 						body:      "## with_out_paging",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags:      []Tag{},
 					},
 					{
@@ -305,8 +307,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_out_paging_2",
 						body:      "## with_out_paging_2",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
 							NewTag("tag1", "test"),
 						},
@@ -336,8 +338,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_prev_paging_limit",
 						"## with_prev_paging_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -345,8 +347,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_prev_paging_limit",
 						"## with_prev_paging_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"tag")
 				mq := mock.ExpectPrepare(
@@ -373,8 +375,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_prev_paging_limit",
 						body:      "## with_prev_paging_limit",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
 							NewTag("tag1", "tag"),
 						},
@@ -404,8 +406,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_prev_paging_limit_and_cursor",
 						"## with_prev_paging_limit_and_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -413,8 +415,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_prev_paging_limit_and_cursor",
 						"## with_prev_paging_limit_and_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"tag")
 				mq := mock.ExpectPrepare(
@@ -443,8 +445,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_prev_paging_limit_and_cursor",
 						body:      "## with_prev_paging_limit_and_cursor",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
 							NewTag("tag1", "tag"),
 						},
@@ -474,8 +476,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_out_paging",
 						"## with_out_paging",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -483,8 +485,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_out_paging",
 						"## with_out_paging",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"tag")
 				mq := mock.ExpectPrepare(
@@ -511,8 +513,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_out_paging",
 						body:      "## with_out_paging",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
 							NewTag("tag1", "tag"),
 						},
@@ -542,8 +544,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_prev_paging_zero_value_cursor",
 						"## with_prev_paging_zero_value_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -551,8 +553,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_prev_paging_zero_value_cursor",
 						"## with_prev_paging_zero_value_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"tag")
 				mq := mock.ExpectPrepare(
@@ -579,8 +581,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_prev_paging_zero_value_cursor",
 						body:      "## with_prev_paging_zero_value_cursor",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
 							NewTag("tag1", "tag"),
 						},
@@ -610,8 +612,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_next_paging_limit",
 						"## with_next_paging_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -619,8 +621,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_next_paging_limit",
 						"## with_next_paging_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"tag")
 				mq := mock.ExpectPrepare(
@@ -647,8 +649,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_next_paging_limit",
 						body:      "## with_next_paging_limit",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
 							NewTag("tag1", "tag"),
 						},
@@ -678,8 +680,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_next_paging_limit_and_cursor",
 						"## with_next_paging_limit_and_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -687,8 +689,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_next_paging_limit_and_cursor",
 						"## with_next_paging_limit_and_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"tag")
 				mq := mock.ExpectPrepare(
@@ -717,8 +719,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_next_paging_limit_and_cursor",
 						body:      "## with_next_paging_limit_and_cursor",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
 							NewTag("tag1", "tag"),
 						},
@@ -748,8 +750,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_out_paging",
 						"## with_out_paging",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -757,8 +759,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_out_paging",
 						"## with_out_paging",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"tag")
 				mq := mock.ExpectPrepare(
@@ -785,8 +787,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_out_paging",
 						body:      "## with_out_paging",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
 							NewTag("tag1", "tag"),
 						},
@@ -816,8 +818,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_next_paging_zero_value_cursor",
 						"## with_next_paging_zero_value_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil).
 					AddRow(
@@ -825,8 +827,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						"with_next_paging_zero_value_cursor",
 						"## with_next_paging_zero_value_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"tag1",
 						"tag")
 				mq := mock.ExpectPrepare(
@@ -853,8 +855,8 @@ func TestArticleService_GetAll(t *testing.T) {
 						title:     "with_next_paging_zero_value_cursor",
 						body:      "## with_next_paging_zero_value_cursor",
 						thumbnail: "01234567890",
-						createdAt: "2021-01-01 00:00:00",
-						updatedAt: "2021-01-01 00:00:00",
+						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
 							NewTag("tag1", "tag"),
 						},

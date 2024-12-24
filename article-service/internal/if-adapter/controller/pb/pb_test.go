@@ -2,7 +2,10 @@ package pb
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
 
 	"github.com/cockroachdb/errors"
@@ -40,8 +43,8 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 				"happy_path/article_has_tag",
 				"## happy_path/article_has_tag",
 				"1234567890",
-				"2020-01-01T00:00:00Z",
-				"2020-01-01T00:00:00Z",
+				synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+				synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 				[]dto.Tag{
 					dto.NewTag("1", "happy_path")}),
 			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
@@ -69,8 +72,8 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 						Title:        "happy_path/article_has_tag",
 						Body:         "## happy_path/article_has_tag",
 						ThumbnailUrl: "1234567890",
-						CreatedAt:    "2020-01-01T00:00:00Z",
-						UpdatedAt:    "2020-01-01T00:00:00Z",
+						CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+						UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 						Tags: []*grpc.Tag{
 							{
 								Id:   "1",
@@ -186,8 +189,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 						"happy_path/multiple_article1",
 						"## happy_path/multiple_article1",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -198,8 +201,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 						"happy_path/multiple_article2",
 						"## happy_path/multiple_article2",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -229,8 +232,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 							Title:        "happy_path/multiple_article1",
 							Body:         "## happy_path/multiple_article1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -247,8 +250,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 							Title:        "happy_path/multiple_article2",
 							Body:         "## happy_path/multiple_article2",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -273,8 +276,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 						"happy_path/single_article",
 						"## happy_path/single_article",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -304,8 +307,8 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 							Title:        "happy_path/single_article",
 							Body:         "## happy_path/single_article",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -449,8 +452,8 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 						"happy_path/multiple_article1",
 						"## happy_path/multiple_article1",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -461,8 +464,8 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 						"happy_path/multiple_article2",
 						"## happy_path/multiple_article2",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -496,8 +499,8 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 							Title:        "happy_path/multiple_article1",
 							Body:         "## happy_path/multiple_article1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -514,8 +517,8 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 							Title:        "happy_path/multiple_article2",
 							Body:         "## happy_path/multiple_article2",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -541,8 +544,8 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 						"happy_path/single_article",
 						"## happy_path/single_article",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -576,8 +579,8 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 							Title:        "happy_path/single_article",
 							Body:         "## happy_path/single_article",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -735,8 +738,8 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 						"happy_path/multiple_article1",
 						"## happy_path/multiple_article1",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -747,8 +750,8 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 						"happy_path/multiple_article2",
 						"## happy_path/multiple_article2",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -782,8 +785,8 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 							Title:        "happy_path/multiple_article1",
 							Body:         "## happy_path/multiple_article1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -800,8 +803,8 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 							Title:        "happy_path/multiple_article2",
 							Body:         "## happy_path/multiple_article2",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -827,8 +830,8 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 						"happy_path/single_article",
 						"## happy_path/single_article",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -862,8 +865,8 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 							Title:        "happy_path/single_article",
 							Body:         "## happy_path/single_article",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
