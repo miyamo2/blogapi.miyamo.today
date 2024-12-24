@@ -11,7 +11,7 @@ require (
 	github.com/google/wire v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.22.0
+	github.com/miyamo2/blogapi.miyamo.today/core v0.23.1
 	github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.5
 	github.com/miyamo2/dynmgrm v0.10.0
 	github.com/miyamo2/godynamo v1.4.0
@@ -23,7 +23,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.0
 	go.uber.org/mock v0.5.0
 	google.golang.org/grpc v1.69.2
-	google.golang.org/protobuf v1.36.0
+	google.golang.org/protobuf v1.36.1
 	gorm.io/gorm v1.25.12
 )
 
@@ -74,6 +74,6 @@ require (
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241219192143-6b3ec007d9bb // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20241223144023-3abc09e42ca8 // indirect
 	gorm.io/plugin/dbresolver v1.5.3 // indirect
 )
