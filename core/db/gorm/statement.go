@@ -10,7 +10,6 @@ import (
 
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/gorm"
 )
@@ -37,7 +36,6 @@ type Statement struct {
 
 func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error {
 	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Statement Execute").End()
-	dw := duration.Start()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		logger = log.DefaultLogger()
@@ -45,7 +43,7 @@ func (s *Statement) Execute(ctx context.Context, opts ...db.ExecuteOption) error
 	logger.Info("BEGIN",
 		slog.Group("parameters",
 			slog.String("opts", fmt.Sprintf("%+v", opts))))
-	defer logger.Info("END", slog.String("duration", dw.SDuration()))
+	defer logger.Info("END")
 	if s.executed {
 		return ErrAlreadyExecuted
 	}

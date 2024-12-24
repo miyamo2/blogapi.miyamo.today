@@ -25,13 +25,13 @@ func TestGetAll_Execute(t *testing.T) {
 	type testCase struct {
 		args                    args
 		setupTransaction        func(tx *mdb.MockTransaction, stmt *mdb.MockStatement)
-		setupTransactionManager func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction)
-		setupTagService         func(qs *mquery.MockTagService, stmt *mdb.MockStatement)
+		setupTransactionManager func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction)
+		setupTagService         func(queryService *mquery.MockTagService, stmt *mdb.MockStatement)
 		want                    want
 		wantErr                 bool
 	}
 
-	errTxmn := errors.New("txmn error")
+	errTxmn := errors.New("transactionManager error")
 	errStmt := errors.New("stmt error")
 	errTxCommit := errors.New("tx commit error")
 	errTxSubscribeError := errors.New("tx subscribe error")
@@ -59,14 +59,14 @@ func TestGetAll_Execute(t *testing.T) {
 					Commit(gomock.Any()).
 					Return(nil).Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().
 					GetAndStart(gomock.Any()).
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
-				qs.EXPECT().
+			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
 						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
@@ -137,14 +137,14 @@ func TestGetAll_Execute(t *testing.T) {
 					Commit(gomock.Any()).
 					Return(nil).Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().
 					GetAndStart(gomock.Any()).
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
-				qs.EXPECT().
+			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
 						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
@@ -238,14 +238,14 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().
 					GetAndStart(gomock.Any()).
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
-				qs.EXPECT().
+			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
 						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
@@ -283,14 +283,14 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(nil).
 					Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().
 					GetAndStart(gomock.Any()).
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
-				qs.EXPECT().
+			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
 						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
@@ -322,14 +322,14 @@ func TestGetAll_Execute(t *testing.T) {
 					Commit(gomock.Any()).
 					Times(0)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().
 					GetAndStart(gomock.Any()).
 					Return(nil, errTxmn).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
-				qs.EXPECT().
+			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
@@ -359,14 +359,14 @@ func TestGetAll_Execute(t *testing.T) {
 					Commit(gomock.Any()).
 					Times(0)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().
 					GetAndStart(gomock.Any()).
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
-				qs.EXPECT().
+			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
 						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
@@ -412,14 +412,14 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(errTxCommit).
 					Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().
 					GetAndStart(gomock.Any()).
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
-				qs.EXPECT().
+			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
 						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
@@ -474,14 +474,14 @@ func TestGetAll_Execute(t *testing.T) {
 					Return(errTxCommit).
 					Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().
 					GetAndStart(gomock.Any()).
 					Return(tx, nil).
 					Times(1)
 			},
-			setupTagService: func(qs *mquery.MockTagService, stmt *mdb.MockStatement) {
-				qs.EXPECT().
+			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any()).
 					DoAndReturn(
 						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
@@ -539,11 +539,11 @@ func TestGetAll_Execute(t *testing.T) {
 			stmt := mdb.NewMockStatement(ctrl)
 			tx := mdb.NewMockTransaction(ctrl)
 			tt.setupTransaction(tx, stmt)
-			txmn := mdb.NewMockTransactionManager(ctrl)
-			tt.setupTransactionManager(txmn, tx)
-			qs := mquery.NewMockTagService(ctrl)
-			tt.setupTagService(qs, stmt)
-			sut := NewGetAll(txmn, qs)
+			transactionManager := mdb.NewMockTransactionManager(ctrl)
+			tt.setupTransactionManager(transactionManager, tx)
+			queryService := mquery.NewMockTagService(ctrl)
+			tt.setupTagService(queryService, stmt)
+			sut := NewGetAll(transactionManager, queryService)
 			got, err := sut.Execute(tt.args.ctx)
 			if tt.wantErr {
 				if err == nil {

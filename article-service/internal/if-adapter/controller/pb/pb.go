@@ -11,7 +11,6 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -41,21 +40,19 @@ var (
 func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.Empty) (*grpc.GetAllArticlesResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAllArticles").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", in.String())))
 	oDto, err := s.getAllUsecase.Execute(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("grpc.GetAllArticlesResponse", nil),
 				slog.Any("error", err)))
@@ -66,8 +63,7 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetAllArticlesFailed))
 		return nil, ErrConversionToGetAllArticlesFailed
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("error", nil)))
 	return res, nil
@@ -77,21 +73,19 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *grpc.GetNextArticlesRequest) (*grpc.GetNextArticlesResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetNextArticles").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", in.String())))
 	oDto, err := s.getNextUsecase.Execute(ctx, dto.NewGetNextInDto(int(in.First), in.After))
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("grpc.GetNextArticlesResponse", nil),
 				slog.Any("error", err)))
@@ -102,8 +96,7 @@ func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *grpc.Get
 		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetNextArticlesFailed))
 		return nil, ErrConversionToGetNextArticlesFailed
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("error", nil)))
 	return res, nil
@@ -113,21 +106,19 @@ func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *grpc.Get
 func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *grpc.GetArticleByIdRequest) (*grpc.GetArticleByIdResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetArticleById").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", in.String())))
 	oDto, err := s.getByIdUsecase.Execute(ctx, dto.NewGetByIdInDto(in.GetId()))
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("pb.GetArticleByIdResponse", nil),
 				slog.Any("error", err)))
@@ -138,8 +129,7 @@ func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *grpc.GetA
 		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetArticleByIdFailed))
 		return nil, ErrConversionToGetArticleByIdFailed
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("error", nil)))
 	return res, nil
@@ -149,21 +139,19 @@ func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *grpc.GetA
 func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *grpc.GetPrevArticlesRequest) (*grpc.GetPrevArticlesResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetPrevArticles").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", in.String())))
 	oDto, err := s.getPrevUsecase.Execute(ctx, dto.NewGetPrevInDto(int(in.Last), in.Before))
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("pb.GetPrevArticlesResponse", nil),
 				slog.Any("error", err)))
@@ -174,8 +162,7 @@ func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *grpc.Get
 		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetPrevArticlesFailed))
 		return nil, ErrConversionToGetPrevArticlesFailed
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("error", nil)))
 	return res, nil

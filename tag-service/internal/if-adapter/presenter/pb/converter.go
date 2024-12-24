@@ -20,18 +20,18 @@ type Converter struct{}
 func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *grpc.GetTagByIdResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetByIdTagResponse").End()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN")
-	defer func() { lgr.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
-	fa := from.Articles()
-	pa := make([]*grpc.Article, 0, len(fa))
-	for _, a := range fa {
-		pa = append(pa, &grpc.Article{
+	logger.InfoContext(ctx, "BEGIN")
+	defer func() { logger.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
+	articleDTOs := from.Articles()
+	articlePBs := make([]*grpc.Article, 0, len(articleDTOs))
+	for _, a := range articleDTOs {
+		articlePBs = append(articlePBs, &grpc.Article{
 			Id:           a.Id(),
 			Title:        a.Title(),
 			ThumbnailUrl: a.ThumbnailUrl(),
@@ -39,13 +39,13 @@ func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOu
 			UpdatedAt:    a.UpdatedAt(),
 		})
 	}
-	t := &grpc.Tag{
+	tagPB := &grpc.Tag{
 		Id:       from.Id(),
 		Name:     from.Name(),
-		Articles: pa,
+		Articles: articlePBs,
 	}
 	response = &grpc.GetTagByIdResponse{
-		Tag: t,
+		Tag: tagPB,
 	}
 	ok = true
 	return
@@ -55,21 +55,21 @@ func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOu
 func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOutDto) (response *grpc.GetAllTagsResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetAllTagsResponse").End()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN")
-	defer func() { lgr.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
-	ft := from.Tags()
-	pt := make([]*grpc.Tag, 0, len(ft))
-	for _, t := range ft {
-		fa := t.Articles()
-		pa := make([]*grpc.Article, 0, len(fa))
-		for _, a := range fa {
-			pa = append(pa, &grpc.Article{
+	logger.InfoContext(ctx, "BEGIN")
+	defer func() { logger.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
+	tagDTOs := from.Tags()
+	tagPBs := make([]*grpc.Tag, 0, len(tagDTOs))
+	for _, t := range tagDTOs {
+		articleDTOs := t.Articles()
+		articlePBs := make([]*grpc.Article, 0, len(articleDTOs))
+		for _, a := range articleDTOs {
+			articlePBs = append(articlePBs, &grpc.Article{
 				Id:           a.Id(),
 				Title:        a.Title(),
 				ThumbnailUrl: a.ThumbnailUrl(),
@@ -77,14 +77,14 @@ func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOut
 				UpdatedAt:    a.UpdatedAt(),
 			})
 		}
-		pt = append(pt, &grpc.Tag{
+		tagPBs = append(tagPBs, &grpc.Tag{
 			Id:       t.Id(),
 			Name:     t.Name(),
-			Articles: pa,
+			Articles: articlePBs,
 		})
 	}
 	response = &grpc.GetAllTagsResponse{
-		Tags: pt,
+		Tags: tagPBs,
 	}
 	ok = true
 	return
@@ -94,21 +94,21 @@ func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOut
 func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextOutDto) (response *grpc.GetNextTagResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetNextTagsResponse").End()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN")
-	defer func() { lgr.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
-	ft := from.Tags()
-	pt := make([]*grpc.Tag, 0, len(ft))
-	for _, t := range ft {
-		fa := t.Articles()
-		pa := make([]*grpc.Article, 0, len(fa))
-		for _, a := range fa {
-			pa = append(pa, &grpc.Article{
+	logger.InfoContext(ctx, "BEGIN")
+	defer func() { logger.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
+	tagDTOs := from.Tags()
+	tagPBs := make([]*grpc.Tag, 0, len(tagDTOs))
+	for _, t := range tagDTOs {
+		articleDTOs := t.Articles()
+		articlePBs := make([]*grpc.Article, 0, len(articleDTOs))
+		for _, a := range articleDTOs {
+			articlePBs = append(articlePBs, &grpc.Article{
 				Id:           a.Id(),
 				Title:        a.Title(),
 				ThumbnailUrl: a.ThumbnailUrl(),
@@ -116,14 +116,14 @@ func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextO
 				UpdatedAt:    a.UpdatedAt(),
 			})
 		}
-		pt = append(pt, &grpc.Tag{
+		tagPBs = append(tagPBs, &grpc.Tag{
 			Id:       t.Id(),
 			Name:     t.Name(),
-			Articles: pa,
+			Articles: articlePBs,
 		})
 	}
 	response = &grpc.GetNextTagResponse{
-		Tags:        pt,
+		Tags:        tagPBs,
 		StillExists: from.HasNext(),
 	}
 	ok = true
@@ -134,21 +134,21 @@ func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextO
 func (c Converter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *grpc.GetPrevTagResponse, ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetPrevTagsResponse").End()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN")
-	defer func() { lgr.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
-	ft := from.Tags()
-	pt := make([]*grpc.Tag, 0, len(ft))
-	for _, t := range ft {
-		fa := t.Articles()
-		pa := make([]*grpc.Article, 0, len(fa))
-		for _, a := range fa {
-			pa = append(pa, &grpc.Article{
+	logger.InfoContext(ctx, "BEGIN")
+	defer func() { logger.InfoContext(ctx, "END", slog.Group("response", slog.Bool("ok", ok))) }()
+	tagDTOs := from.Tags()
+	tagPBs := make([]*grpc.Tag, 0, len(tagDTOs))
+	for _, t := range tagDTOs {
+		articleDTOs := t.Articles()
+		articlePBs := make([]*grpc.Article, 0, len(articleDTOs))
+		for _, a := range articleDTOs {
+			articlePBs = append(articlePBs, &grpc.Article{
 				Id:           a.Id(),
 				Title:        a.Title(),
 				ThumbnailUrl: a.ThumbnailUrl(),
@@ -156,14 +156,14 @@ func (c Converter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevO
 				UpdatedAt:    a.UpdatedAt(),
 			})
 		}
-		pt = append(pt, &grpc.Tag{
+		tagPBs = append(tagPBs, &grpc.Tag{
 			Id:       t.Id(),
 			Name:     t.Name(),
-			Articles: pa,
+			Articles: articlePBs,
 		})
 	}
 	response = &grpc.GetPrevTagResponse{
-		Tags:        pt,
+		Tags:        tagPBs,
 		StillExists: from.HasPrevious(),
 	}
 	ok = true

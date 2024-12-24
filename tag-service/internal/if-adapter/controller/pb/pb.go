@@ -12,7 +12,6 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/presenter"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
@@ -43,21 +42,19 @@ var (
 func (s *TagServiceServer) GetTagById(ctx context.Context, in *grpc.GetTagByIdRequest) (*grpc.GetTagByIdResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetTagById").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = slog.Default()
+		logger = slog.Default()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.Any("in", in)))
 	oDto, err := s.getByIdUsecase.Execute(ctx, dto.NewGetByIdInDto(in.GetId()))
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*grpc.GetTagByIdResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
@@ -70,8 +67,7 @@ func (s *TagServiceServer) GetTagById(ctx context.Context, in *grpc.GetTagByIdRe
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			// slog.Any("*grpc.GetTagByIdResponse", res),
 			slog.Any("error", nil)))
@@ -82,19 +78,17 @@ func (s *TagServiceServer) GetTagById(ctx context.Context, in *grpc.GetTagByIdRe
 func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *emptypb.Empty) (*grpc.GetAllTagsResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAllTags").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = slog.Default()
+		logger = slog.Default()
 	}
-	lgr.InfoContext(ctx, "BEGIN")
+	logger.InfoContext(ctx, "BEGIN")
 	oDto, err := s.getAllUsecase.Execute(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*grpc.GetAllTagsResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
@@ -107,8 +101,7 @@ func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *emptypb.Empty) (*g
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			// slog.Any("*grpc.GetAllTagsResponse", res),
 			slog.Any("error", nil)))
@@ -119,21 +112,19 @@ func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *emptypb.Empty) (*g
 func (s *TagServiceServer) GetNextTags(ctx context.Context, in *grpc.GetNextTagsRequest) (*grpc.GetNextTagResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetTagById").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = slog.Default()
+		logger = slog.Default()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.Any("in", in)))
 	oDto, err := s.getNextUsecase.Execute(ctx, dto.NewGetNextInDto(int(in.GetFirst()), in.After))
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*grpc.GetNextTagResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
@@ -146,8 +137,7 @@ func (s *TagServiceServer) GetNextTags(ctx context.Context, in *grpc.GetNextTags
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			// slog.Any("*grpc.GetNextTagResponse", res),
 			slog.Any("error", nil)))
@@ -158,21 +148,19 @@ func (s *TagServiceServer) GetNextTags(ctx context.Context, in *grpc.GetNextTags
 func (s *TagServiceServer) GetPrevTags(ctx context.Context, in *grpc.GetPrevTagsRequest) (*grpc.GetPrevTagResponse, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetPrevTags").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = slog.Default()
+		logger = slog.Default()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.Any("in", in)))
 	oDto, err := s.getPrevUsecase.Execute(ctx, dto.NewGetPrevInDto(int(in.GetLast()), in.Before))
 	if err != nil {
 		err = errors.WithStack(err)
-		lgr.InfoContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.InfoContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*grpc.GetPrevTagResponse", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
@@ -185,8 +173,7 @@ func (s *TagServiceServer) GetPrevTags(ctx context.Context, in *grpc.GetPrevTags
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			// slog.Any("*grpc.GetPrevTagResponse", res),
 			slog.Any("error", nil)))

@@ -15,34 +15,31 @@ import (
 	iquery "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/query"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 )
 
 // GetById is an implementation of github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetById
 type GetById struct {
-	txmn db.TransactionManager
-	qs   iquery.ArticleService
+	transactionManager db.TransactionManager
+	queryService       iquery.ArticleService
 }
 
 func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByIdOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN",
+	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
 			slog.String("in", fmt.Sprintf("%v", in))))
-	tx, err := u.txmn.GetAndStart(ctx)
+	tx, err := u.transactionManager.GetAndStart(ctx)
 	if err != nil {
 		err := errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("dto.GetByIdOutDto", nil),
 				slog.Any("error", err)))
@@ -51,29 +48,28 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 	errCh := tx.SubscribeError()
 
 	out := db.NewSingleStatementResult[*query.Article]()
-	stmt := u.qs.GetById(ctx, in.Id(), out)
+	stmt := u.queryService.GetById(ctx, in.Id(), out)
 	err = tx.ExecuteStatement(ctx, stmt)
 	if err != nil {
 		err := errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("dto.GetByIdOutDto", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
-	qres := out.StrictGet()
+	queryResult := out.StrictGet()
 	result := dto.NewGetByIdOutDto(
-		qres.ID(),
-		qres.Title(),
-		qres.Body(),
-		qres.Thumbnail(),
-		qres.CreatedAt(),
-		qres.UpdatedAt(),
+		queryResult.ID(),
+		queryResult.Title(),
+		queryResult.Body(),
+		queryResult.Thumbnail(),
+		queryResult.CreatedAt(),
+		queryResult.UpdatedAt(),
 		func() []dto.Tag {
-			tagDto := make([]dto.Tag, 0, len(qres.Tags()))
-			for _, tag := range qres.Tags() {
+			tagDto := make([]dto.Tag, 0, len(queryResult.Tags()))
+			for _, tag := range queryResult.Tags() {
 				tagDto = append(tagDto, dto.NewTag(tag.ID(), tag.Name()))
 			}
 			return tagDto
@@ -88,11 +84,10 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 		}
 		if err != nil {
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			lgr.WarnContext(ctx, "transaction has error.", slog.String("err", err.Error()))
+			logger.WarnContext(ctx, "transaction has error.", slog.String("err", err.Error()))
 		}
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("dto.GetByIdOutDto", result),
 			slog.Any("error", nil)))
@@ -100,6 +95,6 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 }
 
 // NewGetById is constructor of GetById
-func NewGetById(txmn db.TransactionManager, qs iquery.ArticleService) *GetById {
-	return &GetById{txmn: txmn, qs: qs}
+func NewGetById(transactionManager db.TransactionManager, queryService iquery.ArticleService) *GetById {
+	return &GetById{transactionManager: transactionManager, queryService: queryService}
 }

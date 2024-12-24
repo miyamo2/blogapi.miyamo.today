@@ -26,13 +26,13 @@ func TestGetById_Execute(t *testing.T) {
 	type testCase struct {
 		args                    args
 		setupTransaction        func(tx *mdb.MockTransaction, stmt *mdb.MockStatement)
-		setupTransactionManager func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction)
-		setupArticleService     func(qs *mquery.MockArticleService, stmt *mdb.MockStatement)
+		setupTransactionManager func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction)
+		setupArticleService     func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement)
 		want                    want
 		wantErr                 bool
 	}
 
-	errTxmn := errors.New("txmn error")
+	errTxmn := errors.New("transactionManager error")
 	errStmt := errors.New("stmt error")
 	errTxCommit := errors.New("tx commit error")
 	errTxSubscribeError := errors.New("tx subscribe error")
@@ -53,11 +53,11 @@ func TestGetById_Execute(t *testing.T) {
 				tx.EXPECT().ExecuteStatement(gomock.Any(), stmt).Return(nil).Times(1)
 				tx.EXPECT().Commit(gomock.Any()).Return(nil).Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
-				qs.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
+			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
 					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
@@ -103,11 +103,11 @@ func TestGetById_Execute(t *testing.T) {
 				tx.EXPECT().ExecuteStatement(gomock.Any(), stmt).Return(nil).Times(1)
 				tx.EXPECT().Commit(gomock.Any()).Return(nil).Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
-				qs.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
+			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
 					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
@@ -142,11 +142,11 @@ func TestGetById_Execute(t *testing.T) {
 				tx.EXPECT().ExecuteStatement(gomock.Any(), gomock.Any()).Times(0)
 				tx.EXPECT().Commit(gomock.Any()).Times(0)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().GetAndStart(gomock.Any()).Return(nil, errTxmn).Times(1)
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().GetAndStart(gomock.Any()).Return(nil, errTxmn).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
-				qs.EXPECT().GetById(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
+			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().GetById(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
 			want: func() want {
 				return want{out: nil, err: errTxmn}
@@ -167,11 +167,11 @@ func TestGetById_Execute(t *testing.T) {
 				tx.EXPECT().ExecuteStatement(gomock.Any(), stmt).Return(errStmt).Times(1)
 				tx.EXPECT().Commit(gomock.Any()).Times(0)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
-				qs.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
+			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
 					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
@@ -207,11 +207,11 @@ func TestGetById_Execute(t *testing.T) {
 				tx.EXPECT().ExecuteStatement(gomock.Any(), stmt).Return(nil).Times(1)
 				tx.EXPECT().Commit(gomock.Any()).Return(errTxCommit).Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
-				qs.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
+			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
 					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
@@ -257,11 +257,11 @@ func TestGetById_Execute(t *testing.T) {
 				tx.EXPECT().ExecuteStatement(gomock.Any(), stmt).Return(nil).Times(1)
 				tx.EXPECT().Commit(gomock.Any()).Return(errTxCommit).Times(1)
 			},
-			setupTransactionManager: func(txmn *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
-				txmn.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
+			setupTransactionManager: func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction) {
+				transactionManager.EXPECT().GetAndStart(gomock.Any()).Return(tx, nil).Times(1)
 			},
-			setupArticleService: func(qs *mquery.MockArticleService, stmt *mdb.MockStatement) {
-				qs.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
+			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
+				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
 					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
@@ -300,11 +300,11 @@ func TestGetById_Execute(t *testing.T) {
 			stmt := mdb.NewMockStatement(ctrl)
 			tx := mdb.NewMockTransaction(ctrl)
 			tt.setupTransaction(tx, stmt)
-			txmn := mdb.NewMockTransactionManager(ctrl)
-			tt.setupTransactionManager(txmn, tx)
-			qs := mquery.NewMockArticleService(ctrl)
-			tt.setupArticleService(qs, stmt)
-			sut := NewGetById(txmn, qs)
+			transactionManager := mdb.NewMockTransactionManager(ctrl)
+			tt.setupTransactionManager(transactionManager, tx)
+			queryService := mquery.NewMockArticleService(ctrl)
+			tt.setupArticleService(queryService, stmt)
+			sut := NewGetById(transactionManager, queryService)
 			got, err := sut.Execute(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {

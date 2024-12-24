@@ -8,7 +8,6 @@ import (
 
 	"github.com/miyamo2/altnrslog"
 
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/newrelic/go-agent/v3/newrelic"
 
 	"github.com/cockroachdb/errors"
@@ -74,14 +73,13 @@ func (t *Transaction) SubscribeError() <-chan error {
 
 func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Statement) error {
 	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Transaction Execute Statement").End()
-	dw := duration.Start()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN")
 	// error will always be nil.
-	defer logger.InfoContext(ctx, "END", slog.String("duration", dw.SDuration()))
+	defer logger.InfoContext(ctx, "END")
 	errCh := make(chan error, 1)
 	defer close(errCh)
 	t.stmtQueue <- &internal.StatementRequest{
@@ -98,7 +96,6 @@ func (t *Transaction) ExecuteStatement(ctx context.Context, statement db.Stateme
 
 func (t *Transaction) Commit(ctx context.Context) error {
 	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Transaction Commit").End()
-	dw := duration.Start()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		logger = log.DefaultLogger()
@@ -106,7 +103,6 @@ func (t *Transaction) Commit(ctx context.Context) error {
 	logger.InfoContext(ctx, "BEGIN")
 	// error will always be nil.
 	defer logger.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("error", nil)))
 	t.commit <- struct{}{}
@@ -116,7 +112,6 @@ func (t *Transaction) Commit(ctx context.Context) error {
 
 func (t *Transaction) Rollback(ctx context.Context) error {
 	defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Gorm Transaction Rollback").End()
-	dw := duration.Start()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		logger = log.DefaultLogger()
@@ -124,7 +119,6 @@ func (t *Transaction) Rollback(ctx context.Context) error {
 	logger.InfoContext(ctx, "BEGIN")
 	// error will always be nil.
 	defer logger.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.Any("error", nil)))
 	t.rollback <- struct{}{}
@@ -144,7 +138,6 @@ func (m manager) GetAndStart(ctx context.Context, options ...db.GetAndStartOptio
 	for _, opt := range options {
 		opt(&prop)
 	}
-	dw := duration.Start()
 	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		logger = log.DefaultLogger()
@@ -159,7 +152,6 @@ func (m manager) GetAndStart(ctx context.Context, options ...db.GetAndStartOptio
 	}
 	// error will always be nil.
 	defer logger.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
 		slog.Group("returns",
 			slog.String("conn.Transaction", fmt.Sprintf("%+v", *t)),
 			slog.Any("error", nil)))

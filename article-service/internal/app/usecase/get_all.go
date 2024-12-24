@@ -14,32 +14,29 @@ import (
 	iquery "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/query"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 )
 
 // GetAll is an implementation of github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetAll
 type GetAll struct {
-	txmn db.TransactionManager
-	qs   iquery.ArticleService
+	transactionManager db.TransactionManager
+	queryService       iquery.ArticleService
 }
 
 func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN")
-	tx, err := u.txmn.GetAndStart(ctx)
+	logger.InfoContext(ctx, "BEGIN")
+	tx, err := u.transactionManager.GetAndStart(ctx)
 	if err != nil {
 		err := errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("dto.GetAllOutDto", nil),
 				slog.Any("error", err)))
@@ -48,19 +45,18 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 	errCh := tx.SubscribeError()
 
 	out := db.NewMultipleStatementResult[*query.Article]()
-	stmt := u.qs.GetAll(ctx, out)
+	stmt := u.queryService.GetAll(ctx, out)
 	err = tx.ExecuteStatement(ctx, stmt)
 	if err != nil {
 		err := errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("dto.GetAllOutDto", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
-	qres := out.StrictGet()
+	queryResult := out.StrictGet()
 	// convert model.Tag to dto.Tag
 	convTagModels := func(tms []query.Tag) []dto.Tag {
 		t := make([]dto.Tag, 0, len(tms))
@@ -71,8 +67,8 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 	}
 	// convert model.Article to dto.Article
 	convArticleModels := func() []dto.Article {
-		a := make([]dto.Article, 0, len(qres))
-		for _, am := range qres {
+		a := make([]dto.Article, 0, len(queryResult))
+		for _, am := range queryResult {
 			// This would be a dead code.
 			// if am == nil ...
 			a = append(a, dto.NewArticle(
@@ -97,17 +93,16 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 		}
 		if err != nil {
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			lgr.WarnContext(ctx, "transaction has error.", slog.String("err", err.Error()))
+			logger.WarnContext(ctx, "transaction has error.", slog.String("err", err.Error()))
 		}
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("error", nil)))
 	return &result, nil
 }
 
 // NewGetAll is constructor of GetAll.
-func NewGetAll(txmn db.TransactionManager, qs iquery.ArticleService) *GetAll {
-	return &GetAll{txmn: txmn, qs: qs}
+func NewGetAll(transactionManager db.TransactionManager, queryService iquery.ArticleService) *GetAll {
+	return &GetAll{transactionManager: transactionManager, queryService: queryService}
 }
