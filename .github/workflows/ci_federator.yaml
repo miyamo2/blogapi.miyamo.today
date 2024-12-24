@@ -25,10 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Git Config
-        run: |
-          git config --global url."https://${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-
       - name: Setup Go
         uses: actions/setup-go@v5
         with:

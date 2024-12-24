@@ -49,7 +49,7 @@ jobs:
           REPOSITORY: ${{ steps.ecr-repo.outputs.repository }}
           TAG: ${{ github.sha }}
         run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} -f ./.build/package/Dockerfile --build-arg GITHUB_TOKEN=${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }} .
+          docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} -f ./.build/package/Dockerfile .
           docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }}
           aws ssm put-parameter --name /miyamo-today/cicd/${{ env.ENV_NAME }}/ecr/federator/tag --value ${{ env.TAG }} --type String --overwrite --region ap-northeast-1
 
