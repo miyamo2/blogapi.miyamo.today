@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.23.0 - 2024-12-24
+
+### ✨ New Features
+
+- Added `util/url`
+
 ## 0.22.0 - 2024-12-14
 
 ### ✨ New Features
