@@ -7,6 +7,7 @@ on:
       - "refactor/**"
       - "bugfix/**"
       - "hotfix/**"
+      - "main"
     paths:
       - "read-model-updater/**"
   pull_request:
