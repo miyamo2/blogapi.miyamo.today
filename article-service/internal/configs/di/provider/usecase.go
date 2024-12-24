@@ -16,20 +16,20 @@ var (
 	_ usecase.GetPrev = (*impl.GetPrev)(nil)
 )
 
-func GetByIdUsecase(qs query.ArticleService) *impl.GetById {
-	return impl.NewGetById(gorm.Manager(), qs)
+func GetByIdUsecase(queryService query.ArticleService) *impl.GetById {
+	return impl.NewGetById(gorm.Manager(), queryService)
 }
 
-func GetAllUsecase(qs query.ArticleService) *impl.GetAll {
-	return impl.NewGetAll(gorm.Manager(), qs)
+func GetAllUsecase(queryService query.ArticleService) *impl.GetAll {
+	return impl.NewGetAll(gorm.Manager(), queryService)
 }
 
-func GetNextUsecase(qs query.ArticleService) *impl.GetNext {
-	return impl.NewGetNext(gorm.Manager(), qs)
+func GetNextUsecase(queryService query.ArticleService) *impl.GetNext {
+	return impl.NewGetNext(gorm.Manager(), queryService)
 }
 
-func GetPrevUsecase(qs query.ArticleService) *impl.GetPrev {
-	return impl.NewGetPrev(gorm.Manager(), qs)
+func GetPrevUsecase(queryService query.ArticleService) *impl.GetPrev {
+	return impl.NewGetPrev(gorm.Manager(), queryService)
 }
 
 var UsecaseSet = wire.NewSet(

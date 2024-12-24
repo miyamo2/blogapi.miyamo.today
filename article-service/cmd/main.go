@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/configs/di"
 	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/tcp"
 	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
+	"github.com/miyamo2/blogapi.miyamo.today/core/util/tcp"
 	"log/slog"
 	"os"
 	"os/signal"

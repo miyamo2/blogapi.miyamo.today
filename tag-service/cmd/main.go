@@ -2,8 +2,8 @@ package main
 
 import (
 	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
+	"github.com/miyamo2/blogapi.miyamo.today/core/util/tcp"
 	grpcgen "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/tcp"
 	"log/slog"
 	"os"
 	"os/signal"

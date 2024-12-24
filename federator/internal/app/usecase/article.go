@@ -18,7 +18,7 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
-// CreateArticle is a use-case of getting an article by id.
+// Article is a use-case of getting an article by id.
 type Article struct {
 	// articleServiceClient is a client of article service.
 	articleServiceClient grpc.ArticleServiceClient

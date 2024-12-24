@@ -14,33 +14,30 @@ import (
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/duration"
 	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	iquery "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/query"
 )
 
 // GetPrev is an implementation of usecase.GetPrev
 type GetPrev struct {
-	txmn db.TransactionManager
-	qs   iquery.TagService
+	transactionManager db.TransactionManager
+	queryService       iquery.TagService
 }
 
 func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPrevOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
-	dw := duration.Start()
-	lgr, err := altnrslog.FromContext(ctx)
+	logger, err := altnrslog.FromContext(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		lgr = log.DefaultLogger()
+		logger = log.DefaultLogger()
 	}
-	lgr.InfoContext(ctx, "BEGIN")
-	tx, err := u.txmn.GetAndStart(ctx)
+	logger.InfoContext(ctx, "BEGIN")
+	tx, err := u.transactionManager.GetAndStart(ctx)
 	if err != nil {
 		err := errors.WithStack(err)
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*dto.GetPrevOutDto", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
@@ -51,22 +48,21 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 
 	out := db.NewMultipleStatementResult[*model.Tag]()
 	last := in.Last()
-	stmt := u.qs.GetAll(ctx, out, db.WithPreviousPaging(last, in.Cursor()))
+	stmt := u.queryService.GetAll(ctx, out, db.WithPreviousPaging(last, in.Cursor()))
 	err = tx.ExecuteStatement(ctx, stmt)
 	if err != nil {
 		err := errors.WithStack(err)
-		lgr.WarnContext(ctx, "END",
-			slog.String("duration", dw.SDuration()),
+		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("*dto.GetPrevOutDto", nil),
 				slog.String("error", fmt.Sprintf("%+v", err))))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	qres := out.StrictGet()
+	queryResult := out.StrictGet()
 
-	result := dto.NewGetPrevOutDto(len(qres) > last)
-	for i, tag := range qres {
+	result := dto.NewGetPrevOutDto(len(queryResult) > last)
+	for i, tag := range queryResult {
 		if i >= last {
 			break
 		}
@@ -82,11 +78,10 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 		}
 		if err != nil {
 			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			lgr.WarnContext(ctx, "transaction has error.", slog.String("err", err.Error()))
+			logger.WarnContext(ctx, "transaction has error.", slog.String("err", err.Error()))
 		}
 	}
-	lgr.InfoContext(ctx, "END",
-		slog.String("duration", dw.SDuration()),
+	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			// slog.String("*dto.GetPrevOutDto", fmt.Sprintf("%v", result)),
 			slog.Any("error", nil)))
@@ -94,6 +89,6 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 }
 
 // NewGetPrev is constructor of GetPrev
-func NewGetPrev(txmn db.TransactionManager, qs iquery.TagService) *GetPrev {
-	return &GetPrev{txmn: txmn, qs: qs}
+func NewGetPrev(transactionManager db.TransactionManager, queryService iquery.TagService) *GetPrev {
+	return &GetPrev{transactionManager: transactionManager, queryService: queryService}
 }
