@@ -2,6 +2,9 @@ package pb
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -35,8 +38,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists1",
 								"## happy_path/multiple/still_exists1",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -47,8 +50,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists2",
 								"## happy_path/multiple_/still_exists2",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -66,8 +69,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists1",
 							Body:         "## happy_path/multiple/still_exists1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -84,8 +87,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists2",
 							Body:         "## happy_path/multiple_/still_exists2",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -114,8 +117,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists1",
 								"## happy_path/multiple/still_exists1",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -126,8 +129,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists2",
 								"## happy_path/multiple_/still_exists2",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -145,8 +148,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists1",
 							Body:         "## happy_path/multiple/still_exists1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -163,8 +166,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists2",
 							Body:         "## happy_path/multiple_/still_exists2",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -193,8 +196,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists1",
 								"## happy_path/multiple/still_exists1",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -212,8 +215,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists1",
 							Body:         "## happy_path/multiple/still_exists1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -242,8 +245,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists1",
 								"## happy_path/multiple/still_exists1",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -261,8 +264,8 @@ func TestConverter_ToGetNextArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists1",
 							Body:         "## happy_path/multiple/still_exists1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -320,8 +323,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists1",
 								"## happy_path/multiple/still_exists1",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -332,8 +335,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists2",
 								"## happy_path/multiple_/still_exists2",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -351,8 +354,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists1",
 							Body:         "## happy_path/multiple/still_exists1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -369,8 +372,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists2",
 							Body:         "## happy_path/multiple_/still_exists2",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -398,8 +401,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists1",
 								"## happy_path/multiple/still_exists1",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -410,8 +413,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists2",
 								"## happy_path/multiple_/still_exists2",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -429,8 +432,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists1",
 							Body:         "## happy_path/multiple/still_exists1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -447,8 +450,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists2",
 							Body:         "## happy_path/multiple_/still_exists2",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -476,8 +479,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists1",
 								"## happy_path/multiple/still_exists1",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -495,8 +498,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists1",
 							Body:         "## happy_path/multiple/still_exists1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -524,8 +527,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 								"happy_path/multiple/still_exists1",
 								"## happy_path/multiple/still_exists1",
 								"1234567890",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								[]dto.Tag{
 									dto.NewTag("tag1", "1"),
 									dto.NewTag("tag2", "2"),
@@ -543,8 +546,8 @@ func TestConverter_ToGetAllArticlesResponse(t *testing.T) {
 							Title:        "happy_path/multiple/still_exists1",
 							Body:         "## happy_path/multiple/still_exists1",
 							ThumbnailUrl: "1234567890",
-							CreatedAt:    "2020-01-01T00:00:00Z",
-							UpdatedAt:    "2020-01-01T00:00:00Z",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							Tags: []*grpc.Tag{
 								{
 									Id:   "tag1",
@@ -599,8 +602,8 @@ func TestConverter_ToGetByIdArticlesResponse(t *testing.T) {
 						"happy_path/multiple/still_exists1",
 						"## happy_path/multiple/still_exists1",
 						"1234567890",
-						"2020-01-01T00:00:00Z",
-						"2020-01-01T00:00:00Z",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 						[]dto.Tag{
 							dto.NewTag("tag1", "1"),
 							dto.NewTag("tag2", "2"),
@@ -616,8 +619,8 @@ func TestConverter_ToGetByIdArticlesResponse(t *testing.T) {
 						Title:        "happy_path/multiple/still_exists1",
 						Body:         "## happy_path/multiple/still_exists1",
 						ThumbnailUrl: "1234567890",
-						CreatedAt:    "2020-01-01T00:00:00Z",
-						UpdatedAt:    "2020-01-01T00:00:00Z",
+						CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+						UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 						Tags: []*grpc.Tag{
 							{
 								Id:   "tag1",

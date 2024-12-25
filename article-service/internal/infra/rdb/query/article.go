@@ -1,13 +1,18 @@
 package query
 
+import (
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
+)
+
 // Article is a query service model for article.
 type Article struct {
 	id        string
 	title     string
 	body      string
 	thumbnail string
-	createdAt string
-	updatedAt string
+	createdAt synchro.Time[tz.UTC]
+	updatedAt synchro.Time[tz.UTC]
 	tags      []Tag
 }
 
@@ -27,10 +32,10 @@ func (a Article) Body() string { return a.body }
 func (a Article) Thumbnail() string { return a.thumbnail }
 
 // CreatedAt returns date the article was created
-func (a Article) CreatedAt() string { return a.createdAt }
+func (a Article) CreatedAt() synchro.Time[tz.UTC] { return a.createdAt }
 
 // UpdatedAt returns the date the article was last updated.
-func (a Article) UpdatedAt() string { return a.updatedAt }
+func (a Article) UpdatedAt() synchro.Time[tz.UTC] { return a.updatedAt }
 
 // Tags return the tags attached to the article
 func (a Article) Tags() []Tag { return a.tags }
@@ -59,7 +64,7 @@ func WithTagsSize(size int) NewArticleOption {
 }
 
 // NewArticle constructor of Article.
-func NewArticle(id, title, body, thumbnail, createdAt, updatedAt string, opt ...NewArticleOption) Article {
+func NewArticle(id, title, body, thumbnail string, createdAt, updatedAt synchro.Time[tz.UTC], opt ...NewArticleOption) Article {
 	a := Article{
 		id:        id,
 		title:     title,

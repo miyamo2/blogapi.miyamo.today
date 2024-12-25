@@ -11,6 +11,7 @@ import (
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Converter struct{}
@@ -46,8 +47,8 @@ func (c Converter) ToGetNextArticlesResponse(ctx context.Context, from *dto.GetN
 			Title:        a.Title(),
 			Body:         a.Body(),
 			ThumbnailUrl: a.ThumbnailUrl(),
-			CreatedAt:    a.CreatedAt(),
-			UpdatedAt:    a.UpdatedAt(),
+			CreatedAt:    timestamppb.New(a.CreatedAt().StdTime()),
+			UpdatedAt:    timestamppb.New(a.UpdatedAt().StdTime()),
 			Tags:         tagPBs,
 		})
 	}
@@ -90,8 +91,8 @@ func (c Converter) ToGetAllArticlesResponse(ctx context.Context, from *dto.GetAl
 			Title:        a.Title(),
 			Body:         a.Body(),
 			ThumbnailUrl: a.ThumbnailUrl(),
-			CreatedAt:    a.CreatedAt(),
-			UpdatedAt:    a.UpdatedAt(),
+			CreatedAt:    timestamppb.New(a.CreatedAt().StdTime()),
+			UpdatedAt:    timestamppb.New(a.UpdatedAt().StdTime()),
 			Tags:         tagPBs,
 		})
 	}
@@ -129,8 +130,8 @@ func (c Converter) ToGetByIdArticlesResponse(ctx context.Context, from *dto.GetB
 		Title:        from.Title(),
 		Body:         from.Body(),
 		ThumbnailUrl: from.ThumbnailUrl(),
-		CreatedAt:    from.CreatedAt(),
-		UpdatedAt:    from.UpdatedAt(),
+		CreatedAt:    timestamppb.New(from.CreatedAt().StdTime()),
+		UpdatedAt:    timestamppb.New(from.UpdatedAt().StdTime()),
 		Tags:         tagPBs,
 	}
 	response = &grpc.GetArticleByIdResponse{
@@ -171,8 +172,8 @@ func (c Converter) ToGetPrevArticlesResponse(ctx context.Context, from *dto.GetP
 			Title:        a.Title(),
 			Body:         a.Body(),
 			ThumbnailUrl: a.ThumbnailUrl(),
-			CreatedAt:    a.CreatedAt(),
-			UpdatedAt:    a.UpdatedAt(),
+			CreatedAt:    timestamppb.New(a.CreatedAt().StdTime()),
+			UpdatedAt:    timestamppb.New(a.UpdatedAt().StdTime()),
 			Tags:         tagPBs,
 		})
 	}
