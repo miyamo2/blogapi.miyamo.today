@@ -11,7 +11,7 @@ on:
 permissions: write-all
 
 jobs:
-  staging_deploy:
+  deploy:
     runs-on: ubuntu-latest
     defaults:
       run:
