@@ -1,5 +1,10 @@
 package model
 
+import (
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
+)
+
 // Tag is a query service model for tag.
 type Tag struct {
 	id       string
@@ -49,8 +54,8 @@ type Article struct {
 	id        string
 	title     string
 	thumbnail string
-	createdAt string
-	updatedAt string
+	createdAt synchro.Time[tz.UTC]
+	updatedAt synchro.Time[tz.UTC]
 }
 
 // IsQueryServiceModel is a marker method for QueryServiceModel.
@@ -66,13 +71,13 @@ func (a Article) Title() string { return a.title }
 func (a Article) Thumbnail() string { return a.thumbnail }
 
 // CreatedAt returns date the article was created
-func (a Article) CreatedAt() string { return a.createdAt }
+func (a Article) CreatedAt() synchro.Time[tz.UTC] { return a.createdAt }
 
 // UpdatedAt returns the date the article was last updated.
-func (a Article) UpdatedAt() string { return a.updatedAt }
+func (a Article) UpdatedAt() synchro.Time[tz.UTC] { return a.updatedAt }
 
 // NewArticle constructor of Article.
-func NewArticle(id, title, thumbnail, createdAt, updatedAt string) Article {
+func NewArticle(id, title, thumbnail string, createdAt, updatedAt synchro.Time[tz.UTC]) Article {
 	a := Article{
 		id:        id,
 		title:     title,

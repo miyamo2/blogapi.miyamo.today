@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"reflect"
 	"testing"
 
@@ -78,15 +80,15 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/multiple/has_next1",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z")
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
 							tg1.AddArticle(a1)
 							a2 := model.NewArticle(
 								"2",
 								"happy_path/multiple/has_next2",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z")
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
 							tg1.AddArticle(a2)
 							tg2 := model.NewTag("2", "tag2")
 							tg2.AddArticle(a1)
@@ -111,14 +113,14 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/multiple/has_next1",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							dto.NewArticle(
 								"2",
 								"happy_path/multiple/has_next2",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						},
 					))
 				o = o.WithTagDto(
@@ -130,14 +132,14 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/multiple/has_next1",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							dto.NewArticle(
 								"2",
 								"happy_path/multiple/has_next2",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						},
 					))
 				return want{out: &o, err: nil}
@@ -182,15 +184,15 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/multiple/has_not_next1",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z")
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
 							tg1.AddArticle(a1)
 							a2 := model.NewArticle(
 								"2",
 								"happy_path/multiple/has_not_next2",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z")
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
 							tg1.AddArticle(a2)
 							tg2 := model.NewTag("2", "tag2")
 							tg2.AddArticle(a1)
@@ -212,14 +214,14 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/multiple/has_not_next1",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							dto.NewArticle(
 								"2",
 								"happy_path/multiple/has_not_next2",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						},
 					))
 				o = o.WithTagDto(
@@ -231,14 +233,14 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/multiple/has_not_next1",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 							dto.NewArticle(
 								"2",
 								"happy_path/multiple/has_not_next2",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						},
 					))
 				return want{out: &o, err: nil}
@@ -363,8 +365,8 @@ func TestGetNext_Execute(t *testing.T) {
 									"1",
 									"unhappy_path/transaction_execute_statement_returns_error",
 									"thumbnail",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"))
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
 							result := []*model.Tag{&tg}
 							out.Set(result)
 							return stmt
@@ -417,8 +419,8 @@ func TestGetNext_Execute(t *testing.T) {
 									"1",
 									"happy_path/transaction_commit_returns_error",
 									"thumbnail",
-									"2020-01-01T00:00:00Z",
-									"2020-01-01T00:00:00Z"))
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
 							result := []*model.Tag{&tg}
 							out.Set(result)
 							return stmt
@@ -432,8 +434,8 @@ func TestGetNext_Execute(t *testing.T) {
 							"1",
 							"happy_path/transaction_commit_returns_error",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z"),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					}),
 				)
 				return want{out: &o, err: nil}
@@ -479,8 +481,8 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/transaction_subscribe_error_receive_error",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							)
 							tg1.AddArticle(a)
 							result := []*model.Tag{&tg1}
@@ -500,8 +502,8 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/transaction_subscribe_error_receive_error",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						}))
 				return want{out: &o, err: nil}
 			}(),
@@ -546,8 +548,8 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/single/has_next",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							)
 							tg1.AddArticle(a)
 							tg2 := model.NewTag("2", "tag2")
@@ -569,8 +571,8 @@ func TestGetNext_Execute(t *testing.T) {
 								"1",
 								"happy_path/single/has_next",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						}))
 				return want{out: &o, err: nil}
 			}(),

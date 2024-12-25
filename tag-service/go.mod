@@ -3,6 +3,7 @@ module github.com/miyamo2/blogapi.miyamo.today/tag-service
 go 1.23
 
 require (
+	github.com/Code-Hex/synchro v0.5.2
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/cockroachdb/errors v1.11.3
 	github.com/google/go-cmp v0.6.0
@@ -29,6 +30,7 @@ require (
 	github.com/getsentry/sentry-go v0.30.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
 	github.com/jackc/pgconn v1.14.3 // indirect

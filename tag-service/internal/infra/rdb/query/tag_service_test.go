@@ -2,6 +2,8 @@ package query
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"reflect"
 	"regexp"
 	"testing"
@@ -55,8 +57,8 @@ func TestArticleService_GetById(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -65,13 +67,13 @@ func TestArticleService_GetById(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"happy_path",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT "tags".* FROM "tags" WHERE "tags"."id" = $1) AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id"`))
 				mq.ExpectQuery().
@@ -98,8 +100,8 @@ func TestArticleService_GetById(t *testing.T) {
 					"1",
 					"happy_path",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				out := db.NewSingleStatementResult[*model.Tag]()
 				out.Set(&tag)
@@ -121,8 +123,8 @@ func TestArticleService_GetById(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -256,8 +258,8 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -266,18 +268,18 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_out_paging",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00").
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0)).
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -286,13 +288,13 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_out_paging",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT * FROM "tags") AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id" ORDER BY "tags"."id", "articles"."id" NULLS FIRST`))
 				mq.ExpectQuery().
@@ -319,8 +321,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_out_paging",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tag2 := model.NewTag(
 					"tag2",
@@ -330,8 +332,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_out_paging",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tags := []*model.Tag{&tag1, &tag2}
 				out := db.NewMultipleStatementResult[*model.Tag]()
@@ -356,8 +358,8 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -366,18 +368,18 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_prev_paging_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00").
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0)).
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -386,13 +388,13 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_prev_paging_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT * FROM "tags" ORDER BY "id" DESC LIMIT $1) AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id" ORDER BY "tags"."id" DESC, "articles"."id" NULLS FIRST`))
 				mq.ExpectQuery().
@@ -420,8 +422,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_prev_paging_limit",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tag2 := model.NewTag(
 					"tag2",
@@ -431,8 +433,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_prev_paging_limit",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				out := db.NewMultipleStatementResult[*model.Tag]()
 				out.Set([]*model.Tag{&tag1, &tag2})
@@ -456,8 +458,8 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -466,18 +468,18 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_prev_paging_limit_and_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00").
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0)).
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -486,13 +488,13 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_prev_paging_limit_and_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT * FROM "tags" WHERE EXISTS(SELECT id FROM "tags" WHERE "id" = $1) AND "id" < $2 ORDER BY "id" DESC LIMIT $3) AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id" ORDER BY "tags"."id" DESC, "articles"."id" NULLS FIRST`))
 				mq.ExpectQuery().
@@ -520,8 +522,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_prev_paging_limit_and_cursor",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tag2 := model.NewTag(
 					"tag2",
@@ -531,8 +533,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_prev_paging_limit_and_cursor",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				out := db.NewMultipleStatementResult[*model.Tag]()
 				out.Set([]*model.Tag{&tag1, &tag2})
@@ -556,8 +558,8 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -566,18 +568,18 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_prev_paging_invalid_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00").
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0)).
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -586,13 +588,13 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_prev_paging_invalid_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT * FROM "tags") AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id" ORDER BY "tags"."id", "articles"."id" NULLS FIRST`))
 				mq.ExpectQuery().
@@ -619,8 +621,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_prev_paging_invalid_limit",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tag2 := model.NewTag(
 					"tag2",
@@ -630,8 +632,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_prev_paging_invalid_limit",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				out := db.NewMultipleStatementResult[*model.Tag]()
 				out.Set([]*model.Tag{&tag1, &tag2})
@@ -655,8 +657,8 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -665,18 +667,18 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_prev_paging_zero_value_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00").
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0)).
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -685,13 +687,13 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_prev_paging_zero_value_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT * FROM "tags" ORDER BY "id" DESC LIMIT $1) AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id" ORDER BY "tags"."id" DESC, "articles"."id" NULLS FIRST`))
 				mq.ExpectQuery().
@@ -719,8 +721,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_prev_paging_zero_value_cursor",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tag2 := model.NewTag(
 					"tag2",
@@ -730,8 +732,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_prev_paging_zero_value_cursor",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				out := db.NewMultipleStatementResult[*model.Tag]()
 				out.Set([]*model.Tag{&tag1, &tag2})
@@ -755,8 +757,8 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -765,18 +767,18 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_next_paging_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00").
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0)).
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -785,13 +787,13 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_next_paging_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT * FROM "tags" ORDER BY "id" LIMIT $1) AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id" ORDER BY "tags"."id", "articles"."id" NULLS FIRST`))
 				mq.ExpectQuery().
@@ -819,8 +821,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_next_paging_limit",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tag2 := model.NewTag(
 					"tag2",
@@ -830,8 +832,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_next_paging_limit",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				out := db.NewMultipleStatementResult[*model.Tag]()
 				out.Set([]*model.Tag{&tag1, &tag2})
@@ -855,8 +857,8 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -865,18 +867,18 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_next_paging_limit_and_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00").
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0)).
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -885,13 +887,13 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_next_paging_limit_and_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT * FROM "tags" WHERE EXISTS(SELECT id FROM "tags" WHERE "id" = $1) AND "id" > $2 ORDER BY "id" LIMIT $3) AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id" ORDER BY "tags"."id", "articles"."id" NULLS FIRST`))
 				mq.ExpectQuery().
@@ -919,8 +921,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_next_paging_limit_and_cursor",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tag2 := model.NewTag(
 					"tag2",
@@ -930,8 +932,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_next_paging_limit_and_cursor",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				out := db.NewMultipleStatementResult[*model.Tag]()
 				out.Set([]*model.Tag{&tag1, &tag2})
@@ -955,8 +957,8 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -965,18 +967,18 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_next_paging_invalid_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00").
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0)).
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -985,13 +987,13 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_next_paging_invalid_limit",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT * FROM "tags") AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id" ORDER BY "tags"."id", "articles"."id" NULLS FIRST`))
 				mq.ExpectQuery().
@@ -1018,8 +1020,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_next_paging_invalid_limit",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tag2 := model.NewTag(
 					"tag2",
@@ -1029,8 +1031,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_next_paging_invalid_limit",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				out := db.NewMultipleStatementResult[*model.Tag]()
 				out.Set([]*model.Tag{&tag1, &tag2})
@@ -1054,8 +1056,8 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -1064,18 +1066,18 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag1",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_next_paging_zero_value_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00").
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0)).
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						nil,
 						nil,
 						nil,
@@ -1084,13 +1086,13 @@ func TestTagService_GetAll(t *testing.T) {
 					AddRow(
 						"tag2",
 						"test",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00",
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						"1",
 						"with_next_paging_zero_value_cursor",
 						"01234567890",
-						"2021-01-01 00:00:00",
-						"2021-01-01 00:00:00")
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
 					`SELECT "tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at" FROM (SELECT * FROM "tags" ORDER BY "id" LIMIT $1) AS "tags" LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id" ORDER BY "tags"."id", "articles"."id" NULLS FIRST`))
 				mq.ExpectQuery().
@@ -1118,8 +1120,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_next_paging_zero_value_cursor",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				tag2 := model.NewTag(
 					"tag2",
@@ -1129,8 +1131,8 @@ func TestTagService_GetAll(t *testing.T) {
 					"1",
 					"with_next_paging_zero_value_cursor",
 					"01234567890",
-					"2021-01-01 00:00:00",
-					"2021-01-01 00:00:00",
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
+					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 				))
 				out := db.NewMultipleStatementResult[*model.Tag]()
 				out.Set([]*model.Tag{&tag1, &tag2})

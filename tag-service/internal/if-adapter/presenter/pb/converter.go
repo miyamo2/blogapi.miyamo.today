@@ -2,6 +2,7 @@ package pb
 
 import (
 	"context"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"log/slog"
 
 	"github.com/cockroachdb/errors"
@@ -35,8 +36,8 @@ func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOu
 			Id:           a.Id(),
 			Title:        a.Title(),
 			ThumbnailUrl: a.ThumbnailUrl(),
-			CreatedAt:    a.CreatedAt(),
-			UpdatedAt:    a.UpdatedAt(),
+			CreatedAt:    timestamppb.New(a.CreatedAt().StdTime()),
+			UpdatedAt:    timestamppb.New(a.UpdatedAt().StdTime()),
 		})
 	}
 	tagPB := &grpc.Tag{
@@ -73,8 +74,8 @@ func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOut
 				Id:           a.Id(),
 				Title:        a.Title(),
 				ThumbnailUrl: a.ThumbnailUrl(),
-				CreatedAt:    a.CreatedAt(),
-				UpdatedAt:    a.UpdatedAt(),
+				CreatedAt:    timestamppb.New(a.CreatedAt().StdTime()),
+				UpdatedAt:    timestamppb.New(a.UpdatedAt().StdTime()),
 			})
 		}
 		tagPBs = append(tagPBs, &grpc.Tag{
@@ -112,8 +113,8 @@ func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextO
 				Id:           a.Id(),
 				Title:        a.Title(),
 				ThumbnailUrl: a.ThumbnailUrl(),
-				CreatedAt:    a.CreatedAt(),
-				UpdatedAt:    a.UpdatedAt(),
+				CreatedAt:    timestamppb.New(a.CreatedAt().StdTime()),
+				UpdatedAt:    timestamppb.New(a.UpdatedAt().StdTime()),
 			})
 		}
 		tagPBs = append(tagPBs, &grpc.Tag{
@@ -152,8 +153,8 @@ func (c Converter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevO
 				Id:           a.Id(),
 				Title:        a.Title(),
 				ThumbnailUrl: a.ThumbnailUrl(),
-				CreatedAt:    a.CreatedAt(),
-				UpdatedAt:    a.UpdatedAt(),
+				CreatedAt:    timestamppb.New(a.CreatedAt().StdTime()),
+				UpdatedAt:    timestamppb.New(a.UpdatedAt().StdTime()),
 			})
 		}
 		tagPBs = append(tagPBs, &grpc.Tag{

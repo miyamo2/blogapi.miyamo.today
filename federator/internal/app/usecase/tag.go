@@ -4,14 +4,12 @@ import (
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
-	"log/slog"
-	"net/url"
-	"time"
-
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
+	"log/slog"
+	"net/url"
 
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
@@ -54,26 +52,8 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDTO) (dto.TagOutDTO, erro
 	articlePBs := tagPB.Articles
 	articleDTOs := make([]dto.Article, 0, len(articlePBs))
 	for _, article := range articlePBs {
-		createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.CreatedAt)
-		if err != nil {
-			err = errors.WithStack(err)
-			logger.WarnContext(ctx, "END",
-				slog.Group("return",
-					slog.Any("*dto.ArticleOutDTO", nil),
-					slog.Any("error", err)))
-			return dto.TagOutDTO{}, err
-		}
-
-		updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
-		if err != nil {
-			err = errors.WithStack(err)
-			logger.WarnContext(ctx, "END",
-
-				slog.Group("return",
-					slog.Any("*dto.ArticleOutDTO", nil),
-					slog.Any("error", err)))
-			return dto.TagOutDTO{}, err
-		}
+		createdAt := synchro.In[tz.UTC](article.CreatedAt.AsTime())
+		updatedAt := synchro.In[tz.UTC](article.UpdatedAt.AsTime())
 
 		thumbnailURL, err := url.Parse(article.ThumbnailUrl)
 		if err != nil {

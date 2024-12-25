@@ -1,5 +1,10 @@
 package dto
 
+import (
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
+)
+
 // GetByIdInDto is an Input DTO for GetById use-case
 type GetByIdInDto struct {
 	id string
@@ -47,8 +52,8 @@ type Article struct {
 	id           string
 	title        string
 	thumbnailUrl string
-	createdAt    string
-	updatedAt    string
+	createdAt    synchro.Time[tz.UTC]
+	updatedAt    synchro.Time[tz.UTC]
 }
 
 // IsOutDto is a marker method for OutDTO.
@@ -64,18 +69,18 @@ func (a Article) Title() string { return a.title }
 func (a Article) ThumbnailUrl() string { return a.thumbnailUrl }
 
 // CreatedAt returns date the article was created
-func (a Article) CreatedAt() string { return a.createdAt }
+func (a Article) CreatedAt() synchro.Time[tz.UTC] { return a.createdAt }
 
 // UpdatedAt returns the date the article was last updated.
-func (a Article) UpdatedAt() string { return a.updatedAt }
+func (a Article) UpdatedAt() synchro.Time[tz.UTC] { return a.updatedAt }
 
 // NewArticle is constructor of Article
 func NewArticle(
 	id string,
 	title string,
 	thumbnail string,
-	createdAt string,
-	updatedAt string,
+	createdAt synchro.Time[tz.UTC],
+	updatedAt synchro.Time[tz.UTC],
 ) Article {
 	return Article{
 		id:           id,
