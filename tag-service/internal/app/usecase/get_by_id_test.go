@@ -2,6 +2,8 @@ package usecase
 
 import (
 	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"reflect"
 	"testing"
 
@@ -66,14 +68,14 @@ func TestGetById_Execute(t *testing.T) {
 								"1",
 								"happy_path",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"))
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
 							tg.AddArticle(model.NewArticle(
 								"2",
 								"happy_path2",
 								"thumbnail",
-								"2020-01-01T00:00:00Z",
-								"2020-01-01T00:00:00Z"))
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
 
 							out.Set(&tg)
 							return stmt
@@ -89,14 +91,14 @@ func TestGetById_Execute(t *testing.T) {
 							"1",
 							"happy_path",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z"),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 						dto.NewArticle(
 							"2",
 							"happy_path2",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z"),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					})
 				return want{out: &o, err: nil}
 			}(),
@@ -239,8 +241,8 @@ func TestGetById_Execute(t *testing.T) {
 							"1",
 							"happy_path/transaction_commit_returns_error",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z"))
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
 						out.Set(&tg)
 						return stmt
 					}).Times(1)
@@ -254,8 +256,8 @@ func TestGetById_Execute(t *testing.T) {
 							"1",
 							"happy_path/transaction_commit_returns_error",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z"),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					})
 				return want{out: &o, err: nil}
 			}(),
@@ -286,8 +288,8 @@ func TestGetById_Execute(t *testing.T) {
 							"1",
 							"happy_path/transaction_subscribe_error_receive_error",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z"))
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
 						out.Set(&tg)
 						out.Set(&tg)
 						return stmt
@@ -302,8 +304,8 @@ func TestGetById_Execute(t *testing.T) {
 							"1",
 							"happy_path/transaction_subscribe_error_receive_error",
 							"thumbnail",
-							"2020-01-01T00:00:00Z",
-							"2020-01-01T00:00:00Z"),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
 					})
 				return want{out: &o, err: nil}
 			}(),

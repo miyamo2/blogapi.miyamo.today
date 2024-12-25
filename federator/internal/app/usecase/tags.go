@@ -4,10 +4,6 @@ import (
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
-	"log/slog"
-	"net/url"
-	"time"
-
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/miyamo2/blogapi.miyamo.today/core/log"
@@ -17,6 +13,8 @@ import (
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"log/slog"
+	"net/url"
 )
 
 // Tags is a use-case of getting tags.
@@ -92,25 +90,8 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDTO) (dto.Tag
 		articlePBs := tag.GetArticles()
 		articleDTOs := make([]dto.Article, 0, len(articlePBs))
 		for _, article := range articlePBs {
-			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.CreatedAt)
-			if err != nil {
-				err = errors.WithStack(err)
-				logger.WarnContext(ctx, "END",
-					slog.Group("return",
-						slog.Any("*dto.ArticleOutDTO", nil),
-						slog.Any("error", err)))
-				return dto.TagsOutDTO{}, err
-			}
-
-			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
-			if err != nil {
-				err = errors.WithStack(err)
-				logger.WarnContext(ctx, "END",
-					slog.Group("return",
-						slog.Any("*dto.ArticleOutDTO", nil),
-						slog.Any("error", err)))
-				return dto.TagsOutDTO{}, err
-			}
+			createdAt := synchro.In[tz.UTC](article.CreatedAt.AsTime())
+			updatedAt := synchro.In[tz.UTC](article.UpdatedAt.AsTime())
 
 			thumbnailURL, err := url.Parse(article.ThumbnailUrl)
 			if err != nil {
@@ -175,25 +156,8 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDTO) (dto.Tag
 		articlePBs := tag.GetArticles()
 		articleDTOs := make([]dto.Article, 0, len(articlePBs))
 		for _, article := range articlePBs {
-			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.CreatedAt)
-			if err != nil {
-				err = errors.WithStack(err)
-				logger.WarnContext(ctx, "END",
-					slog.Group("return",
-						slog.Any("*dto.ArticleOutDTO", nil),
-						slog.Any("error", err)))
-				return dto.TagsOutDTO{}, err
-			}
-
-			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
-			if err != nil {
-				err = errors.WithStack(err)
-				logger.WarnContext(ctx, "END",
-					slog.Group("return",
-						slog.Any("*dto.ArticleOutDTO", nil),
-						slog.Any("error", err)))
-				return dto.TagsOutDTO{}, err
-			}
+			createdAt := synchro.In[tz.UTC](article.CreatedAt.AsTime())
+			updatedAt := synchro.In[tz.UTC](article.UpdatedAt.AsTime())
 
 			thumbnailURL, err := url.Parse(article.ThumbnailUrl)
 			if err != nil {
@@ -253,25 +217,8 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDTO, error) {
 		articlePBs := tag.GetArticles()
 		articleDTOs := make([]dto.Article, 0, len(articlePBs))
 		for _, article := range tag.Articles {
-			createdAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.CreatedAt)
-			if err != nil {
-				err = errors.WithStack(err)
-				logger.WarnContext(ctx, "END",
-					slog.Group("return",
-						slog.Any("*dto.ArticleOutDTO", nil),
-						slog.Any("error", err)))
-				return dto.TagsOutDTO{}, err
-			}
-
-			updatedAt, err := synchro.Parse[tz.UTC](time.RFC3339Nano, article.UpdatedAt)
-			if err != nil {
-				err = errors.WithStack(err)
-				logger.WarnContext(ctx, "END",
-					slog.Group("return",
-						slog.Any("*dto.ArticleOutDTO", nil),
-						slog.Any("error", err)))
-				return dto.TagsOutDTO{}, err
-			}
+			createdAt := synchro.In[tz.UTC](article.CreatedAt.AsTime())
+			updatedAt := synchro.In[tz.UTC](article.UpdatedAt.AsTime())
 
 			thumbnailURL, err := url.Parse(article.ThumbnailUrl)
 			if err != nil {
