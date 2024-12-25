@@ -123,6 +123,8 @@ github.com/miyamo2/altnrslog v0.4.2 h1:JZLZz0gDGtWnY0lki2LbxAfLUrxBUdYyuVn70brrh
 github.com/miyamo2/altnrslog v0.4.2/go.mod h1:TVxN4FJJYkkxwsJJuXXUxuQgVlTOxMu92h2RKxoThxw=
 github.com/miyamo2/blogapi.miyamo.today/core v0.22.0 h1:Iv08LM81+1NiUV6YinGBuW3YsrELErzXt4uDrE4+LcU=
 github.com/miyamo2/blogapi.miyamo.today/core v0.22.0/go.mod h1:/sqZ0Flz9aiLMg3eYrGaee1KsXZwASMz3BPVm7jgl00=
+github.com/miyamo2/blogapi.miyamo.today/core v0.23.1 h1:1qNSwhdKjUWxoFcpBpyNsBWngD9UDxNnbMkBfRVwPbI=
+github.com/miyamo2/blogapi.miyamo.today/core v0.23.1/go.mod h1:/yXFNIMVomvOC3c1BZCGZlk86pHi6m4qC1GJJe6zTkA=
 github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.5 h1:mKLoU203jg0tN0aWepgbdk/oUrBQ/OPljoNRnGnPSeQ=
 github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.5/go.mod h1:n66UH/N6J+YP+ZEMG4AjxqgDC7HYuhyzEzd5yps28s0=
 github.com/miyamo2/dynmgrm v0.10.0 h1:heR43A4LoWAJeFsyjmSrvxOEqKr1yKRzcMk197atkdU=
@@ -265,6 +267,8 @@ golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20241219192143-6b3ec007d9bb h1:3oy2tynMOP1QbTC0MsNNAV+Se8M2Bd0A5+x1QHyw+pI=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20241219192143-6b3ec007d9bb/go.mod h1:lcTa1sDdWEIHMWlITnIczmw5w60CF9ffkb8Z+DVmmjA=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20241223144023-3abc09e42ca8 h1:TqExAhdPaB60Ux47Cn0oLV07rGnxZzIsaRhQaqS666A=
+google.golang.org/genproto/googleapis/rpc v0.0.0-20241223144023-3abc09e42ca8/go.mod h1:lcTa1sDdWEIHMWlITnIczmw5w60CF9ffkb8Z+DVmmjA=
 google.golang.org/grpc v1.69.2 h1:U3S9QEtbXC0bYNvRtcoklF3xGtLViumSYxWykJS+7AU=
 google.golang.org/grpc v1.69.2/go.mod h1:vyjdE6jLBI76dgpDojsFGNaHlxdjXN9ghpnd2o7JGZ4=
 google.golang.org/protobuf v1.36.0 h1:mjIs9gYtt56AzC4ZaffQuh88TZurBGhIJMBZGSxNerQ=
