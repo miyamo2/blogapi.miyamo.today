@@ -60,7 +60,7 @@ func TestGetById_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
-					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
+					func(ctx context.Context, id string, out *db.SingleStatementResult[query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
 							"happy_path",
@@ -68,10 +68,9 @@ func TestGetById_Execute(t *testing.T) {
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							query.WithTagsSize(2))
-						a.AddTag(query.NewTag("1", "tag1"))
-						a.AddTag(query.NewTag("2", "tag2"))
-						out.Set(&a)
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"))
+						out.Set(a)
 						return stmt
 					}).Times(1)
 			},
@@ -110,7 +109,7 @@ func TestGetById_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
-					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
+					func(ctx context.Context, id string, out *db.SingleStatementResult[query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
 							"happy_path",
@@ -118,7 +117,7 @@ func TestGetById_Execute(t *testing.T) {
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-						out.Set(&a)
+						out.Set(a)
 						return stmt
 					}).Times(1)
 			},
@@ -174,7 +173,7 @@ func TestGetById_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
-					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
+					func(ctx context.Context, id string, out *db.SingleStatementResult[query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
 							"unhappy_path/transaction_execute_statement_returns_error",
@@ -182,10 +181,9 @@ func TestGetById_Execute(t *testing.T) {
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							query.WithTagsSize(2))
-						a.AddTag(query.NewTag("1", "tag1"))
-						a.AddTag(query.NewTag("2", "tag2"))
-						out.Set(&a)
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"))
+						out.Set(a)
 						return stmt
 					}).Times(1)
 			},
@@ -214,7 +212,7 @@ func TestGetById_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
-					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
+					func(ctx context.Context, id string, out *db.SingleStatementResult[query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
 							"happy_path/transaction_commit_returns_error",
@@ -222,10 +220,9 @@ func TestGetById_Execute(t *testing.T) {
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							query.WithTagsSize(2))
-						a.AddTag(query.NewTag("1", "tag1"))
-						a.AddTag(query.NewTag("2", "tag2"))
-						out.Set(&a)
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"))
+						out.Set(a)
 						return stmt
 					}).Times(1)
 			},
@@ -264,7 +261,7 @@ func TestGetById_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
-					func(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
+					func(ctx context.Context, id string, out *db.SingleStatementResult[query.Article]) db.Statement {
 						a := query.NewArticle(
 							"1",
 							"happy_path/transaction_subscribe_error_receive_error",
@@ -272,10 +269,9 @@ func TestGetById_Execute(t *testing.T) {
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							query.WithTagsSize(2))
-						a.AddTag(query.NewTag("1", "tag1"))
-						a.AddTag(query.NewTag("2", "tag2"))
-						out.Set(&a)
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"))
+						out.Set(a)
 						return stmt
 					}).Times(1)
 			},

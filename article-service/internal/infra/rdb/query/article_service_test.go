@@ -4,7 +4,9 @@ import (
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
-	"reflect"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query/internal/entity"
 	"regexp"
 	"testing"
 
@@ -19,14 +21,14 @@ func TestArticleService_GetById(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		id  string
-		out *db.SingleStatementResult[*Article]
+		out *db.SingleStatementResult[Article]
 	}
 	type testCase struct {
 		args        args
 		execOpt     func() []db.ExecuteOption
 		want        error
-		wantErr     bool
-		expectedOut *db.SingleStatementResult[*Article]
+		exists      bool
+		expectedOut *db.SingleStatementResult[Article]
 	}
 	articleTable := []string{
 		"id",
@@ -35,16 +37,16 @@ func TestArticleService_GetById(t *testing.T) {
 		"thumbnail",
 		"created_at",
 		"updated_at",
-		"tag_id",
-		"tag_name",
+		"tags",
 	}
 	tests := map[string]testCase{
 		"happy_path": {
 			args: args{
 				ctx: context.Background(),
 				id:  "1",
-				out: &db.SingleStatementResult[*Article]{},
+				out: &db.SingleStatementResult[Article]{},
 			},
+			exists: true,
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
 				if err != nil {
@@ -58,19 +60,9 @@ func TestArticleService_GetById(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"1",
-						"happy_path",
-						"## happy_path",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"test")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE "id" = $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id"`))
+					`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" WHERE "id" = $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().
 					WithArgs("1").WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -86,7 +78,7 @@ func TestArticleService_GetById(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.SingleStatementResult[*Article] {
+			expectedOut: func() *db.SingleStatementResult[Article] {
 				article := NewArticle(
 					"1",
 					"happy_path",
@@ -94,19 +86,19 @@ func TestArticleService_GetById(t *testing.T) {
 					"01234567890",
 					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-					WithTagsSize(1))
-				article.AddTag(NewTag("tag1", "test"))
-				out := db.NewSingleStatementResult[*Article]()
-				out.Set(&article)
+					NewTag("tag1", "test"))
+				out := db.NewSingleStatementResult[Article]()
+				out.Set(article)
 				return out
 			}(),
 		},
-		"happy_path/article_has_no_tag": {
+		"article_has_no_tag": {
 			args: args{
 				ctx: context.Background(),
 				id:  "1",
-				out: &db.SingleStatementResult[*Article]{},
+				out: &db.SingleStatementResult[Article]{},
 			},
+			exists: true,
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
 				if err != nil {
@@ -119,10 +111,9 @@ func TestArticleService_GetById(t *testing.T) {
 					"01234567890",
 					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-					nil,
 					nil)
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE "id" = $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id"`))
+					`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" WHERE "id" = $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().
 					WithArgs("1").WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -138,7 +129,7 @@ func TestArticleService_GetById(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.SingleStatementResult[*Article] {
+			expectedOut: func() *db.SingleStatementResult[Article] {
 				article := NewArticle(
 					"1",
 					"happy_path",
@@ -146,8 +137,8 @@ func TestArticleService_GetById(t *testing.T) {
 					"01234567890",
 					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 					synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0))
-				out := db.NewSingleStatementResult[*Article]()
-				out.Set(&article)
+				out := db.NewSingleStatementResult[Article]()
+				out.Set(article)
 				return out
 			}(),
 		},
@@ -155,7 +146,7 @@ func TestArticleService_GetById(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				id:  "1",
-				out: &db.SingleStatementResult[*Article]{},
+				out: &db.SingleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -164,7 +155,7 @@ func TestArticleService_GetById(t *testing.T) {
 				}
 				rows := sqlmock.NewRows(articleTable)
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE "id" = $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id"`))
+					`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" WHERE "id" = $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().
 					WithArgs("1").WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -179,32 +170,22 @@ func TestArticleService_GetById(t *testing.T) {
 				}
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
-			want:    ErrNotFound,
-			wantErr: true,
+			want: ErrNotFound,
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			a := NewArticleService()
 			err := a.GetById(tt.args.ctx, tt.args.id, tt.args.out).Execute(tt.args.ctx, tt.execOpt()...)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("want error but got nil")
-					return
-				}
-				if !errors.Is(err, tt.want) {
-					t.Errorf("want error %+v but got %+v", tt.want, err)
-					return
-				}
+			if !errors.Is(err, tt.want) {
+				t.Errorf("want error %+v but got %+v", tt.want, err)
 				return
 			}
-			if err != nil {
-				t.Errorf("want nil but got error %+v", err)
-				return
-			}
-			if !reflect.DeepEqual(tt.expectedOut.StrictGet(), tt.args.out.StrictGet()) {
-				t.Errorf("want %+v but got %+v", tt.expectedOut.StrictGet(), tt.args.out.StrictGet())
-				return
+			if tt.exists {
+				if diff := cmp.Diff(tt.expectedOut.StrictGet(), tt.args.out.StrictGet(), cmp.AllowUnexported(Article{}), cmp.AllowUnexported(Tag{}), cmpopts.EquateEmpty()); diff != "" {
+					t.Errorf(`unexpected output (-want +got): %s`, diff)
+					return
+				}
 			}
 		})
 	}
@@ -214,14 +195,13 @@ func TestArticleService_GetAll(t *testing.T) {
 	type args struct {
 		ctx              context.Context
 		paginationOption []db.PaginationOption
-		out              *db.MultipleStatementResult[*Article]
+		out              *db.MultipleStatementResult[Article]
 	}
 	type testCase struct {
 		args        args
 		execOpt     func() []db.ExecuteOption
 		want        error
-		wantErr     bool
-		expectedOut *db.MultipleStatementResult[*Article]
+		expectedOut *db.MultipleStatementResult[Article]
 	}
 	articleTable := []string{
 		"id",
@@ -230,8 +210,7 @@ func TestArticleService_GetAll(t *testing.T) {
 		"thumbnail",
 		"created_at",
 		"updated_at",
-		"tag_id",
-		"tag_name",
+		"tags",
 	}
 	cursor := "1"
 	zValCursor := ""
@@ -239,7 +218,7 @@ func TestArticleService_GetAll(t *testing.T) {
 		"happy_path/with_out_paging": {
 			args: args{
 				ctx: context.Background(),
-				out: &db.MultipleStatementResult[*Article]{},
+				out: &db.MultipleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -254,7 +233,6 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
 						nil).
 					AddRow(
 						"2",
@@ -263,19 +241,9 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"2",
-						"with_out_paging_2",
-						"## with_out_paging_2",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"test")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles") AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
+					`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id") AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().
 					WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -291,8 +259,8 @@ func TestArticleService_GetAll(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.MultipleStatementResult[*Article] {
-				articles := []*Article{
+			expectedOut: func() *db.MultipleStatementResult[Article] {
+				articles := []Article{
 					{
 						id:        "1",
 						title:     "with_out_paging",
@@ -314,7 +282,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						},
 					},
 				}
-				out := db.NewMultipleStatementResult[*Article]()
+				out := db.NewMultipleStatementResult[Article]()
 				out.Set(articles)
 				return out
 			}(),
@@ -325,7 +293,7 @@ func TestArticleService_GetAll(t *testing.T) {
 				paginationOption: []db.PaginationOption{
 					db.WithPreviousPaging(1, nil),
 				},
-				out: &db.MultipleStatementResult[*Article]{},
+				out: &db.MultipleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -340,20 +308,10 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"1",
-						"with_prev_paging_limit",
-						"## with_prev_paging_limit",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"tag")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" DESC, "tags"."id" NULLS FIRST`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().WithArgs(2).WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -368,8 +326,8 @@ func TestArticleService_GetAll(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.MultipleStatementResult[*Article] {
-				articles := []*Article{
+			expectedOut: func() *db.MultipleStatementResult[Article] {
+				articles := []Article{
 					{
 						id:        "1",
 						title:     "with_prev_paging_limit",
@@ -378,11 +336,11 @@ func TestArticleService_GetAll(t *testing.T) {
 						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
-							NewTag("tag1", "tag"),
+							NewTag("tag1", "test"),
 						},
 					},
 				}
-				out := db.NewMultipleStatementResult[*Article]()
+				out := db.NewMultipleStatementResult[Article]()
 				out.Set(articles)
 				return out
 			}(),
@@ -393,7 +351,7 @@ func TestArticleService_GetAll(t *testing.T) {
 				paginationOption: []db.PaginationOption{
 					db.WithPreviousPaging(1, &cursor),
 				},
-				out: &db.MultipleStatementResult[*Article]{},
+				out: &db.MultipleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -408,20 +366,10 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"0",
-						"with_prev_paging_limit_and_cursor",
-						"## with_prev_paging_limit_and_cursor",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"tag")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND  "id" < $2 ORDER BY "id" DESC LIMIT $3) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" DESC, "tags"."id" NULLS FIRST`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND "id" < $2 ORDER BY "id" DESC LIMIT $3) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().
 					WithArgs("1", "1", 2).
 					WillReturnRows(rows)
@@ -438,8 +386,8 @@ func TestArticleService_GetAll(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.MultipleStatementResult[*Article] {
-				articles := []*Article{
+			expectedOut: func() *db.MultipleStatementResult[Article] {
+				articles := []Article{
 					{
 						id:        "0",
 						title:     "with_prev_paging_limit_and_cursor",
@@ -448,11 +396,11 @@ func TestArticleService_GetAll(t *testing.T) {
 						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
-							NewTag("tag1", "tag"),
+							NewTag("tag1", "test"),
 						},
 					},
 				}
-				out := db.NewMultipleStatementResult[*Article]()
+				out := db.NewMultipleStatementResult[Article]()
 				out.Set(articles)
 				return out
 			}(),
@@ -463,7 +411,7 @@ func TestArticleService_GetAll(t *testing.T) {
 				paginationOption: []db.PaginationOption{
 					db.WithPreviousPaging(0, nil),
 				},
-				out: &db.MultipleStatementResult[*Article]{},
+				out: &db.MultipleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -478,20 +426,10 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"1",
-						"with_out_paging",
-						"## with_out_paging",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"tag")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles") AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" DESC) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -506,8 +444,8 @@ func TestArticleService_GetAll(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.MultipleStatementResult[*Article] {
-				articles := []*Article{
+			expectedOut: func() *db.MultipleStatementResult[Article] {
+				articles := []Article{
 					{
 						id:        "1",
 						title:     "with_out_paging",
@@ -516,11 +454,11 @@ func TestArticleService_GetAll(t *testing.T) {
 						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
-							NewTag("tag1", "tag"),
+							NewTag("tag1", "test"),
 						},
 					},
 				}
-				out := db.NewMultipleStatementResult[*Article]()
+				out := db.NewMultipleStatementResult[Article]()
 				out.Set(articles)
 				return out
 			}(),
@@ -531,7 +469,7 @@ func TestArticleService_GetAll(t *testing.T) {
 				paginationOption: []db.PaginationOption{
 					db.WithPreviousPaging(1, &zValCursor),
 				},
-				out: &db.MultipleStatementResult[*Article]{},
+				out: &db.MultipleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -546,20 +484,10 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"1",
-						"with_prev_paging_zero_value_cursor",
-						"## with_prev_paging_zero_value_cursor",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"tag")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id" DESC, "tags"."id" NULLS FIRST`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().WithArgs(2).WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -574,8 +502,8 @@ func TestArticleService_GetAll(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.MultipleStatementResult[*Article] {
-				articles := []*Article{
+			expectedOut: func() *db.MultipleStatementResult[Article] {
+				articles := []Article{
 					{
 						id:        "1",
 						title:     "with_prev_paging_zero_value_cursor",
@@ -584,11 +512,11 @@ func TestArticleService_GetAll(t *testing.T) {
 						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
-							NewTag("tag1", "tag"),
+							NewTag("tag1", "test"),
 						},
 					},
 				}
-				out := db.NewMultipleStatementResult[*Article]()
+				out := db.NewMultipleStatementResult[Article]()
 				out.Set(articles)
 				return out
 			}(),
@@ -599,7 +527,7 @@ func TestArticleService_GetAll(t *testing.T) {
 				paginationOption: []db.PaginationOption{
 					db.WithNextPaging(1, nil),
 				},
-				out: &db.MultipleStatementResult[*Article]{},
+				out: &db.MultipleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -614,20 +542,10 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"1",
-						"with_next_paging_limit",
-						"## with_next_paging_limit",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"tag")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().WithArgs(2).WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -642,8 +560,8 @@ func TestArticleService_GetAll(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.MultipleStatementResult[*Article] {
-				articles := []*Article{
+			expectedOut: func() *db.MultipleStatementResult[Article] {
+				articles := []Article{
 					{
 						id:        "1",
 						title:     "with_next_paging_limit",
@@ -652,11 +570,11 @@ func TestArticleService_GetAll(t *testing.T) {
 						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
-							NewTag("tag1", "tag"),
+							NewTag("tag1", "test"),
 						},
 					},
 				}
-				out := db.NewMultipleStatementResult[*Article]()
+				out := db.NewMultipleStatementResult[Article]()
 				out.Set(articles)
 				return out
 			}(),
@@ -667,7 +585,7 @@ func TestArticleService_GetAll(t *testing.T) {
 				paginationOption: []db.PaginationOption{
 					db.WithNextPaging(1, &cursor),
 				},
-				out: &db.MultipleStatementResult[*Article]{},
+				out: &db.MultipleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -682,20 +600,10 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"0",
-						"with_next_paging_limit_and_cursor",
-						"## with_next_paging_limit_and_cursor",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"tag")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND  "id" > $2 ORDER BY "id" LIMIT $3) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND "id" > $2 ORDER BY "id" LIMIT $3) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().
 					WithArgs("1", "1", 2).
 					WillReturnRows(rows)
@@ -712,8 +620,8 @@ func TestArticleService_GetAll(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.MultipleStatementResult[*Article] {
-				articles := []*Article{
+			expectedOut: func() *db.MultipleStatementResult[Article] {
+				articles := []Article{
 					{
 						id:        "0",
 						title:     "with_next_paging_limit_and_cursor",
@@ -722,11 +630,11 @@ func TestArticleService_GetAll(t *testing.T) {
 						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
-							NewTag("tag1", "tag"),
+							NewTag("tag1", "test"),
 						},
 					},
 				}
-				out := db.NewMultipleStatementResult[*Article]()
+				out := db.NewMultipleStatementResult[Article]()
 				out.Set(articles)
 				return out
 			}(),
@@ -737,7 +645,7 @@ func TestArticleService_GetAll(t *testing.T) {
 				paginationOption: []db.PaginationOption{
 					db.WithNextPaging(0, nil),
 				},
-				out: &db.MultipleStatementResult[*Article]{},
+				out: &db.MultipleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -752,20 +660,10 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"1",
-						"with_out_paging",
-						"## with_out_paging",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"tag")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles") AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id") AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -780,8 +678,8 @@ func TestArticleService_GetAll(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.MultipleStatementResult[*Article] {
-				articles := []*Article{
+			expectedOut: func() *db.MultipleStatementResult[Article] {
+				articles := []Article{
 					{
 						id:        "1",
 						title:     "with_out_paging",
@@ -790,11 +688,11 @@ func TestArticleService_GetAll(t *testing.T) {
 						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
-							NewTag("tag1", "tag"),
+							NewTag("tag1", "test"),
 						},
 					},
 				}
-				out := db.NewMultipleStatementResult[*Article]()
+				out := db.NewMultipleStatementResult[Article]()
 				out.Set(articles)
 				return out
 			}(),
@@ -805,7 +703,7 @@ func TestArticleService_GetAll(t *testing.T) {
 				paginationOption: []db.PaginationOption{
 					db.WithNextPaging(1, &zValCursor),
 				},
-				out: &db.MultipleStatementResult[*Article]{},
+				out: &db.MultipleStatementResult[Article]{},
 			},
 			execOpt: func() []db.ExecuteOption {
 				sqlDB, mock, err := sqlmock.New()
@@ -820,20 +718,10 @@ func TestArticleService_GetAll(t *testing.T) {
 						"01234567890",
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						nil,
-						nil).
-					AddRow(
-						"1",
-						"with_next_paging_zero_value_cursor",
-						"## with_next_paging_zero_value_cursor",
-						"01234567890",
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
-						"tag1",
-						"tag")
+						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "articles".*, "tags"."id" AS "tag_id", "tags"."name" AS "tag_name" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT $1) AS "articles" LEFT OUTER JOIN "tags" ON "articles"."id" = "tags"."article_id" ORDER BY "articles"."id", "tags"."id" NULLS FIRST`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
 				mq.ExpectQuery().WithArgs(2).WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -848,8 +736,8 @@ func TestArticleService_GetAll(t *testing.T) {
 				return []db.ExecuteOption{gwrapper.WithTransaction(tx)}
 			},
 			want: nil,
-			expectedOut: func() *db.MultipleStatementResult[*Article] {
-				articles := []*Article{
+			expectedOut: func() *db.MultipleStatementResult[Article] {
+				articles := []Article{
 					{
 						id:        "1",
 						title:     "with_next_paging_zero_value_cursor",
@@ -858,11 +746,11 @@ func TestArticleService_GetAll(t *testing.T) {
 						createdAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						updatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						tags: []Tag{
-							NewTag("tag1", "tag"),
+							NewTag("tag1", "test"),
 						},
 					},
 				}
-				out := db.NewMultipleStatementResult[*Article]()
+				out := db.NewMultipleStatementResult[Article]()
 				out.Set(articles)
 				return out
 			}(),
@@ -872,23 +760,12 @@ func TestArticleService_GetAll(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			a := NewArticleService()
 			err := a.GetAll(tt.args.ctx, tt.args.out, tt.args.paginationOption...).Execute(tt.args.ctx, tt.execOpt()...)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("want error but got nil")
-					return
-				}
-				if !errors.Is(err, tt.want) {
-					t.Errorf("want error %+v but got %+v", tt.want, err)
-					return
-				}
+			if !errors.Is(err, tt.want) {
+				t.Errorf("want error %+v but got %+v", tt.want, err)
 				return
 			}
-			if err != nil {
-				t.Errorf("want nil but got error %+v", err)
-				return
-			}
-			if !reflect.DeepEqual(tt.expectedOut.StrictGet(), tt.args.out.StrictGet()) {
-				t.Errorf("want %+v but got %+v", tt.expectedOut.StrictGet(), tt.args.out.StrictGet())
+			if diff := cmp.Diff(tt.expectedOut.StrictGet(), tt.args.out.StrictGet(), cmp.AllowUnexported(Article{}), cmp.AllowUnexported(Tag{}), cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf(`unexpected output (-want +got): %s`, diff)
 				return
 			}
 		})

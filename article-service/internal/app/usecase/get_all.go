@@ -44,7 +44,7 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 	}
 	errCh := tx.SubscribeError()
 
-	out := db.NewMultipleStatementResult[*query.Article]()
+	out := db.NewMultipleStatementResult[query.Article]()
 	stmt := u.queryService.GetAll(ctx, out)
 	err = tx.ExecuteStatement(ctx, stmt)
 	if err != nil {

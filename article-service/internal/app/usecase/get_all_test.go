@@ -58,17 +58,17 @@ func TestGetAll_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetAll(gomock.Any(), gomock.Any()).DoAndReturn(
-					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
+					func(ctx context.Context, out *db.MultipleStatementResult[query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a := query.NewArticle(
 							"1",
 							"happy_path",
 							"## happy_path",
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-						a.AddTag(query.NewTag("1", "tag1"))
-						a.AddTag(query.NewTag("2", "tag2"))
-						result := []*query.Article{&a}
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"))
+						result := []query.Article{a}
 						out.Set(result)
 						return stmt
 					}).Times(1)
@@ -109,26 +109,26 @@ func TestGetAll_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetAll(gomock.Any(), gomock.Any()).DoAndReturn(
-					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
+					func(ctx context.Context, out *db.MultipleStatementResult[query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a1 := query.NewArticle(
 							"1",
 							"happy_path/multiple",
 							"## happy_path/multiple",
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-						a1.AddTag(query.NewTag("1", "tag1"))
-						a1.AddTag(query.NewTag("2", "tag2"))
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"))
 						a2 := query.NewArticle(
 							"2",
 							"happy_path/multiple2",
 							"## happy_path/multiple2",
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-						a2.AddTag(query.NewTag("1", "tag1"))
-						a2.AddTag(query.NewTag("2", "tag2"))
-						result := []*query.Article{&a1, &a2}
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"))
+						result := []query.Article{a1, a2}
 						out.Set(result)
 						return stmt
 					}).Times(1)
@@ -180,8 +180,8 @@ func TestGetAll_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetAll(gomock.Any(), gomock.Any()).DoAndReturn(
-					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
-						result := make([]*query.Article, 0)
+					func(ctx context.Context, out *db.MultipleStatementResult[query.Article], paginationOption ...db.PaginationOption) db.Statement {
+						result := make([]query.Article, 0)
 						out.Set(result)
 						return stmt
 					}).Times(1)
@@ -210,9 +210,9 @@ func TestGetAll_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetAll(gomock.Any(), gomock.Any()).DoAndReturn(
-					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
-						result := []*query.Article{
-							func() *query.Article {
+					func(ctx context.Context, out *db.MultipleStatementResult[query.Article], paginationOption ...db.PaginationOption) db.Statement {
+						result := []query.Article{
+							func() query.Article {
 								a := query.NewArticle(
 									"1",
 									"happy_path/article_has_no_tags",
@@ -220,7 +220,7 @@ func TestGetAll_Execute(t *testing.T) {
 									"thumbnail",
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-								return &a
+								return a
 							}(),
 						}
 						out.Set(result)
@@ -280,17 +280,17 @@ func TestGetAll_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetAll(gomock.Any(), gomock.Any()).DoAndReturn(
-					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
+					func(ctx context.Context, out *db.MultipleStatementResult[query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a := query.NewArticle(
 							"1",
 							"unhappy_path/transaction_execute_statement_returns_error",
 							"## unhappy_path/transaction_execute_statement_returns_error",
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-						a.AddTag(query.NewTag("1", "tag1"))
-						a.AddTag(query.NewTag("2", "tag2"))
-						result := []*query.Article{&a}
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"))
+						result := []query.Article{a}
 						out.Set(result)
 						return stmt
 					}).Times(1)
@@ -319,17 +319,17 @@ func TestGetAll_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetAll(gomock.Any(), gomock.Any()).DoAndReturn(
-					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
+					func(ctx context.Context, out *db.MultipleStatementResult[query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a := query.NewArticle(
 							"1",
 							"happy_path/transaction_commit_returns_error",
 							"## happy_path/transaction_commit_returns_error",
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-						a.AddTag(query.NewTag("1", "tag1"))
-						a.AddTag(query.NewTag("2", "tag2"))
-						result := []*query.Article{&a}
+							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"))
+						result := []query.Article{a}
 						out.Set(result)
 						return stmt
 					}).Times(1)
@@ -371,7 +371,7 @@ func TestGetAll_Execute(t *testing.T) {
 			},
 			setupArticleService: func(queryService *mquery.MockArticleService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetAll(gomock.Any(), gomock.Any()).DoAndReturn(
-					func(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
+					func(ctx context.Context, out *db.MultipleStatementResult[query.Article], paginationOption ...db.PaginationOption) db.Statement {
 						a := query.NewArticle(
 							"1",
 							"happy_path/transaction_subscribe_error_receive_error",
@@ -379,10 +379,10 @@ func TestGetAll_Execute(t *testing.T) {
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							query.NewTag("1", "tag1"),
+							query.NewTag("2", "tag2"),
 						)
-						a.AddTag(query.NewTag("1", "tag1"))
-						a.AddTag(query.NewTag("2", "tag2"))
-						result := []*query.Article{&a}
+						result := []query.Article{a}
 						out.Set(result)
 						return stmt
 					}).Times(1)
