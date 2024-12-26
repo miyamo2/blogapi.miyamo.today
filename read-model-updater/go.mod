@@ -12,7 +12,7 @@ require (
 	github.com/cockroachdb/errors v1.11.3
 	github.com/goccy/go-json v0.10.4
 	github.com/google/wire v0.6.0
-	github.com/miyamo2/blogapi.miyamo.today/core v0.22.0
+	github.com/miyamo2/blogapi.miyamo.today/core v0.23.1
 	github.com/miyamo2/dynmgrm v0.10.0
 	github.com/miyamo2/pqxd v0.5.0
 	github.com/miyamo2/sqldav v0.2.1
@@ -47,7 +47,7 @@ require (
 	github.com/aws/smithy-go v1.22.1 // indirect
 	github.com/btnguyen2k/consu/g18 v0.1.0 // indirect
 	github.com/btnguyen2k/consu/reddo v0.1.9 // indirect
-	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
+	github.com/cockroachdb/logtags v0.0.0-20241215232642-bb51bb14a506 // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/getsentry/sentry-go v0.30.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -78,12 +78,12 @@ require (
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/mock v0.5.0 // indirect
-	golang.org/x/crypto v0.30.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241209162323-e6fa225c2576 // indirect
-	google.golang.org/grpc v1.69.0 // indirect
-	google.golang.org/protobuf v1.35.2 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20241223144023-3abc09e42ca8 // indirect
+	google.golang.org/grpc v1.69.2 // indirect
+	google.golang.org/protobuf v1.36.1 // indirect
 )

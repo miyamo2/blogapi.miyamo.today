@@ -10,7 +10,7 @@ require (
 	github.com/google/wire v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.22.0
+	github.com/miyamo2/blogapi.miyamo.today/core v0.23.1
 	github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.5
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4
