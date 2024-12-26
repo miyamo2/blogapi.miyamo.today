@@ -43,7 +43,7 @@ func (m *MockArticleService) EXPECT() *MockArticleServiceMockRecorder {
 }
 
 // GetAll mocks base method.
-func (m *MockArticleService) GetAll(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement {
+func (m *MockArticleService) GetAll(ctx context.Context, out *db.MultipleStatementResult[query.Article], paginationOption ...db.PaginationOption) db.Statement {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, out}
 	for _, a := range paginationOption {
@@ -62,7 +62,7 @@ func (mr *MockArticleServiceMockRecorder) GetAll(ctx, out any, paginationOption 
 }
 
 // GetById mocks base method.
-func (m *MockArticleService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement {
+func (m *MockArticleService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[query.Article]) db.Statement {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetById", ctx, id, out)
 	ret0, _ := ret[0].(db.Statement)

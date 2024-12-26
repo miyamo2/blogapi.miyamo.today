@@ -44,7 +44,7 @@ func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPre
 	}
 	errCh := tx.SubscribeError()
 
-	out := db.NewMultipleStatementResult[*query.Article]()
+	out := db.NewMultipleStatementResult[query.Article]()
 	limit := in.Last()
 	stmt := u.queryService.GetAll(ctx, out, db.WithPreviousPaging(limit, in.Cursor()))
 	err = tx.ExecuteStatement(ctx, stmt)

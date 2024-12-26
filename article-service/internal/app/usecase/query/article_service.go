@@ -11,10 +11,10 @@ import (
 // ArticleService is a query service interface.
 type ArticleService interface {
 	// GetById returns a single article with tags.
-	GetById(ctx context.Context, id string, out *db.SingleStatementResult[*query.Article]) db.Statement
+	GetById(ctx context.Context, id string, out *db.SingleStatementResult[query.Article]) db.Statement
 	// GetAll returns all articles with tags.
 	//
 	// If PaginationOption is specified, paging is performed.
 	// multiple PaginationOption is specified, the last one is used.
-	GetAll(ctx context.Context, out *db.MultipleStatementResult[*query.Article], paginationOption ...db.PaginationOption) db.Statement
+	GetAll(ctx context.Context, out *db.MultipleStatementResult[query.Article], paginationOption ...db.PaginationOption) db.Statement
 }

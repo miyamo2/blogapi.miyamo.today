@@ -55,16 +55,8 @@ func (t Tag) ID() string { return t.id }
 // Name returns the name of the tag
 func (t Tag) Name() string { return t.name }
 
-type NewArticleOption func(*Article)
-
-func WithTagsSize(size int) NewArticleOption {
-	return func(a *Article) {
-		a.tags = make([]Tag, 0, size)
-	}
-}
-
 // NewArticle constructor of Article.
-func NewArticle(id, title, body, thumbnail string, createdAt, updatedAt synchro.Time[tz.UTC], opt ...NewArticleOption) Article {
+func NewArticle(id, title, body, thumbnail string, createdAt, updatedAt synchro.Time[tz.UTC], tags ...Tag) Article {
 	a := Article{
 		id:        id,
 		title:     title,
@@ -72,16 +64,9 @@ func NewArticle(id, title, body, thumbnail string, createdAt, updatedAt synchro.
 		thumbnail: thumbnail,
 		createdAt: createdAt,
 		updatedAt: updatedAt,
-		tags:      make([]Tag, 0),
-	}
-	for _, o := range opt {
-		o(&a)
+		tags:      tags,
 	}
 	return a
-}
-
-func (a *Article) AddTag(tag Tag) {
-	a.tags = append(a.tags, tag)
 }
 
 // NewTag constructor of Tag.
