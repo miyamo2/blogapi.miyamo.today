@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/configs/di"
@@ -43,6 +44,8 @@ func main() {
 		slog.Error(err.Error())
 	case <-quit:
 		slog.Info("stopping graphql server...")
-		e.Shutdown(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		e.Shutdown(ctx)
 	}
 }
