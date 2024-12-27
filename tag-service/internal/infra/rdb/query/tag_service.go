@@ -24,7 +24,7 @@ var ErrNotFound = errors.New("not found")
 // TagService is an implementation of query.TagService
 type TagService struct{}
 
-func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement {
+func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[model.Tag]) db.Statement {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetById").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -52,16 +52,15 @@ func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleState
 				slog.Group("bind",
 					slog.String("id", id)))
 			defer func() { logger.InfoContext(ctx, "END") }()
+
 			tx = tx.WithContext(ctx)
-			var rows []entity.TagArticle
-			tagQuery := tx.
-				Select(`"tags".*`).
-				Table(`"tags"`).
-				Where(`"tags"."id" = ?`, id)
 			q := tx.
-				Select(`"tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at"`).
-				Table(`(?) AS "tags"`, tagQuery).
-				Joins(`LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id"`)
+				Select(`"t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles"`).
+				Table(`(?) AS "t"`, tx.Select(`*`).Table(`"tags"`).Where(`"id" = ?`, id)).
+				Joins(`LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id"`).
+				Group(`"t"."id"`)
+
+			var rows []entity.Tag
 			gwrapper.TraceableScan(nrtx, q, &rows)
 			if len(rows) == 0 {
 				err := errors.WithDetail(ErrNotFound, fmt.Sprintf("id: %v", id))
@@ -69,25 +68,21 @@ func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleState
 				return err
 			}
 			var tag model.Tag
-			for i, r := range rows {
-				if i == 0 {
-					tag = model.NewTag(
-						r.ID,
-						r.Name,
-						model.WithTagsSize(len(rows)),
-					)
+
+			row := rows[0]
+			tag = model.NewTag(row.ID, row.Name, func() []model.Article {
+				articles := make([]model.Article, 0)
+				for _, a := range row.Articles {
+					articles = append(articles, model.NewArticle(
+						a.ID,
+						a.Title,
+						a.Thumbnail,
+						a.CreatedAt,
+						a.UpdatedAt))
 				}
-				if r.ArticleID == nil || r.ArticleTitle == nil {
-					continue
-				}
-				tag.AddArticle(model.NewArticle(
-					*r.ArticleID,
-					*r.ArticleTitle,
-					*r.ArticleThumbnail,
-					*r.ArticleCreatedAt,
-					*r.ArticleUpdatedAt))
-			}
-			out.Set(&tag)
+				return articles
+			}()...)
+			out.Set(tag)
 			return nil
 		}, out)
 	defer logger.InfoContext(ctx, "END",
@@ -97,7 +92,7 @@ func (t *TagService) GetById(ctx context.Context, id string, out *db.SingleState
 	return stmt
 }
 
-func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAll").End()
 	pagination := db.Pagination{}
@@ -129,31 +124,31 @@ func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult
 					slog.String("pagination", fmt.Sprintf("%v", pagination)),
 				))
 			defer func() { logger.InfoContext(ctx, "END") }()
-			var rows []entity.TagArticle
+
+			var rows []entity.Tag
 			tx = tx.WithContext(ctx)
-			q := tx.Select(`"tags".*, "articles"."id" AS "article_id", "articles"."title" AS "article_title", "articles"."thumbnail" AS "article_thumbnail", "articles"."created_at" AS "article_created_at", "articles"."updated_at" AS "article_updated_at"`).
-				Joins(`LEFT OUTER JOIN "articles" ON "tags"."id" = "articles"."tag_id"`)
+			q := tx.Select(`"t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles"`).
+				Joins(`LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id"`).
+				Group(`"t"."id"`)
 			buildQuery(pagination, tx, q)
+
 			gwrapper.TraceableScan(nrtx, q, &rows)
-			tagMap := make(map[string]*model.Tag)
-			result := make([]*model.Tag, 0)
+
+			result := make([]model.Tag, 0, len(rows))
 			for _, r := range rows {
-				v, ok := tagMap[r.ID]
-				if !ok {
-					m := model.NewTag(r.ID, r.Name)
-					v = &m
-					tagMap[r.ID] = v
-					result = append(result, v)
-				}
-				if r.ArticleID == nil || r.ArticleTitle == nil {
-					continue
-				}
-				v.AddArticle(model.NewArticle(
-					*r.ArticleID,
-					*r.ArticleTitle,
-					*r.ArticleThumbnail,
-					*r.ArticleCreatedAt,
-					*r.ArticleUpdatedAt))
+				tag := model.NewTag(r.ID, r.Name, func() []model.Article {
+					articles := make([]model.Article, 0)
+					for _, a := range r.Articles {
+						articles = append(articles, model.NewArticle(
+							a.ID,
+							a.Title,
+							a.Thumbnail,
+							a.CreatedAt,
+							a.UpdatedAt))
+					}
+					return articles
+				}()...)
+				result = append(result, tag)
 			}
 			out.Set(result)
 			return nil
@@ -167,50 +162,43 @@ func (t *TagService) GetAll(ctx context.Context, out *db.MultipleStatementResult
 
 // buildQuery builds a query for pagination.
 func buildQuery(pagination db.Pagination, tx *gorm.DB, q *gorm.DB) {
-	nextPaging := pagination.IsNextPaging()
-	prevPaging := pagination.IsPreviousPaging()
 	tagQuery := tx.Select(`*`).Table("tags")
-	q.Table(`(?) AS "tags"`, tagQuery)
-	if !nextPaging && !prevPaging {
-		// default
-		q.Order(`"tags"."id", "articles"."id" NULLS FIRST`)
-		return
-	}
-	l := pagination.Limit()
-	if l <= 0 {
-		// default
-		q.Order(`"tags"."id", "articles"."id" NULLS FIRST`)
-		return
-	}
+	q.Table(`(?) AS "t"`, tagQuery)
+
+	limit := pagination.Limit()
 	// must fetch one more row to check if there is more page.
-	tagQuery.Limit(l + 1)
-	c := pagination.Cursor()
-	if nextPaging {
-		if c != "" {
-			tagQuery.
-				Where(
-					`EXISTS(?)`,
-					tx.Select(`id`).Table("tags").Where(`"id" = ?`, c),
-				).
-				Where(`"id" > ?`, c)
-		}
+	if limit != 0 {
+		tagQuery.Limit(limit + 1)
+	}
+
+	cursor := pagination.Cursor()
+	if pagination.IsNextPaging() {
 		tagQuery.Order(`"id"`)
-		q.Order(`"tags"."id", "articles"."id" NULLS FIRST`)
-		return
-	}
-	if prevPaging {
-		if c != "" {
-			tagQuery.
-				Where(
-					`EXISTS(?)`,
-					tx.Select(`id`).Table("tags").Where(`"id" = ?`, c),
-				).
-				Where(`"id" < ?`, c)
+		if cursor == "" {
+			return
 		}
-		tagQuery.Order(`"id" DESC`)
-		q.Order(`"tags"."id" DESC, "articles"."id" NULLS FIRST`)
+		tagQuery.
+			Where(
+				`EXISTS(?)`,
+				tx.Select(`id`).Table("tags").Where(`"id" = ?`, cursor),
+			).
+			Where(`"id" > ?`, cursor)
 		return
 	}
+	if pagination.IsPreviousPaging() {
+		tagQuery.Order(`"id" DESC`)
+		if cursor == "" {
+			return
+		}
+		tagQuery.
+			Where(
+				`EXISTS(?)`,
+				tx.Select(`id`).Table("tags").Where(`"id" = ?`, cursor),
+			).
+			Where(`"id" < ?`, cursor)
+		return
+	}
+	tagQuery.Order(`"id"`)
 }
 
 func NewTagService() *TagService {

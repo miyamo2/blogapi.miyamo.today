@@ -11,7 +11,7 @@ import (
 // TagService is a query service interface.
 type TagService interface {
 	// GetById returns a single tag with articles.
-	GetById(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement
+	GetById(ctx context.Context, id string, out *db.SingleStatementResult[model.Tag]) db.Statement
 	// GetAll returns multiple tag with articles.
-	GetAll(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement
+	GetAll(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement
 }

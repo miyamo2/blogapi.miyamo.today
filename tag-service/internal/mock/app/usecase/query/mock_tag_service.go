@@ -43,7 +43,7 @@ func (m *MockTagService) EXPECT() *MockTagServiceMockRecorder {
 }
 
 // GetAll mocks base method.
-func (m *MockTagService) GetAll(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+func (m *MockTagService) GetAll(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, out}
 	for _, a := range paginationOption {
@@ -62,7 +62,7 @@ func (mr *MockTagServiceMockRecorder) GetAll(ctx, out any, paginationOption ...a
 }
 
 // GetById mocks base method.
-func (m *MockTagService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement {
+func (m *MockTagService) GetById(ctx context.Context, id string, out *db.SingleStatementResult[model.Tag]) db.Statement {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetById", ctx, id, out)
 	ret0, _ := ret[0].(db.Statement)

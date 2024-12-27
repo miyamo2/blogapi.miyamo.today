@@ -46,7 +46,7 @@ func (u *GetNext) Execute(ctx context.Context, in dto.GetNextInDto) (*dto.GetNex
 	}
 	errCh := tx.SubscribeError()
 
-	out := db.NewMultipleStatementResult[*model.Tag]()
+	out := db.NewMultipleStatementResult[model.Tag]()
 	first := in.First()
 	stmt := u.queryService.GetAll(ctx, out, db.WithNextPaging(first, in.Cursor()))
 	err = tx.ExecuteStatement(ctx, stmt)

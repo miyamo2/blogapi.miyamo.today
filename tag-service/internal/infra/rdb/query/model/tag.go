@@ -24,29 +24,13 @@ func (t *Tag) Name() string { return t.name }
 // Articles returns the articles of the tag
 func (t *Tag) Articles() []Article { return t.articles }
 
-func (t *Tag) AddArticle(article Article) {
-	t.articles = append(t.articles, article)
-}
-
-type NewTagOption func(*Tag)
-
-func WithTagsSize(size int) NewTagOption {
-	return func(t *Tag) {
-		t.articles = make([]Article, 0, size)
-	}
-}
-
 // NewTag constructor of Tag.
-func NewTag(id, name string, opt ...NewTagOption) Tag {
-	t := Tag{
+func NewTag(id, name string, articles ...Article) Tag {
+	return Tag{
 		id:       id,
 		name:     name,
-		articles: make([]Article, 0),
+		articles: articles,
 	}
-	for _, o := range opt {
-		o(&t)
-	}
-	return t
 }
 
 // Article is a query service model for article.
