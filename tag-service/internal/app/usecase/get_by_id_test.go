@@ -31,7 +31,6 @@ func TestGetById_Execute(t *testing.T) {
 		setupTransactionManager func(transactionManager *mdb.MockTransactionManager, tx *mdb.MockTransaction)
 		setupTagService         func(queryService *mquery.MockTagService, stmt *mdb.MockStatement)
 		want                    want
-		wantErr                 bool
 	}
 
 	errTxmn := errors.New("transactionManager error")
@@ -62,22 +61,22 @@ func TestGetById_Execute(t *testing.T) {
 				queryService.EXPECT().
 					GetById(gomock.Any(), "1", gomock.Any()).
 					DoAndReturn(
-						func(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement {
-							tg := model.NewTag("1", "tag1", model.WithTagsSize(2))
-							tg.AddArticle(model.NewArticle(
-								"1",
-								"happy_path",
-								"thumbnail",
-								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
-							tg.AddArticle(model.NewArticle(
-								"2",
-								"happy_path2",
-								"thumbnail",
-								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
-
-							out.Set(&tg)
+						func(ctx context.Context, id string, out *db.SingleStatementResult[model.Tag]) db.Statement {
+							tg := model.NewTag("1", "tag1",
+								model.NewArticle(
+									"1",
+									"happy_path",
+									"thumbnail",
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								model.NewArticle(
+									"2",
+									"happy_path2",
+									"thumbnail",
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+							)
+							out.Set(tg)
 							return stmt
 						}).
 					Times(1)
@@ -137,9 +136,9 @@ func TestGetById_Execute(t *testing.T) {
 				queryService.EXPECT().
 					GetById(gomock.Any(), "1", gomock.Any()).
 					DoAndReturn(
-						func(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement {
-							t := model.NewTag("1", "tag1", model.WithTagsSize(0))
-							out.Set(&t)
+						func(ctx context.Context, id string, out *db.SingleStatementResult[model.Tag]) db.Statement {
+							t := model.NewTag("1", "tag1")
+							out.Set(t)
 							return stmt
 						}).
 					Times(1)
@@ -206,14 +205,13 @@ func TestGetById_Execute(t *testing.T) {
 			},
 			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
-					func(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement {
+					func(ctx context.Context, id string, out *db.SingleStatementResult[model.Tag]) db.Statement {
 						return stmt
 					}).Times(1)
 			},
 			want: func() want {
 				return want{out: nil, err: errStmt}
 			}(),
-			wantErr: true,
 		},
 		"happy_path/transaction_commit_returns_error": {
 			args: args{
@@ -235,15 +233,14 @@ func TestGetById_Execute(t *testing.T) {
 			},
 			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
-					func(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement {
-						tg := model.NewTag("1", "tag1", model.WithTagsSize(1))
-						tg.AddArticle(model.NewArticle(
+					func(ctx context.Context, id string, out *db.SingleStatementResult[model.Tag]) db.Statement {
+						tg := model.NewTag("1", "tag1", model.NewArticle(
 							"1",
 							"happy_path/transaction_commit_returns_error",
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
-						out.Set(&tg)
+						out.Set(tg)
 						return stmt
 					}).Times(1)
 			},
@@ -282,16 +279,14 @@ func TestGetById_Execute(t *testing.T) {
 			},
 			setupTagService: func(queryService *mquery.MockTagService, stmt *mdb.MockStatement) {
 				queryService.EXPECT().GetById(gomock.Any(), "1", gomock.Any()).DoAndReturn(
-					func(ctx context.Context, id string, out *db.SingleStatementResult[*model.Tag]) db.Statement {
-						tg := model.NewTag("1", "tag1", model.WithTagsSize(1))
-						tg.AddArticle(model.NewArticle(
+					func(ctx context.Context, id string, out *db.SingleStatementResult[model.Tag]) db.Statement {
+						tg := model.NewTag("1", "tag1", model.NewArticle(
 							"1",
 							"happy_path/transaction_subscribe_error_receive_error",
 							"thumbnail",
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 							synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
-						out.Set(&tg)
-						out.Set(&tg)
+						out.Set(tg)
 						return stmt
 					}).Times(1)
 			},
@@ -324,15 +319,9 @@ func TestGetById_Execute(t *testing.T) {
 			tt.setupTagService(queryService, stmt)
 			sut := NewGetById(transactionManager, queryService)
 			got, err := sut.Execute(tt.args.ctx, tt.args.in)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("Execute() expected to return an error, but it was nil. want: %+v", err)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("Execute() error = %v, want %v", err, tt.want.err)
-					return
-				}
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("Execute() error = %v, want %v", err, tt.want.err)
+				return
 			}
 			if !reflect.DeepEqual(got, tt.want.out) {
 				t.Errorf("Execute() got = %v, want %v", got, tt.want)

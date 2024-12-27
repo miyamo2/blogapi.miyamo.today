@@ -6,7 +6,7 @@ import (
 )
 
 // tagDtoFromQueryModel converts query.Tag to dto.Tag
-func tagDtoFromQueryModel(tag *model.Tag) dto.Tag {
+func tagDtoFromQueryModel(tag model.Tag) dto.Tag {
 	return dto.NewTag(
 		tag.ID(),
 		tag.Name(),

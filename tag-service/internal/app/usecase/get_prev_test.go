@@ -74,29 +74,45 @@ func TestGetPrev_Execute(t *testing.T) {
 				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any(), gomock.Any()).
 					DoAndReturn(
-						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
-							tg1 := model.NewTag("1", "tag1")
-							a1 := model.NewArticle(
+						func(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+							tg1 := model.NewTag("1", "tag1", model.NewArticle(
 								"1",
 								"happy_path/multiple/has_prev1",
 								"thumbnail",
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-							tg1.AddArticle(a1)
-							a2 := model.NewArticle(
-								"2",
-								"happy_path/multiple/has_prev2",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								model.NewArticle(
+									"2",
+									"happy_path/multiple/has_prev2",
+									"thumbnail",
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
+							tg2 := model.NewTag("2", "tag2", model.NewArticle(
+								"1",
+								"happy_path/multiple/has_prev1",
 								"thumbnail",
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-							tg1.AddArticle(a2)
-							tg2 := model.NewTag("2", "tag2")
-							tg2.AddArticle(a1)
-							tg2.AddArticle(a2)
-							tg3 := model.NewTag("3", "tag3")
-							tg3.AddArticle(a1)
-							tg3.AddArticle(a2)
-							result := []*model.Tag{&tg1, &tg2, &tg3}
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								model.NewArticle(
+									"2",
+									"happy_path/multiple/has_prev2",
+									"thumbnail",
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
+							tg3 := model.NewTag("3", "tag3", model.NewArticle(
+								"1",
+								"happy_path/multiple/has_prev1",
+								"thumbnail",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								model.NewArticle(
+									"2",
+									"happy_path/multiple/has_prev2",
+									"thumbnail",
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
+
+							result := []model.Tag{tg1, tg2, tg3}
 							out.Set(result)
 							return stmt
 						}).
@@ -178,26 +194,32 @@ func TestGetPrev_Execute(t *testing.T) {
 				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any(), gomock.Any()).
 					DoAndReturn(
-						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
-							tg1 := model.NewTag("1", "tag1")
-							a1 := model.NewArticle(
+						func(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+							tg1 := model.NewTag("1", "tag1", model.NewArticle(
 								"1",
 								"happy_path/multiple/has_not_prev1",
 								"thumbnail",
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-							tg1.AddArticle(a1)
-							a2 := model.NewArticle(
-								"2",
-								"happy_path/multiple/has_not_prev2",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								model.NewArticle(
+									"2",
+									"happy_path/multiple/has_not_prev2",
+									"thumbnail",
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
+							tg2 := model.NewTag("2", "tag2", model.NewArticle(
+								"1",
+								"happy_path/multiple/has_not_prev1",
 								"thumbnail",
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0))
-							tg1.AddArticle(a2)
-							tg2 := model.NewTag("2", "tag2")
-							tg2.AddArticle(a1)
-							tg2.AddArticle(a2)
-							result := []*model.Tag{&tg1, &tg2}
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)),
+								model.NewArticle(
+									"2",
+									"happy_path/multiple/has_not_prev2",
+									"thumbnail",
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
+							result := []model.Tag{tg1, tg2}
 							out.Set(result)
 							return stmt
 						}).
@@ -280,9 +302,9 @@ func TestGetPrev_Execute(t *testing.T) {
 				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any(), gomock.Any()).
 					DoAndReturn(
-						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+						func(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement {
 							tg := model.NewTag("1", "tag1")
-							result := []*model.Tag{&tg}
+							result := []model.Tag{tg}
 							out.Set(result)
 							return stmt
 						}).
@@ -358,16 +380,14 @@ func TestGetPrev_Execute(t *testing.T) {
 				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any(), gomock.Any()).
 					DoAndReturn(
-						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
-							tg := model.NewTag("1", "tag1")
-							tg.AddArticle(
-								model.NewArticle(
-									"1",
-									"unhappy_path/transaction_execute_statement_returns_error",
-									"thumbnail",
-									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
-							result := []*model.Tag{&tg}
+						func(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+							tg := model.NewTag("1", "tag1", model.NewArticle(
+								"1",
+								"unhappy_path/transaction_execute_statement_returns_error",
+								"thumbnail",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
+							result := []model.Tag{tg}
 							out.Set(result)
 							return stmt
 						}).
@@ -412,16 +432,14 @@ func TestGetPrev_Execute(t *testing.T) {
 				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any(), gomock.Any()).
 					DoAndReturn(
-						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
-							tg := model.NewTag("1", "tag1")
-							tg.AddArticle(
-								model.NewArticle(
-									"1",
-									"happy_path/transaction_commit_returns_error",
-									"thumbnail",
-									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-									synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
-							result := []*model.Tag{&tg}
+						func(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+							tg := model.NewTag("1", "tag1", model.NewArticle(
+								"1",
+								"happy_path/transaction_commit_returns_error",
+								"thumbnail",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0)))
+							result := []model.Tag{tg}
 							out.Set(result)
 							return stmt
 						}).Times(1)
@@ -475,17 +493,15 @@ func TestGetPrev_Execute(t *testing.T) {
 				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any(), gomock.Any()).
 					DoAndReturn(
-						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
-							tg1 := model.NewTag("1", "tag1")
-							a := model.NewArticle(
+						func(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+							tg1 := model.NewTag("1", "tag1", model.NewArticle(
 								"1",
 								"happy_path/transaction_subscribe_error_receive_error",
 								"thumbnail",
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							)
-							tg1.AddArticle(a)
-							result := []*model.Tag{&tg1}
+							))
+							result := []model.Tag{tg1}
 							out.Set(result)
 							return stmt
 						}).
@@ -542,19 +558,22 @@ func TestGetPrev_Execute(t *testing.T) {
 				queryService.EXPECT().
 					GetAll(gomock.Any(), gomock.Any(), gomock.Any()).
 					DoAndReturn(
-						func(ctx context.Context, out *db.MultipleStatementResult[*model.Tag], paginationOption ...db.PaginationOption) db.Statement {
-							tg1 := model.NewTag("1", "tag1")
-							a := model.NewArticle(
+						func(ctx context.Context, out *db.MultipleStatementResult[model.Tag], paginationOption ...db.PaginationOption) db.Statement {
+							tg1 := model.NewTag("1", "tag1", model.NewArticle(
 								"1",
 								"happy_path/single/has_prev",
 								"thumbnail",
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-							)
-							tg1.AddArticle(a)
-							tg2 := model.NewTag("2", "tag2")
-							tg2.AddArticle(a)
-							result := []*model.Tag{&tg1, &tg2}
+							))
+							tg2 := model.NewTag("2", "tag2", model.NewArticle(
+								"1",
+								"happy_path/single/has_prev",
+								"thumbnail",
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+								synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+							))
+							result := []model.Tag{tg1, tg2}
 							out.Set(result)
 							return stmt
 						}).

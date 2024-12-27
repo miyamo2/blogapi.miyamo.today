@@ -48,7 +48,7 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 	}
 	errCh := tx.SubscribeError()
 
-	out := db.NewSingleStatementResult[*model.Tag]()
+	out := db.NewSingleStatementResult[model.Tag]()
 	stmt := u.queryService.GetById(ctx, in.Id(), out)
 	err = tx.ExecuteStatement(ctx, stmt)
 	if err != nil {

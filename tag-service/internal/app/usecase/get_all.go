@@ -46,7 +46,7 @@ func (u *GetAll) Execute(ctx context.Context) (*dto.GetAllOutDto, error) {
 	}
 	errCh := tx.SubscribeError()
 
-	out := db.NewMultipleStatementResult[*model.Tag]()
+	out := db.NewMultipleStatementResult[model.Tag]()
 	stmt := u.queryService.GetAll(ctx, out)
 	err = tx.ExecuteStatement(ctx, stmt)
 	if err != nil {
