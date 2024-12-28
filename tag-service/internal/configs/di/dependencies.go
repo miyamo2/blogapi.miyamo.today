@@ -1,29 +1,25 @@
 package di
 
 import (
-	grpcgen "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
+	"github.com/labstack/echo/v4"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"google.golang.org/grpc"
 	"gorm.io/gorm"
 )
 
 type Dependencies struct {
-	GRPCServer       *grpc.Server
-	NewRelicApp      *newrelic.Application
-	TagServiceServer grpcgen.TagServiceServer
-	GORMDialector    *gorm.Dialector
+	NewRelicApp   *newrelic.Application
+	Echo          *echo.Echo
+	GORMDialector *gorm.Dialector
 }
 
 func NewDependencies(
-	grpcServer *grpc.Server,
 	newRelicApp *newrelic.Application,
-	tagServiceServer grpcgen.TagServiceServer,
+	echoApp *echo.Echo,
 	gormDialector *gorm.Dialector,
 ) *Dependencies {
 	return &Dependencies{
-		GRPCServer:       grpcServer,
-		NewRelicApp:      newRelicApp,
-		TagServiceServer: tagServiceServer,
-		GORMDialector:    gormDialector,
+		NewRelicApp:   newRelicApp,
+		Echo:          echoApp,
+		GORMDialector: gormDialector,
 	}
 }

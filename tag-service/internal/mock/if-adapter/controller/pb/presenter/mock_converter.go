@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	connect "connectrpc.com/connect"
 	dto "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	grpc "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	gomock "go.uber.org/mock/gomock"
@@ -43,10 +44,10 @@ func (m *MockToGetByIdConverter) EXPECT() *MockToGetByIdConverterMockRecorder {
 }
 
 // ToGetByIdTagResponse mocks base method.
-func (m *MockToGetByIdConverter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOutDto) (*grpc.GetTagByIdResponse, bool) {
+func (m *MockToGetByIdConverter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOutDto) (*connect.Response[grpc.GetTagByIdResponse], bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetByIdTagResponse", ctx, from)
-	ret0, _ := ret[0].(*grpc.GetTagByIdResponse)
+	ret0, _ := ret[0].(*connect.Response[grpc.GetTagByIdResponse])
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -82,10 +83,10 @@ func (m *MockToGetAllConverter) EXPECT() *MockToGetAllConverterMockRecorder {
 }
 
 // ToGetAllTagsResponse mocks base method.
-func (m *MockToGetAllConverter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOutDto) (*grpc.GetAllTagsResponse, bool) {
+func (m *MockToGetAllConverter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOutDto) (*connect.Response[grpc.GetAllTagsResponse], bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetAllTagsResponse", ctx, from)
-	ret0, _ := ret[0].(*grpc.GetAllTagsResponse)
+	ret0, _ := ret[0].(*connect.Response[grpc.GetAllTagsResponse])
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -121,10 +122,10 @@ func (m *MockToGetNextConverter) EXPECT() *MockToGetNextConverterMockRecorder {
 }
 
 // ToGetNextTagsResponse mocks base method.
-func (m *MockToGetNextConverter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextOutDto) (*grpc.GetNextTagResponse, bool) {
+func (m *MockToGetNextConverter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextOutDto) (*connect.Response[grpc.GetNextTagResponse], bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetNextTagsResponse", ctx, from)
-	ret0, _ := ret[0].(*grpc.GetNextTagResponse)
+	ret0, _ := ret[0].(*connect.Response[grpc.GetNextTagResponse])
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -160,10 +161,10 @@ func (m *MockToGetPrevConverter) EXPECT() *MockToGetPrevConverterMockRecorder {
 }
 
 // ToGetPrevTagsResponse mocks base method.
-func (m *MockToGetPrevConverter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevOutDto) (*grpc.GetPrevTagResponse, bool) {
+func (m *MockToGetPrevConverter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevOutDto) (*connect.Response[grpc.GetPrevTagResponse], bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ToGetPrevTagsResponse", ctx, from)
-	ret0, _ := ret[0].(*grpc.GetPrevTagResponse)
+	ret0, _ := ret[0].(*connect.Response[grpc.GetPrevTagResponse])
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }

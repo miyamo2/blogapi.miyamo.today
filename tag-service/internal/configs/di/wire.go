@@ -15,7 +15,7 @@ func GetDependencies() *Dependencies {
 		provider.PresenterSet,
 		provider.UsecaseSet,
 		provider.TagServiceSet,
-		provider.GRPCServerSet,
+		provider.EchoSet,
 		wire.NewSet(NewDependencies),
 	)
 	return nil

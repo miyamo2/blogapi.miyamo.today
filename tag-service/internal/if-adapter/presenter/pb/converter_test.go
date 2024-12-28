@@ -1,9 +1,11 @@
 package pb
 
 import (
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
 
@@ -19,7 +21,7 @@ func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 		from func() *dto.GetByIdOutDto
 	}
 	type want struct {
-		result *grpc.GetTagByIdResponse
+		result *connect.Response[grpc.GetTagByIdResponse]
 		ok     bool
 	}
 	type testCase struct {
@@ -47,7 +49,7 @@ func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &grpc.GetTagByIdResponse{
+				result: connect.NewResponse(&grpc.GetTagByIdResponse{
 					Tag: &grpc.Tag{
 						Id:   "tag1",
 						Name: "1",
@@ -61,7 +63,7 @@ func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				ok: true,
 			},
 		},
@@ -73,8 +75,8 @@ func TestConverter_ToGetByIdTagResponse(t *testing.T) {
 			if tt.want.ok != ok {
 				t.Errorf("ToGetByIdTagResponse() ok = %v, want %v", ok, tt.want.ok)
 			}
-			if diff := cmp.Diff(got, tt.want.result, protocmp.Transform()); diff != "" {
-				t.Errorf("ToGetByIdTagResponse() = %v, want %v", got, tt.want.result)
+			if diff := cmp.Diff(got.Msg, tt.want.result.Msg, protocmp.Transform(), cmpopts.IgnoreUnexported()); diff != "" {
+				t.Errorf("ToGetByIdTagResponse() = %v, want %v", got.Msg, tt.want.result.Msg)
 			}
 		})
 	}
@@ -86,7 +88,7 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 		from func() *dto.GetAllOutDto
 	}
 	type want struct {
-		result *grpc.GetAllTagsResponse
+		result *connect.Response[grpc.GetAllTagsResponse]
 		ok     bool
 	}
 	type testCase struct {
@@ -129,7 +131,7 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &grpc.GetAllTagsResponse{
+				result: connect.NewResponse(&grpc.GetAllTagsResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
@@ -158,7 +160,7 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				ok: true,
 			},
 		},
@@ -170,8 +172,8 @@ func TestConverter_ToGetAllTagsResponse(t *testing.T) {
 			if tt.want.ok != ok {
 				t.Errorf("ToGetByIdTagResponse() ok = %v, want %v", ok, tt.want.ok)
 			}
-			if diff := cmp.Diff(got, tt.want.result, protocmp.Transform()); diff != "" {
-				t.Errorf("ToGetByIdTagResponse() = %v, want %v", got, tt.want.result)
+			if diff := cmp.Diff(got.Msg, tt.want.result.Msg, protocmp.Transform(), cmpopts.IgnoreUnexported()); diff != "" {
+				t.Errorf("ToGetByIdTagResponse() = %v, want %v", got.Msg, tt.want.result.Msg)
 			}
 		})
 	}
@@ -183,7 +185,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 		from func() *dto.GetNextOutDto
 	}
 	type want struct {
-		result *grpc.GetNextTagResponse
+		result *connect.Response[grpc.GetNextTagResponse]
 		ok     bool
 	}
 	type testCase struct {
@@ -227,7 +229,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &grpc.GetNextTagResponse{
+				result: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
@@ -257,7 +259,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 				ok: true,
 			},
 		},
@@ -296,7 +298,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &grpc.GetNextTagResponse{
+				result: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
@@ -325,7 +327,7 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				ok: true,
 			},
 		},
@@ -337,8 +339,8 @@ func TestConverter_ToGetNextTagsResponse(t *testing.T) {
 			if tt.want.ok != ok {
 				t.Errorf("ToGetNextTagsResponse() ok = %v, want %v", ok, tt.want.ok)
 			}
-			if diff := cmp.Diff(got, tt.want.result, protocmp.Transform()); diff != "" {
-				t.Errorf("ToGetNextTagsResponse() = %v, want %v", got, tt.want.result)
+			if diff := cmp.Diff(got.Msg, tt.want.result.Msg, protocmp.Transform(), cmpopts.IgnoreUnexported()); diff != "" {
+				t.Errorf("ToGetNextTagsResponse() = %v, want %v", got.Msg, tt.want.result.Msg)
 			}
 		})
 	}
@@ -350,7 +352,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 		from func() *dto.GetPrevOutDto
 	}
 	type want struct {
-		result *grpc.GetPrevTagResponse
+		result *connect.Response[grpc.GetPrevTagResponse]
 		ok     bool
 	}
 	type testCase struct {
@@ -394,7 +396,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &grpc.GetPrevTagResponse{
+				result: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
@@ -424,7 +426,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 				ok: true,
 			},
 		},
@@ -463,7 +465,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 				},
 			},
 			want: want{
-				result: &grpc.GetPrevTagResponse{
+				result: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "tag1",
@@ -492,7 +494,7 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				ok: true,
 			},
 		},
@@ -504,8 +506,8 @@ func TestConverter_ToGetPrevTagsResponse(t *testing.T) {
 			if tt.want.ok != ok {
 				t.Errorf("ToGetPrevTagsResponse() ok = %v, want %v", ok, tt.want.ok)
 			}
-			if diff := cmp.Diff(got, tt.want.result, protocmp.Transform()); diff != "" {
-				t.Errorf("ToGetPrevTagsResponse() = %v, want %v", got, tt.want.result)
+			if diff := cmp.Diff(got.Msg, tt.want.result.Msg, protocmp.Transform(), cmpopts.IgnoreUnexported()); diff != "" {
+				t.Errorf("ToGetPrevTagsResponse() = %v, want %v", got.Msg, tt.want.result.Msg)
 			}
 		})
 	}
