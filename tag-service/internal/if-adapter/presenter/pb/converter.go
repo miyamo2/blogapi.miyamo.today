@@ -1,6 +1,7 @@
 package pb
 
 import (
+	"connectrpc.com/connect"
 	"context"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log/slog"
@@ -18,7 +19,7 @@ import (
 type Converter struct{}
 
 // ToGetByIdTagResponse is an implementation of presenter.ToGetByIdConverter#ToGetByIdTagResponse
-func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *grpc.GetTagByIdResponse, ok bool) {
+func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOutDto) (response *connect.Response[grpc.GetTagByIdResponse], ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetByIdTagResponse").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -45,15 +46,16 @@ func (c Converter) ToGetByIdTagResponse(ctx context.Context, from *dto.GetByIdOu
 		Name:     from.Name(),
 		Articles: articlePBs,
 	}
-	response = &grpc.GetTagByIdResponse{
+	rawResponse := &grpc.GetTagByIdResponse{
 		Tag: tagPB,
 	}
+	response = connect.NewResponse(rawResponse)
 	ok = true
 	return
 }
 
 // ToGetAllTagsResponse is an implementation of presenter.ToGetAllConverter#ToGetAllTagsResponse
-func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOutDto) (response *grpc.GetAllTagsResponse, ok bool) {
+func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOutDto) (response *connect.Response[grpc.GetAllTagsResponse], ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetAllTagsResponse").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -84,15 +86,16 @@ func (c Converter) ToGetAllTagsResponse(ctx context.Context, from *dto.GetAllOut
 			Articles: articlePBs,
 		})
 	}
-	response = &grpc.GetAllTagsResponse{
+	rawResponse := &grpc.GetAllTagsResponse{
 		Tags: tagPBs,
 	}
+	response = connect.NewResponse(rawResponse)
 	ok = true
 	return
 }
 
 // ToGetNextTagsResponse is an implementation of presenter.ToGetNextConverter#ToGetNextTagsResponse
-func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextOutDto) (response *grpc.GetNextTagResponse, ok bool) {
+func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextOutDto) (response *connect.Response[grpc.GetNextTagResponse], ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetNextTagsResponse").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -123,16 +126,17 @@ func (c Converter) ToGetNextTagsResponse(ctx context.Context, from *dto.GetNextO
 			Articles: articlePBs,
 		})
 	}
-	response = &grpc.GetNextTagResponse{
+	rawResponse := &grpc.GetNextTagResponse{
 		Tags:        tagPBs,
 		StillExists: from.HasNext(),
 	}
+	response = connect.NewResponse(rawResponse)
 	ok = true
 	return
 }
 
 // ToGetPrevTagsResponse is an implementation of presenter.ToGetPrevConverter#ToGetPrevTagsResponse
-func (c Converter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *grpc.GetPrevTagResponse, ok bool) {
+func (c Converter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevOutDto) (response *connect.Response[grpc.GetPrevTagResponse], ok bool) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ToGetPrevTagsResponse").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -163,10 +167,11 @@ func (c Converter) ToGetPrevTagsResponse(ctx context.Context, from *dto.GetPrevO
 			Articles: articlePBs,
 		})
 	}
-	response = &grpc.GetPrevTagResponse{
+	rawResponse := &grpc.GetPrevTagResponse{
 		Tags:        tagPBs,
 		StillExists: from.HasPrevious(),
 	}
+	response = connect.NewResponse(rawResponse)
 	ok = true
 	return
 }

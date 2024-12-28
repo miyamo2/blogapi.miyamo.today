@@ -1,8 +1,10 @@
 package pb
 
 import (
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro/tz"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
 
@@ -21,19 +23,18 @@ import (
 func TestTagServiceServer_GetTagById(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.GetTagByIdRequest
+		in  *connect.Request[grpc.GetTagByIdRequest]
 	}
 	type want struct {
-		response *grpc.GetTagByIdResponse
+		response *connect.Response[grpc.GetTagByIdResponse]
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetByIdOutDto
 		setupUsecase   func(out dto.GetByIdOutDto, u *musecase.MockGetById)
-		setupConverter func(from dto.GetByIdOutDto, res *grpc.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter)
+		setupConverter func(from dto.GetByIdOutDto, res *connect.Response[grpc.GetTagByIdResponse], conv *mpresenter.MockToGetByIdConverter)
 		args           args
 		want           want
-		wantErr        bool
 	}
 	errGetTagById := errors.New("error get article by id")
 	tests := map[string]testCase{
@@ -55,7 +56,7 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
+			setupConverter: func(from dto.GetByIdOutDto, res *connect.Response[grpc.GetTagByIdResponse], conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdTagResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -63,12 +64,12 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetTagByIdRequest{
+				in: connect.NewRequest(&grpc.GetTagByIdRequest{
 					Id: "1",
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetTagByIdResponse{
+				response: connect.NewResponse(&grpc.GetTagByIdResponse{
 					Tag: &grpc.Tag{
 						Id:   "1",
 						Name: "happy_path/tag_has_article",
@@ -82,7 +83,7 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -92,22 +93,21 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(nil, errGetTagById).Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
+			setupConverter: func(from dto.GetByIdOutDto, res *connect.Response[grpc.GetTagByIdResponse], conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdTagResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetTagByIdRequest{
+				in: connect.NewRequest(&grpc.GetTagByIdRequest{
 					Id: "1",
-				},
+				}),
 			},
 			want: want{
 				response: nil,
 				err:      errGetTagById,
 			},
-			wantErr: true,
 		},
 		"unhappy_path/failed_to_convert": {
 			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
@@ -115,7 +115,7 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetTagByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
+			setupConverter: func(from dto.GetByIdOutDto, res *connect.Response[grpc.GetTagByIdResponse], conv *mpresenter.MockToGetByIdConverter) {
 				conv.EXPECT().
 					ToGetByIdTagResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -123,15 +123,14 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetTagByIdRequest{
+				in: connect.NewRequest(&grpc.GetTagByIdRequest{
 					Id: "1",
-				},
+				}),
 			},
 			want: want{
 				response: nil,
 				err:      ErrConversionToGetTagByIdFailed,
 			},
-			wantErr: true,
 		},
 	}
 	for name, tt := range tests {
@@ -146,18 +145,17 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 			tt.setupConverter(out, response, conv)
 			s := NewTagServiceServer(u, conv, nil, nil, nil, nil, nil, nil)
 			got, err := s.GetTagById(tt.args.ctx, tt.args.in)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("GetTagById() expected to return an error, but it was nil. want: %+v", err)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("GetTagById() error = %v, want %v", err, tt.want.err)
-					return
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetTagById() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if tt.want.response == nil {
+				if got != nil {
+					t.Errorf("GetTagById() got = %v, want nil", got)
 				}
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got.Msg, tt.want.response.Msg, protocmp.Transform(), cmpopts.IgnoreUnexported()); diff != "" {
 				t.Errorf("GetTagById() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -167,19 +165,18 @@ func TestTagServiceServer_GetTagById(t *testing.T) {
 func TestTagServiceServer_GetAllTags(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *emptypb.Empty
+		in  *connect.Request[emptypb.Empty]
 	}
 	type want struct {
-		response *grpc.GetAllTagsResponse
+		response *connect.Response[grpc.GetAllTagsResponse]
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetAllOutDto
 		setupUsecase   func(out dto.GetAllOutDto, u *musecase.MockGetAll)
-		setupConverter func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter)
+		setupConverter func(from dto.GetAllOutDto, res *connect.Response[grpc.GetAllTagsResponse], conv *mpresenter.MockToGetAllConverter)
 		args           args
 		want           want
-		wantErr        bool
 	}
 	errGetAllTag := errors.New("error get all tags")
 	tests := map[string]testCase{
@@ -206,7 +203,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *connect.Response[grpc.GetAllTagsResponse], conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -214,10 +211,10 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in:  &emptypb.Empty{},
+				in:  connect.NewRequest(&emptypb.Empty{}),
 			},
 			want: want{
-				response: &grpc.GetAllTagsResponse{
+				response: connect.NewResponse(&grpc.GetAllTagsResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -233,7 +230,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -267,7 +264,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *connect.Response[grpc.GetAllTagsResponse], conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -275,10 +272,10 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in:  &emptypb.Empty{},
+				in:  connect.NewRequest(&emptypb.Empty{}),
 			},
 			want: want{
-				response: &grpc.GetAllTagsResponse{
+				response: connect.NewResponse(&grpc.GetAllTagsResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -301,7 +298,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -340,7 +337,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *connect.Response[grpc.GetAllTagsResponse], conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -348,10 +345,10 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in:  &emptypb.Empty{},
+				in:  connect.NewRequest(&emptypb.Empty{}),
 			},
 			want: want{
-				response: &grpc.GetAllTagsResponse{
+				response: connect.NewResponse(&grpc.GetAllTagsResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -380,7 +377,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -433,7 +430,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *connect.Response[grpc.GetAllTagsResponse], conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -441,10 +438,10 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in:  &emptypb.Empty{},
+				in:  connect.NewRequest(&emptypb.Empty{}),
 			},
 			want: want{
-				response: &grpc.GetAllTagsResponse{
+				response: connect.NewResponse(&grpc.GetAllTagsResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -487,7 +484,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -497,20 +494,19 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					Execute(gomock.Any()).
 					Return(nil, errGetAllTag).Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *connect.Response[grpc.GetAllTagsResponse], conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in:  &emptypb.Empty{},
+				in:  connect.NewRequest(&emptypb.Empty{}),
 			},
 			want: want{
 				response: nil,
 				err:      errGetAllTag,
 			},
-			wantErr: true,
 		},
 		"unhappy_path/failed_to_convert": {
 			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
@@ -518,7 +514,7 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 					Execute(gomock.Any()).
 					Return(&out, nil).Times(1)
 			},
-			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllTagsResponse, conv *mpresenter.MockToGetAllConverter) {
+			setupConverter: func(from dto.GetAllOutDto, res *connect.Response[grpc.GetAllTagsResponse], conv *mpresenter.MockToGetAllConverter) {
 				conv.EXPECT().
 					ToGetAllTagsResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -526,13 +522,12 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in:  &emptypb.Empty{},
+				in:  connect.NewRequest(&emptypb.Empty{}),
 			},
 			want: want{
 				response: nil,
 				err:      ErrConversionToGetAllTagsFailed,
 			},
-			wantErr: true,
 		},
 	}
 	for name, tt := range tests {
@@ -547,18 +542,17 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 			tt.setupConverter(out, response, conv)
 			s := NewTagServiceServer(nil, nil, u, conv, nil, nil, nil, nil)
 			got, err := s.GetAllTags(tt.args.ctx, tt.args.in)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("GetAllTags() expected to return an error, but it was nil. want: %+v", err)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("GetAllTags() error = %v, want %v", err, tt.want.err)
-					return
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetAllTags() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if tt.want.response == nil {
+				if got != nil {
+					t.Errorf("GetAllTags() got = %v, want nil", got)
 				}
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got.Msg, tt.want.response.Msg, protocmp.Transform(), cmpopts.IgnoreUnexported()); diff != "" {
 				t.Errorf("GetAllTags() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -568,19 +562,18 @@ func TestTagServiceServer_GetAllTags(t *testing.T) {
 func TestTagServiceServer_GetNextTags(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.GetNextTagsRequest
+		in  *connect.Request[grpc.GetNextTagsRequest]
 	}
 	type want struct {
-		response *grpc.GetNextTagResponse
+		response *connect.Response[grpc.GetNextTagResponse]
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetNextOutDto
 		setupUsecase   func(out dto.GetNextOutDto, u *musecase.MockGetNext)
-		setupConverter func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter)
+		setupConverter func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter)
 		args           args
 		want           want
-		wantErr        bool
 	}
 	errGetNextTag := errors.New("error get next tags")
 	tests := map[string]testCase{
@@ -607,7 +600,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -615,12 +608,12 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 1,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextTagResponse{
+				response: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -637,7 +630,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 			},
 		},
 		"happy_path/single_tag/single_article/not_anymore": {
@@ -663,7 +656,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -671,12 +664,12 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 1,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextTagResponse{
+				response: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -693,7 +686,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 						},
 					},
 					StillExists: false,
-				},
+				}),
 			},
 		},
 		"happy_path/single_tag/multiple_article/has_next": {
@@ -724,7 +717,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -732,12 +725,12 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 1,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextTagResponse{
+				response: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -761,7 +754,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 			},
 		},
 		"happy_path/single_tag/multiple_article/not_anymore": {
@@ -792,7 +785,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -800,12 +793,12 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 1,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextTagResponse{
+				response: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -828,7 +821,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 			},
 		},
 		"happy_path/multiple_tag/single_article/has_next": {
@@ -864,7 +857,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -872,12 +865,12 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 2,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextTagResponse{
+				response: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -907,7 +900,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 			},
 		},
 		"happy_path/multiple_tag/single_article/not_anymore": {
@@ -943,7 +936,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -951,12 +944,12 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 2,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextTagResponse{
+				response: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -985,7 +978,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 			},
 		},
 		"happy_path/multiple_tag/multiple_article/has_next": {
@@ -1033,7 +1026,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1041,12 +1034,12 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 2,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextTagResponse{
+				response: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1090,7 +1083,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 			},
 		},
 		"happy_path/multiple_tag/multiple_article/not_anymore": {
@@ -1138,7 +1131,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1146,12 +1139,12 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 2,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextTagResponse{
+				response: connect.NewResponse(&grpc.GetNextTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1164,7 +1157,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 			},
 		},
 		"unhappy_path/usecase_returns_error": {
@@ -1174,16 +1167,16 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(nil, errGetNextTag).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 1,
-				},
+				}),
 			},
 			want: want{
 				response: nil,
@@ -1198,7 +1191,7 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextTagResponse, conv *mpresenter.MockToGetNextConverter) {
+			setupConverter: func(from dto.GetNextOutDto, res *connect.Response[grpc.GetNextTagResponse], conv *mpresenter.MockToGetNextConverter) {
 				conv.EXPECT().
 					ToGetNextTagsResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -1206,9 +1199,9 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextTagsRequest{
+				in: connect.NewRequest(&grpc.GetNextTagsRequest{
 					First: 1,
-				},
+				}),
 			},
 			want: want{
 				response: nil,
@@ -1228,18 +1221,17 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 			tt.setupConverter(out, response, conv)
 			s := NewTagServiceServer(nil, nil, nil, nil, u, conv, nil, nil)
 			got, err := s.GetNextTags(tt.args.ctx, tt.args.in)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("GetNextTags() expected to return an error, but it was nil. want: %+v", err)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("GetNextTags() error = %v, want %v", err, tt.want.err)
-					return
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetNextTags() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if tt.want.response == nil {
+				if got != nil {
+					t.Errorf("GetNextTags() got = %v, want %v", got, tt.want.response)
 				}
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got.Msg, tt.want.response.Msg, protocmp.Transform(), cmpopts.IgnoreUnexported()); diff != "" {
 				t.Errorf("GetNextTags() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -1249,19 +1241,18 @@ func TestTagServiceServer_GetNextTags(t *testing.T) {
 func TestTagServiceServer_GetPrevTags(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.GetPrevTagsRequest
+		in  *connect.Request[grpc.GetPrevTagsRequest]
 	}
 	type want struct {
-		response *grpc.GetPrevTagResponse
+		response *connect.Response[grpc.GetPrevTagResponse]
 		err      error
 	}
 	type testCase struct {
 		outDto         dto.GetPrevOutDto
 		setupUsecase   func(out dto.GetPrevOutDto, u *musecase.MockGetPrev)
-		setupConverter func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter)
+		setupConverter func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter)
 		args           args
 		want           want
-		wantErr        bool
 	}
 	errGetPrevTag := errors.New("error get prev tags")
 	tests := map[string]testCase{
@@ -1288,7 +1279,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1296,12 +1287,12 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 1,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevTagResponse{
+				response: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1318,7 +1309,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 			},
 		},
 		"happy_path/single_tag/single_article/not_anymore": {
@@ -1344,7 +1335,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1352,12 +1343,12 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 1,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevTagResponse{
+				response: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1374,7 +1365,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 						},
 					},
 					StillExists: false,
-				},
+				}),
 			},
 		},
 		"happy_path/single_tag/multiple_article/has_prev": {
@@ -1405,7 +1396,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1413,12 +1404,12 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 1,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevTagResponse{
+				response: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1442,7 +1433,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 			},
 		},
 		"happy_path/single_tag/multiple_article/not_anymore": {
@@ -1473,7 +1464,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1481,12 +1472,12 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 1,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevTagResponse{
+				response: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1509,7 +1500,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 			},
 		},
 		"happy_path/multiple_tag/single_article/has_prev": {
@@ -1545,7 +1536,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1553,12 +1544,12 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 2,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevTagResponse{
+				response: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1588,7 +1579,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 			},
 		},
 		"happy_path/multiple_tag/single_article/not_anymore": {
@@ -1624,7 +1615,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1632,12 +1623,12 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 2,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevTagResponse{
+				response: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1666,7 +1657,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 			},
 		},
 		"happy_path/multiple_tag/multiple_article/has_prev": {
@@ -1714,7 +1705,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1722,12 +1713,12 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 2,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevTagResponse{
+				response: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1771,7 +1762,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 			},
 		},
 		"happy_path/multiple_tag/multiple_article/not_anymore": {
@@ -1819,7 +1810,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(res, true).
@@ -1827,12 +1818,12 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 2,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevTagResponse{
+				response: connect.NewResponse(&grpc.GetPrevTagResponse{
 					Tags: []*grpc.Tag{
 						{
 							Id:   "1",
@@ -1845,7 +1836,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 			},
 		},
 		"unhappy_path/usecase_returns_error": {
@@ -1855,16 +1846,16 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(nil, errGetPrevTag).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 1,
-				},
+				}),
 			},
 			want: want{
 				response: nil,
@@ -1879,7 +1870,7 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 					Return(&out, nil).
 					Times(1)
 			},
-			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevTagResponse, conv *mpresenter.MockToGetPrevConverter) {
+			setupConverter: func(from dto.GetPrevOutDto, res *connect.Response[grpc.GetPrevTagResponse], conv *mpresenter.MockToGetPrevConverter) {
 				conv.EXPECT().
 					ToGetPrevTagsResponse(gomock.Any(), &from).
 					Return(nil, false).
@@ -1887,9 +1878,9 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevTagsRequest{
+				in: connect.NewRequest(&grpc.GetPrevTagsRequest{
 					Last: 1,
-				},
+				}),
 			},
 			want: want{
 				response: nil,
@@ -1909,18 +1900,17 @@ func TestTagServiceServer_GetPrevTags(t *testing.T) {
 			tt.setupConverter(out, response, conv)
 			s := NewTagServiceServer(nil, nil, nil, nil, nil, nil, u, conv)
 			got, err := s.GetPrevTags(tt.args.ctx, tt.args.in)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("GetPrevTags() expected to return an error, but it was nil. want: %+v", err)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("GetPrevTags() error = %v, want %v", err, tt.want.err)
-					return
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetPrevTags() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if tt.want.response == nil {
+				if got != nil {
+					t.Errorf("GetPrevTags() got = %v, want %v", got, tt.want.response)
 				}
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got.Msg, tt.want.response.Msg, protocmp.Transform(), cmpopts.IgnoreUnexported()); diff != "" {
 				t.Errorf("GetPrevTags() got = %v, want %v", got, tt.want.response)
 			}
 		})

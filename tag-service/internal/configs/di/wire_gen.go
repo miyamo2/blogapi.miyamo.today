@@ -17,7 +17,6 @@ import (
 
 func GetDependencies() *Dependencies {
 	application := provider.NewRelic()
-	server := provider.GRPCServer(application)
 	tagService := query.NewTagService()
 	getById := provider.GetByIdUsecase(tagService)
 	converter := pb.NewConverter()
@@ -25,7 +24,8 @@ func GetDependencies() *Dependencies {
 	getNext := provider.GetNextUsecase(tagService)
 	getPrev := provider.GetPrevUsecase(tagService)
 	tagServiceServer := pb2.NewTagServiceServer(getById, converter, getAll, converter, getNext, converter, getPrev, converter)
+	echo := provider.Echo(tagServiceServer, application)
 	dialector := provider.GormDialector()
-	dependencies := NewDependencies(server, application, tagServiceServer, dialector)
+	dependencies := NewDependencies(application, echo, dialector)
 	return dependencies
 }

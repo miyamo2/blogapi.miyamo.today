@@ -48,17 +48,12 @@ func SetLoggerToContext(app *newrelic.Application) echo.MiddlewareFunc {
 	}
 }
 
-func NRConnect(app *newrelic.Application) echo.MiddlewareFunc {
+func NRConnect() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			ctx := c.Request().Context()
 			nrtx := newrelic.FromContext(ctx)
-			if nrtx == nil {
-				nrtx = app.StartTransaction(c.Request().URL.Path)
-				defer nrtx.End()
-			} else {
-				nrtx.SetName(c.Request().URL.Path)
-			}
+			nrtx.SetName(c.Request().URL.Path)
 			host := c.Request().Host
 			nrtx.SetWebRequest(newrelic.WebRequest{
 				Type:      "ConnectRPC",
@@ -69,6 +64,7 @@ func NRConnect(app *newrelic.Application) echo.MiddlewareFunc {
 				Transport: newrelic.TransportHTTP})
 			ctx = newrelic.NewContext(ctx, nrtx)
 			c.SetRequest(c.Request().WithContext(ctx))
+
 			return next(c)
 		}
 	}
