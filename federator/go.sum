@@ -80,6 +80,8 @@ github.com/miyamo2/blogapi.miyamo.today/core v0.23.1 h1:1qNSwhdKjUWxoFcpBpyNsBWn
 github.com/miyamo2/blogapi.miyamo.today/core v0.23.1/go.mod h1:/yXFNIMVomvOC3c1BZCGZlk86pHi6m4qC1GJJe6zTkA=
 github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.1 h1:bCKaVk6LA9B5Ym/ye7zYWobejJ1Bn7jKGqIv/Tw4iRY=
 github.com/miyamo2/blogapi.miyamo.today/core/echo v0.1.1/go.mod h1:wRKSifg0H5o5cO/XFFYC6um5+e/VDRDVp4AZDInLLqA=
+github.com/miyamo2/blogapi.miyamo.today/core/echo v0.2.0 h1:OhkU+d/tc5fgHAHoRnHUscxhVxjydHkbLWjFLt7QfH4=
+github.com/miyamo2/blogapi.miyamo.today/core/echo v0.2.0/go.mod h1:qGM9urk4MDNPWFwTDcNrP3QVVt1kXKSQA+fErw9O494=
 github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.3.1 h1:QPggO2isCPzo2IIMEQmBCG0SRMLrTwtOu3wYgbye2Js=
 github.com/miyamo2/blogapi.miyamo.today/core/graphql v0.3.1/go.mod h1:N2rez21NY8lnw6Os6QwLc9vMs0e40v8OfTK13zM/Osk=
 github.com/newrelic/csec-go-agent v0.6.0 h1:0/1UFUicqIcDwkhFkrXBtRfUzGsZrH/mWlBzLwPJVFU=
