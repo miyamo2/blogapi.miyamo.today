@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/url"
 
+	blogapicontext "blogapi.miyamo.today/core/context"
+	"blogapi.miyamo.today/core/log"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/miyamo2/altnrslog"
-	blogapicontext "github.com/miyamo2/blogapi.miyamo.today/core/context"
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
 )

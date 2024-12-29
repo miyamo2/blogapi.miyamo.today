@@ -3,10 +3,10 @@ module blogapi.miyamo.today/core/graphql
 go 1.23
 
 require (
+	blogapi.miyamo.today/core v0.24.0
 	github.com/99designs/gqlgen v0.17.61
 	github.com/Code-Hex/synchro v0.5.2
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.23.1
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/oklog/ulid/v2 v2.1.0
 )
