@@ -1,4 +1,4 @@
-module github.com/miyamo2/blogapi.miyamo.today/core/graphql
+module blogapi.miyamo.today/core/graphql
 
 go 1.23
 

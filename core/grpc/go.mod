@@ -1,4 +1,4 @@
-module github.com/miyamo2/blogapi.miyamo.today/core/grpc
+module blogapi.miyamo.today/core/grpc
 
 go 1.23
 

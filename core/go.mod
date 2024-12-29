@@ -1,4 +1,4 @@
-module github.com/miyamo2/blogapi.miyamo.today/core
+module blogapi.miyamo.today/core
 
 go 1.23
 

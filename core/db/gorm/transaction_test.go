@@ -4,10 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"blogapi.miyamo.today/core/db"
+	"blogapi.miyamo.today/core/db/internal"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db/internal"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

@@ -5,9 +5,9 @@ import (
 	"io"
 	"log/slog"
 
-	"github.com/miyamo2/blogapi.miyamo.today/core/internal"
+	"blogapi.miyamo.today/core/internal"
 
-	blogapictx "github.com/miyamo2/blogapi.miyamo.today/core/context"
+	blogapictx "blogapi.miyamo.today/core/context"
 )
 
 type Logger struct {

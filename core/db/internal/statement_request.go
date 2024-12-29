@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	"blogapi.miyamo.today/core/db"
 )
 
 type StatementRequest struct {

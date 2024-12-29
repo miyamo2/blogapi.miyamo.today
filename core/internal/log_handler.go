@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"path/filepath"
 
-	blogapictx "github.com/miyamo2/blogapi.miyamo.today/core/context"
+	blogapictx "blogapi.miyamo.today/core/context"
 )
 
 var JSONHandlerOption = &slog.HandlerOptions{
