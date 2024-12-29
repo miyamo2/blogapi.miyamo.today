@@ -3,6 +3,7 @@ module blogapi.miyamo.today/read-model-updater
 go 1.23
 
 require (
+	blogapi.miyamo.today/core v0.24.0
 	github.com/Code-Hex/synchro v0.5.2
 	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go v1.55.5
@@ -12,7 +13,6 @@ require (
 	github.com/cockroachdb/errors v1.11.3
 	github.com/goccy/go-json v0.10.4
 	github.com/google/wire v0.6.0
-	blogapi.miyamo.today/core v0.24.0
 	github.com/miyamo2/dynmgrm v0.10.0
 	github.com/miyamo2/pqxd v0.5.0
 	github.com/miyamo2/sqldav v0.2.1
@@ -28,7 +28,6 @@ require (
 )
 
 require (
-	github.com/Songmu/flextime v0.1.0 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.7 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.48 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.15.20 // indirect
