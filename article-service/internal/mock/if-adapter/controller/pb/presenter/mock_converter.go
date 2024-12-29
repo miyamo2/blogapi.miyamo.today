@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	dto "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
-	grpc "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
+	dto "blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	grpc "blogapi.miyamo.today/article-service/internal/infra/grpc"
 	gomock "go.uber.org/mock/gomock"
 )
 

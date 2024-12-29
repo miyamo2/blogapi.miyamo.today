@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	db "github.com/miyamo2/blogapi.miyamo.today/core/db"
+	db "blogapi.miyamo.today/core/db"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -1,9 +1,9 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb"
+	"blogapi.miyamo.today/tag-service/internal/infra/grpc/grpcconnect"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc/grpcconnect"
 )
 
 // compatibility check

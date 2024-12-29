@@ -1,8 +1,8 @@
 package di
 
 import (
+	grpcgen "blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	grpcgen "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"

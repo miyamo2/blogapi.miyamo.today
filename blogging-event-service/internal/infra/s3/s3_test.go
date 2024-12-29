@@ -1,6 +1,8 @@
 package s3
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/mock/infra/s3"
+	"blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"bytes"
 	"context"
 	"fmt"
@@ -9,8 +11,6 @@ import (
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/mock/infra/s3"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"go.uber.org/mock/gomock"
 	"io"
 	"net/url"

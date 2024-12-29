@@ -7,9 +7,9 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
 
+	"blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	"blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"google.golang.org/protobuf/testing/protocmp"
 )
 

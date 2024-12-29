@@ -2,10 +2,10 @@
 package converters
 
 import (
+	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	"blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 )
 
 // ArticleConverter is the converter for an article.

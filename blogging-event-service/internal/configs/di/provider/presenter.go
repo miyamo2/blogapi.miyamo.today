@@ -1,9 +1,9 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/presenters"
+	impl "blogapi.miyamo.today/blogging-event-service/internal/if-adapter/presenter/pb"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/presenters"
-	impl "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/presenter/pb"
 )
 
 // compatibility check

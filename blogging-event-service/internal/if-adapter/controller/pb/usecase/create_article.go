@@ -2,8 +2,8 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
 )
 
 // CreateArticle is a use-case interface for creating an article.

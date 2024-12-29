@@ -2,8 +2,8 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 )
 
 // CreateArticle is the usecase for creating an article.

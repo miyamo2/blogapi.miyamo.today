@@ -1,4 +1,4 @@
-module github.com/miyamo2/blogapi.miyamo.today/read-model-updater
+module blogapi.miyamo.today/read-model-updater
 
 go 1.23
 
@@ -12,7 +12,7 @@ require (
 	github.com/cockroachdb/errors v1.11.3
 	github.com/goccy/go-json v0.10.4
 	github.com/google/wire v0.6.0
-	github.com/miyamo2/blogapi.miyamo.today/core v0.23.1
+	blogapi.miyamo.today/core v0.24.0
 	github.com/miyamo2/dynmgrm v0.10.0
 	github.com/miyamo2/pqxd v0.5.0
 	github.com/miyamo2/sqldav v0.2.1

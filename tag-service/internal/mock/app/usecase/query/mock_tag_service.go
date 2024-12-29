@@ -13,8 +13,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	db "github.com/miyamo2/blogapi.miyamo.today/core/db"
-	model "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
+	db "blogapi.miyamo.today/core/db"
+	model "blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
 	gomock "go.uber.org/mock/gomock"
 )
 

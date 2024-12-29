@@ -2,9 +2,9 @@
 package presenters
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
+	"blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
 )
 
 // ToCreateArticleResponse is a converter interface for converting from CreateArticle use-case's dto to pb response.

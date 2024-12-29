@@ -1,8 +1,8 @@
 package di
 
 import (
+	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/if-adapters/lambda"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 

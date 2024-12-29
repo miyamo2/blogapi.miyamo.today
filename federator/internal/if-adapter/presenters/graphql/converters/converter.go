@@ -1,16 +1,16 @@
 package converters
 
 import (
+	"blogapi.miyamo.today/core/log"
+	"blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 	"context"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"log/slog"
 
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	"blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 

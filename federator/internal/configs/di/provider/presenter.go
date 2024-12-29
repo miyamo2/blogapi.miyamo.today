@@ -1,9 +1,9 @@
 package provider
 
 import (
+	abstract "blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converters"
+	"blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/converters"
 	"github.com/google/wire"
-	abstract "github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converters"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/converters"
 )
 
 // compatibility check

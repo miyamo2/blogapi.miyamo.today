@@ -6,11 +6,11 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log/slog"
 
+	"blogapi.miyamo.today/core/log"
+	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
+	"blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )

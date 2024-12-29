@@ -7,10 +7,10 @@
 package di
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/configs/di/provider"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/converters"
+	"blogapi.miyamo.today/federator/internal/app/usecase"
+	"blogapi.miyamo.today/federator/internal/configs/di/provider"
+	"blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver"
+	"blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/converters"
 )
 
 // Injectors from wire.go:

@@ -5,10 +5,10 @@
 package grpcconnect
 
 import (
+	grpc "blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	grpc "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	strings "strings"

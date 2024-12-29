@@ -8,8 +8,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/fw/gqlgen"
+	"blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	"blogapi.miyamo.today/federator/internal/infra/fw/gqlgen"
 )
 
 // Noop is the resolver for the noop field.

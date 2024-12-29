@@ -2,8 +2,8 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 )
 
 // GetAll is a use-case interface for getting all tags.

@@ -1,13 +1,13 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
+	"blogapi.miyamo.today/blogging-event-service/internal/domain/model"
+	mcommand "blogapi.miyamo.today/blogging-event-service/internal/mock/app/usecase/command"
+	mdb "blogapi.miyamo.today/blogging-event-service/internal/mock/core/db"
+	"blogapi.miyamo.today/core/db"
 	"context"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/domain/model"
-	mcommand "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/mock/app/usecase/command"
-	mdb "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/mock/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	"go.uber.org/mock/gomock"
 	"reflect"
 	"testing"

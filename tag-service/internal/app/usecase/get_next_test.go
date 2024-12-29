@@ -7,14 +7,14 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
-	mquery "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/mock/app/usecase/query"
-	mdb "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/mock/core/db"
+	"blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
+	mquery "blogapi.miyamo.today/tag-service/internal/mock/app/usecase/query"
+	mdb "blogapi.miyamo.today/tag-service/internal/mock/core/db"
 	"go.uber.org/mock/gomock"
 
+	"blogapi.miyamo.today/core/db"
+	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 )
 
 func TestGetNext_Execute(t *testing.T) {

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/configs/di"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
-	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/tcp"
+	"blogapi.miyamo.today/blogging-event-service/internal/configs/di"
+	"blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
+	gwrapper "blogapi.miyamo.today/core/db/gorm"
+	"blogapi.miyamo.today/core/util/tcp"
 	nraws "github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2"
 	"log/slog"
 	"os"

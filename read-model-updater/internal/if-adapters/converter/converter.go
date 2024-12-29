@@ -1,14 +1,14 @@
 package converter
 
 import (
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
+	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/model"
 	"context"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/cockroachdb/errors"
 	"github.com/goccy/go-json"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/if-adapters/model"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"iter"

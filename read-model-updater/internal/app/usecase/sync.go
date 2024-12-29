@@ -1,15 +1,15 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/core/db"
+	gw "blogapi.miyamo.today/core/db/gorm"
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/query"
+	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/query"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/domain/model"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"

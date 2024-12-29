@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/configs/di"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
-	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
-	"github.com/miyamo2/blogapi.miyamo.today/core/util/tcp"
+	"blogapi.miyamo.today/article-service/internal/configs/di"
+	"blogapi.miyamo.today/article-service/internal/infra/grpc"
+	gwrapper "blogapi.miyamo.today/core/db/gorm"
+	"blogapi.miyamo.today/core/util/tcp"
 	"log/slog"
 	"os"
 	"os/signal"

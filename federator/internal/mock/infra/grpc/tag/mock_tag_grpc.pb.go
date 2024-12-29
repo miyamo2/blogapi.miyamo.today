@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	tag "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
+	tag "blogapi.miyamo.today/federator/internal/infra/grpc/tag"
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"

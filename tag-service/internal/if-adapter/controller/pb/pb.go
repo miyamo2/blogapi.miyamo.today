@@ -1,11 +1,11 @@
 package pb
 
 import (
+	"blogapi.miyamo.today/tag-service/internal/infra/grpc"
+	"blogapi.miyamo.today/tag-service/internal/infra/grpc/grpcconnect"
 	"connectrpc.com/connect"
 	"context"
 	"fmt"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc/grpcconnect"
 	"log/slog"
 
 	"github.com/miyamo2/altnrslog"
@@ -13,10 +13,10 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
+	"blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/presenter"
+	"blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/presenter"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 )
 
