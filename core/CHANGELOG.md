@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.24.0 - 2024-12-29
+
+### 💥 Breaking Changes
+
+- Package name is now `blogapi.miyamo.today/core` instead of `github.com/miyamo2/blogapi.miyamo.today/core`.
+
 ## 0.23.1 - 2024-12-24
 
 ## 0.23.0 - 2024-12-24
