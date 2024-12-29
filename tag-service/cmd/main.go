@@ -1,10 +1,10 @@
 package main
 
 import (
+	gwrapper "blogapi.miyamo.today/core/db/gorm"
 	"context"
 	"fmt"
 	"github.com/cockroachdb/errors"
-	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"golang.org/x/net/http2"
 	"log/slog"
 	"net/http"
@@ -12,8 +12,8 @@ import (
 	"os/signal"
 	"time"
 
+	"blogapi.miyamo.today/tag-service/internal/configs/di"
 	"github.com/joho/godotenv"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/configs/di"
 )
 
 const defaultPort = "8080"

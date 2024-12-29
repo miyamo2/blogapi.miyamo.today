@@ -1,18 +1,18 @@
 package pb
 
 import (
+	"blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
 
+	"blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	mpresenter "blogapi.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/presenter"
+	musecase "blogapi.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/usecase"
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
-	mpresenter "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/presenter"
-	musecase "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/usecase"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/emptypb"

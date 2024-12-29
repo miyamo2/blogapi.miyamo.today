@@ -1,9 +1,9 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/presenter"
+	impl "blogapi.miyamo.today/article-service/internal/if-adapter/presenter/pb"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/presenter"
-	impl "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/presenter/pb"
 )
 
 // compatibility check

@@ -2,8 +2,8 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 )
 
 // GetById is a use-case interface for getting an article by id.

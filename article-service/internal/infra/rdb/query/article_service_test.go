@@ -1,19 +1,19 @@
 package query
 
 import (
+	"blogapi.miyamo.today/article-service/internal/infra/rdb/query/internal/entity"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query/internal/entity"
 	"regexp"
 	"testing"
 
+	"blogapi.miyamo.today/core/db"
+	gwrapper "blogapi.miyamo.today/core/db/gorm"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"gorm.io/driver/postgres"
 )
 

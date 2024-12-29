@@ -2,10 +2,10 @@
 package presenter
 
 import (
+	"blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
+	"blogapi.miyamo.today/article-service/internal/infra/grpc"
 )
 
 type ToGetNextConverter interface {

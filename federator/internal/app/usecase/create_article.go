@@ -1,15 +1,15 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/core/log"
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
 	"context"
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"log/slog"
 
+	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 

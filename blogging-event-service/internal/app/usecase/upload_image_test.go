@@ -1,12 +1,12 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
 	"context"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
 
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/mock/app/usecase/storage"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/pkg"
+	"blogapi.miyamo.today/blogging-event-service/internal/mock/app/usecase/storage"
+	"blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"go.uber.org/mock/gomock"
 	"reflect"
 	"testing"

@@ -1,15 +1,15 @@
 package converters
 
 import (
+	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	"blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
+	"blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
+	"blogapi.miyamo.today/federator/internal/utils"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/presenters/graphql/model"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"testing"
 )
 

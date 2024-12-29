@@ -1,12 +1,12 @@
 package dynamo
 
 import (
+	"blogapi.miyamo.today/core/db"
+	gw "blogapi.miyamo.today/core/db/gorm"
+	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
 	"context"
 	"fmt"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/domain/model"
 	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/sqldav"
 	"github.com/newrelic/go-agent/v3/newrelic"

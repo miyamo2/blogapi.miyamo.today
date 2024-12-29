@@ -1,12 +1,12 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/infra/s3"
 	"context"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/s3"
 )
 
 func AWSConfig() *aws.Config {

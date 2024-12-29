@@ -5,19 +5,19 @@ import (
 	"fmt"
 	"log/slog"
 
+	"blogapi.miyamo.today/core/log"
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 
+	"blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	iquery "blogapi.miyamo.today/article-service/internal/app/usecase/query"
+	"blogapi.miyamo.today/article-service/internal/infra/rdb/query"
+	"blogapi.miyamo.today/core/db"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
-	iquery "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/query"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 )
 
-// GetById is an implementation of github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetById
+// GetById is an implementation of blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetById
 type GetById struct {
 	transactionManager db.TransactionManager
 	queryService       iquery.ArticleService

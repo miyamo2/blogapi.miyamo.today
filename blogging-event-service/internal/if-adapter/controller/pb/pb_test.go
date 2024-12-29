@@ -1,14 +1,14 @@
 package pb
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
+	"blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
+	mpresenter "blogapi.miyamo.today/blogging-event-service/internal/mock/if-adapter/controller/pb/presenter"
+	musecase "blogapi.miyamo.today/blogging-event-service/internal/mock/if-adapter/controller/pb/usecase"
+	"blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"context"
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
-	mpresenter "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/mock/if-adapter/controller/pb/presenter"
-	musecase "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/mock/if-adapter/controller/pb/usecase"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/testing/protocmp"
 	"testing"

@@ -7,16 +7,16 @@
 package di
 
 import (
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/query"
+	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/converter"
+	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/lambda"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/app/usecase/query"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/if-adapters/converter"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/if-adapters/lambda"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
 )
 
 import (

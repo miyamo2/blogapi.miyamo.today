@@ -2,10 +2,10 @@
 package query
 
 import (
+	"blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
 
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	"blogapi.miyamo.today/core/db"
 )
 
 // TagService is a query service interface.

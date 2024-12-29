@@ -1,20 +1,20 @@
 package provider
 
 import (
+	blogapictx "blogapi.miyamo.today/core/context"
+	"blogapi.miyamo.today/core/echo/middlewares"
 	"connectrpc.com/grpcreflect"
 	"errors"
 	"fmt"
 	"github.com/google/wire"
-	blogapictx "github.com/miyamo2/blogapi.miyamo.today/core/context"
-	"github.com/miyamo2/blogapi.miyamo.today/core/echo/middlewares"
 	"log/slog"
 	"net/http"
 
+	"blogapi.miyamo.today/core/echo/s11n"
+	"blogapi.miyamo.today/tag-service/internal/infra/grpc/grpcconnect"
 	"connectrpc.com/grpchealth"
 	"github.com/goccy/go-json"
 	"github.com/labstack/echo/v4"
-	"github.com/miyamo2/blogapi.miyamo.today/core/echo/s11n"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc/grpcconnect"
 	"github.com/newrelic/go-agent/v3/integrations/nrecho-v4"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"

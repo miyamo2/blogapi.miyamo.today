@@ -1,8 +1,8 @@
 package resolver
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converters"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
+	"blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converters"
+	"blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
 )
 
 // This file will not be regenerated automatically.

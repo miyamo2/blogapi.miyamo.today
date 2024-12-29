@@ -2,8 +2,8 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 )
 
 // GetPrev is a use-case interface for getting previous tags.

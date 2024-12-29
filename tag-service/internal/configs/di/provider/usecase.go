@@ -1,11 +1,11 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/core/db/gorm"
+	impl "blogapi.miyamo.today/tag-service/internal/app/usecase"
+	"blogapi.miyamo.today/tag-service/internal/app/usecase/query"
+	"blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
-	impl "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/query"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
 )
 
 // compatibility check

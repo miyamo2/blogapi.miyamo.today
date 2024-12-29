@@ -1,9 +1,9 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb"
+	"blogapi.miyamo.today/article-service/internal/infra/grpc"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/grpc"
 )
 
 // compatibility check

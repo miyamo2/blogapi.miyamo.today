@@ -1,8 +1,8 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/core/grpc/interceptor"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/core/grpc/interceptor"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/grpc"

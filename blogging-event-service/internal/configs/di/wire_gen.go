@@ -7,9 +7,9 @@
 package di
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/configs/di/provider"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/presenter/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/s3"
+	"blogapi.miyamo.today/blogging-event-service/internal/configs/di/provider"
+	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/presenter/pb"
+	"blogapi.miyamo.today/blogging-event-service/internal/infra/s3"
 )
 
 // Injectors from wire.go:

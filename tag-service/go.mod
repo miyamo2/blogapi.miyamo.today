@@ -1,8 +1,10 @@
-module github.com/miyamo2/blogapi.miyamo.today/tag-service
+module blogapi.miyamo.today/tag-service
 
 go 1.23
 
 require (
+	blogapi.miyamo.today/core v0.24.0
+	blogapi.miyamo.today/core/echo v0.4.0
 	connectrpc.com/connect v1.17.0
 	connectrpc.com/grpchealth v1.3.0
 	connectrpc.com/grpcreflect v1.2.0
@@ -15,8 +17,6 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.23.1
-	github.com/miyamo2/blogapi.miyamo.today/core/echo v0.3.0
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.2
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.1

@@ -1,9 +1,9 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/federator/internal/app/usecase"
+	abstract "blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase"
-	abstract "github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
 )
 
 // compatibility check

@@ -2,11 +2,11 @@
 package presenter
 
 import (
+	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"connectrpc.com/connect"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
+	"blogapi.miyamo.today/tag-service/internal/infra/grpc"
 )
 
 // ToGetByIdConverter is a converter interface for converting from GetById use-case's dto to pb response.

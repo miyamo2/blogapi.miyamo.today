@@ -1,11 +1,11 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/federator/internal/infra/grpc/article"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/tag"
 	"fmt"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/article"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
 	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/balancer/roundrobin"

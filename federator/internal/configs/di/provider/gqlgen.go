@@ -1,17 +1,17 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/core/graphql/middleware"
+	"blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver"
+	"blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converters"
+	"blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
+	"blogapi.miyamo.today/federator/internal/infra/fw/gqlgen"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
 	"github.com/99designs/gqlgen/graphql/handler/lru"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/core/graphql/middleware"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/presenter/converters"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/if-adapter/controller/graphql/resolver/usecase"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/fw/gqlgen"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/vektah/gqlparser/v2/ast"
 	"time"

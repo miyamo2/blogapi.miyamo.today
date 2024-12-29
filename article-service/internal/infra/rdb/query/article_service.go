@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"log/slog"
 
+	"blogapi.miyamo.today/core/log"
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 
+	"blogapi.miyamo.today/article-service/internal/infra/rdb/query/internal/entity"
+	"blogapi.miyamo.today/core/db"
+	gwrapper "blogapi.miyamo.today/core/db/gorm"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query/internal/entity"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	gwrapper "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"gorm.io/gorm"
 )
 

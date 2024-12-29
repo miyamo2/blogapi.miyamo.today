@@ -7,11 +7,11 @@ import (
 	"log/slog"
 	"net/http"
 
+	"blogapi.miyamo.today/core/echo/s11n"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/goccy/go-json"
 	"github.com/labstack/echo/v4"
-	"github.com/miyamo2/blogapi.miyamo.today/core/echo/s11n"
 	"github.com/newrelic/go-agent/v3/integrations/nrecho-v4"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"

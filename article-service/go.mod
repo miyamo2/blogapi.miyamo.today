@@ -1,8 +1,10 @@
-module github.com/miyamo2/blogapi.miyamo.today/article-service
+module blogapi.miyamo.today/article-service
 
 go 1.23
 
 require (
+	blogapi.miyamo.today/core v0.24.0
+	blogapi.miyamo.today/core/grpc v0.3.0
 	github.com/Code-Hex/synchro v0.5.2
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/cockroachdb/errors v1.11.3
@@ -11,8 +13,6 @@ require (
 	github.com/google/wire v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/blogapi.miyamo.today/core v0.23.1
-	github.com/miyamo2/blogapi.miyamo.today/core/grpc v0.2.5
 	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.1

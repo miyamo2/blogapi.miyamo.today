@@ -2,9 +2,9 @@
 package command
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/domain/model"
+	"blogapi.miyamo.today/core/db"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/domain/model"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 )
 
 // BloggingEventService is a command service for blogging events.

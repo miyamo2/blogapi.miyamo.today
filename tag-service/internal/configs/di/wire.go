@@ -3,8 +3,8 @@
 package di
 
 import (
+	"blogapi.miyamo.today/tag-service/internal/configs/di/provider"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/configs/di/provider"
 )
 
 func GetDependencies() *Dependencies {

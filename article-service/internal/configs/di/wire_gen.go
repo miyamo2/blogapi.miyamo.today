@@ -7,10 +7,10 @@
 package di
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/configs/di/provider"
-	pb2 "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/if-adapter/presenter/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
+	"blogapi.miyamo.today/article-service/internal/configs/di/provider"
+	pb2 "blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb"
+	"blogapi.miyamo.today/article-service/internal/if-adapter/presenter/pb"
+	"blogapi.miyamo.today/article-service/internal/infra/rdb/query"
 )
 
 // Injectors from wire.go:

@@ -1,11 +1,11 @@
 package provider
 
 import (
+	impl "blogapi.miyamo.today/blogging-event-service/internal/app/usecase"
+	"blogapi.miyamo.today/blogging-event-service/internal/app/usecase/command"
+	"blogapi.miyamo.today/blogging-event-service/internal/app/usecase/storage"
+	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/google/wire"
-	impl "github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/command"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/storage"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/usecase"
 )
 
 // compatibility check

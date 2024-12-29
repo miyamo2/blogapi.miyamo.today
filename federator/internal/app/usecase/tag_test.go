@@ -1,19 +1,19 @@
 package usecase
 
 import (
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/tag"
+	mgrpc "blogapi.miyamo.today/federator/internal/mock/infra/grpc/tag"
+	"blogapi.miyamo.today/federator/internal/utils"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
-	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/tag"
-	mgrpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/infra/grpc/tag"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"reflect"
 	"testing"
 
+	blogapictx "blogapi.miyamo.today/core/context"
+	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"github.com/cockroachdb/errors"
-	blogapictx "github.com/miyamo2/blogapi.miyamo.today/core/context"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"go.uber.org/mock/gomock"
 )
 

@@ -2,8 +2,8 @@
 package usecase
 
 import (
+	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
 )
 
 // Tag is a use-case of getting a tag by id.

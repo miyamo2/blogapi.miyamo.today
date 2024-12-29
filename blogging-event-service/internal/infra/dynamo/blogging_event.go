@@ -1,13 +1,13 @@
 package dynamo
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/domain/model"
+	"blogapi.miyamo.today/blogging-event-service/internal/pkg"
+	"blogapi.miyamo.today/core/db"
+	gw "blogapi.miyamo.today/core/db/gorm"
 	"context"
 	"fmt"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/domain/model"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/pkg"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
 	"github.com/miyamo2/sqldav"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"

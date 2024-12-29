@@ -1,15 +1,15 @@
 package usecase
 
 import (
+	blogapictx "blogapi.miyamo.today/core/context"
+	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
+	mgrpc "blogapi.miyamo.today/federator/internal/mock/infra/grpc/bloggingevent"
+	"blogapi.miyamo.today/federator/internal/utils"
 	"context"
 	"fmt"
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
-	blogapictx "github.com/miyamo2/blogapi.miyamo.today/core/context"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	grpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
-	mgrpc "github.com/miyamo2/blogapi.miyamo.today/federator/internal/mock/infra/grpc/bloggingevent"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/utils"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/testing/protocmp"
 	"testing"

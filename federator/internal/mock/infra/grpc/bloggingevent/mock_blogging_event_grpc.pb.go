@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	bloggingevent "github.com/miyamo2/blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
+	bloggingevent "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
 )

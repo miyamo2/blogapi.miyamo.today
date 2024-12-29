@@ -8,8 +8,8 @@ import (
 	"os/signal"
 	"time"
 
+	"blogapi.miyamo.today/federator/internal/configs/di"
 	"github.com/joho/godotenv"
-	"github.com/miyamo2/blogapi.miyamo.today/federator/internal/configs/di"
 )
 
 const defaultPort = "8080"

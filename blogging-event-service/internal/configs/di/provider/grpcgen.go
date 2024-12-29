@@ -1,11 +1,11 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb"
+	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/presenters"
+	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/usecase"
+	"blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
 	"github.com/google/wire"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/presenters"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/usecase"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
 )
 
 // compatibility check

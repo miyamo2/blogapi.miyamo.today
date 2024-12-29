@@ -2,10 +2,10 @@
 package query
 
 import (
+	"blogapi.miyamo.today/article-service/internal/infra/rdb/query"
 	"context"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
 
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
+	"blogapi.miyamo.today/core/db"
 )
 
 // ArticleService is a query service interface.

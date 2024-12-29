@@ -1,3 +1,7 @@
+blogapi.miyamo.today/core v0.24.0 h1:BJ2RUREukwazU3qqX5eYftvvWdG0tBNgIvTxvS8df/Y=
+blogapi.miyamo.today/core v0.24.0/go.mod h1:WheqmYNRtvXgIHvJ2A3kSGgOXJKIDHFS4qOE8N7E0Bo=
+blogapi.miyamo.today/core/echo v0.4.0 h1:gi6TD33gEFvQwe9KkEv5Uf4lvrn9IPAQzKLj5j7F0bU=
+blogapi.miyamo.today/core/echo v0.4.0/go.mod h1:o9NZq3c4LxzIKUFpnFpixZttineTNsxfaP9PPViEjek=
 connectrpc.com/connect v1.17.0 h1:W0ZqMhtVzn9Zhn2yATuUokDLO5N+gIuBWMOnsQrfmZk=
 connectrpc.com/connect v1.17.0/go.mod h1:0292hj1rnx8oFrStN7cB4jjVBeqs+Yx5yDIC2prWDO8=
 connectrpc.com/grpchealth v1.3.0 h1:FA3OIwAvuMokQIXQrY5LbIy8IenftksTP/lG4PbYN+E=
@@ -157,10 +161,6 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/miyamo2/altnrslog v0.4.2 h1:JZLZz0gDGtWnY0lki2LbxAfLUrxBUdYyuVn70brrhnU=
 github.com/miyamo2/altnrslog v0.4.2/go.mod h1:TVxN4FJJYkkxwsJJuXXUxuQgVlTOxMu92h2RKxoThxw=
-github.com/miyamo2/blogapi.miyamo.today/core v0.23.1 h1:1qNSwhdKjUWxoFcpBpyNsBWngD9UDxNnbMkBfRVwPbI=
-github.com/miyamo2/blogapi.miyamo.today/core v0.23.1/go.mod h1:/yXFNIMVomvOC3c1BZCGZlk86pHi6m4qC1GJJe6zTkA=
-github.com/miyamo2/blogapi.miyamo.today/core/echo v0.3.0 h1:v/SACu8VpzKYv4lRu0vpdlFLqDSdBjWZXF0rAW4/JK8=
-github.com/miyamo2/blogapi.miyamo.today/core/echo v0.3.0/go.mod h1:qGM9urk4MDNPWFwTDcNrP3QVVt1kXKSQA+fErw9O494=
 github.com/newrelic/go-agent/v3 v3.0.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
 github.com/newrelic/go-agent/v3 v3.35.1 h1:N43qBNDILmnwLDCSfnE1yy6adyoVEU95nAOtdUgG4vA=
 github.com/newrelic/go-agent/v3 v3.35.1/go.mod h1:GNTda53CohAhkgsc7/gqSsJhDZjj8vaky5u+vKz7wqM=

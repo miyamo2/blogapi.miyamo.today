@@ -3,9 +3,9 @@ managed:
   enabled: true
   override:
     - file_option: go_package
-      value: github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc
+      value: blogapi.miyamo.today/tag-service/internal/infra/grpc
 plugins:
   - local: protoc-gen-go
-    out: ../../../../
+    out: ../../
   - local: protoc-gen-connect-go
-    out: ../../../../
+    out: ../../

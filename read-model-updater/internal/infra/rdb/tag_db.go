@@ -1,12 +1,12 @@
 package rdb
 
 import (
+	"blogapi.miyamo.today/core/db"
+	gw "blogapi.miyamo.today/core/db/gorm"
+	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	gw "github.com/miyamo2/blogapi.miyamo.today/core/db/gorm"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/domain/model"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"

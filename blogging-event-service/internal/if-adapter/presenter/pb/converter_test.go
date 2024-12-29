@@ -1,11 +1,11 @@
 package pb
 
 import (
+	"blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
+	"blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
+	"blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"context"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
-	"github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/internal/pkg"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"

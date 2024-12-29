@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
-	"github.com/miyamo2/blogapi.miyamo.today/read-model-updater/internal/configs/di"
+	"blogapi.miyamo.today/core/log"
+	"blogapi.miyamo.today/read-model-updater/internal/configs/di"
 	nraws "github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2"
 	"github.com/newrelic/go-agent/v3/integrations/nrlambda"
 	"log/slog"

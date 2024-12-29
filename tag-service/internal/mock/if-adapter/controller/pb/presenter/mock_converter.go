@@ -13,9 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
+	dto "blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
+	grpc "blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	connect "connectrpc.com/connect"
-	dto "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
-	grpc "github.com/miyamo2/blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	gomock "go.uber.org/mock/gomock"
 )
 

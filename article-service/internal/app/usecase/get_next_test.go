@@ -7,12 +7,12 @@ import (
 	"reflect"
 	"testing"
 
+	"blogapi.miyamo.today/article-service/internal/app/usecase/dto"
+	"blogapi.miyamo.today/article-service/internal/infra/rdb/query"
+	mquery "blogapi.miyamo.today/article-service/internal/mock/app/usecase/query"
+	mdb "blogapi.miyamo.today/article-service/internal/mock/core/db"
+	"blogapi.miyamo.today/core/db"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/app/usecase/dto"
-	"github.com/miyamo2/blogapi.miyamo.today/article-service/internal/infra/rdb/query"
-	mquery "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/app/usecase/query"
-	mdb "github.com/miyamo2/blogapi.miyamo.today/article-service/internal/mock/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
 	"go.uber.org/mock/gomock"
 )
 
