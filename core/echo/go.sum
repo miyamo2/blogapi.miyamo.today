@@ -1,3 +1,5 @@
+blogapi.miyamo.today/core v0.24.0 h1:BJ2RUREukwazU3qqX5eYftvvWdG0tBNgIvTxvS8df/Y=
+blogapi.miyamo.today/core v0.24.0/go.mod h1:WheqmYNRtvXgIHvJ2A3kSGgOXJKIDHFS4qOE8N7E0Bo=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-logr/logr v1.4.2 h1:6pFjapn8bFcIbiKo3XT4j/BhANplGihG6tvd+8rYgrY=
@@ -21,8 +23,6 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/miyamo2/altnrslog v0.4.2 h1:JZLZz0gDGtWnY0lki2LbxAfLUrxBUdYyuVn70brrhnU=
 github.com/miyamo2/altnrslog v0.4.2/go.mod h1:TVxN4FJJYkkxwsJJuXXUxuQgVlTOxMu92h2RKxoThxw=
-github.com/miyamo2/blogapi.miyamo.today/core v0.23.1 h1:1qNSwhdKjUWxoFcpBpyNsBWngD9UDxNnbMkBfRVwPbI=
-github.com/miyamo2/blogapi.miyamo.today/core v0.23.1/go.mod h1:/yXFNIMVomvOC3c1BZCGZlk86pHi6m4qC1GJJe6zTkA=
 github.com/newrelic/go-agent/v3 v3.35.1 h1:N43qBNDILmnwLDCSfnE1yy6adyoVEU95nAOtdUgG4vA=
 github.com/newrelic/go-agent/v3 v3.35.1/go.mod h1:GNTda53CohAhkgsc7/gqSsJhDZjj8vaky5u+vKz7wqM=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 h1:QHUFxBPgC8YYcCRCGfteWJUnaQjetEFTmd67KQ44t1M=
