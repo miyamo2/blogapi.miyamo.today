@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 - 2024-12-29
+
+### 💥 Breaking Changes
+
+- Package name is now `blogapi.miyamo.today/core/grpc` instead of `github.com/miyamo2/blogapi.miyamo.today/core/grpc`
+
 ## 0.2.5 - 2024-12-14
 
 Dependencies Update

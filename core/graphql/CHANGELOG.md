@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 - 2024-12-29
+
+### 💥 Breaking Changes
+
+- Package name is now `blogapi.miyamo.today/core/graphql` instead of `github.com/miyamo2/blogapi.miyamo.today/core/graphql`
+
 ## 0.3.1 - 2024-12-14
 
 Dependencies Update
