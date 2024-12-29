@@ -4,7 +4,7 @@ package model
 
 import (
 	"blogapi.miyamo.today/federator/internal/pkg/gqlscalar"
-
+	"github.com/99designs/gqlgen/graphql"
 )
 
 type Node interface {

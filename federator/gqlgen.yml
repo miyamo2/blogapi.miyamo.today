@@ -87,13 +87,13 @@ models:
       - github.com/99designs/gqlgen/graphql.Int32
   DateTime:
     model:
-      - github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar.UTC
+      - blogapi.miyamo.today/federator/internal/pkg/gqlscalar.UTC
   Markdown:
     model:
       - github.com/99designs/gqlgen/graphql.String
   URL:
     model:
-      - github.com/miyamo2/blogapi.miyamo.today/federator/internal/pkg/gqlscalar.URL
+      - blogapi.miyamo.today/federator/internal/pkg/gqlscalar.URL
 directives:
   derivedTypes:
     skip_runtime: true
