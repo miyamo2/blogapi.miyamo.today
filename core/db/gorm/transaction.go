@@ -10,10 +10,10 @@ import (
 
 	"github.com/newrelic/go-agent/v3/newrelic"
 
+	"blogapi.miyamo.today/core/db"
+	"blogapi.miyamo.today/core/db/internal"
+	"blogapi.miyamo.today/core/log"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db/internal"
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 )
 
 var _ db.Transaction = (*Transaction)(nil)

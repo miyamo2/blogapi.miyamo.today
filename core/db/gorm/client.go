@@ -3,11 +3,11 @@ package gorm
 import (
 	"context"
 
+	"blogapi.miyamo.today/core/db/gorm/internal/conn"
+	"blogapi.miyamo.today/core/db/gorm/internal/dial"
+	"blogapi.miyamo.today/core/log"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db/gorm/internal/conn"
-	"github.com/miyamo2/blogapi.miyamo.today/core/db/gorm/internal/dial"
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
 	"gorm.io/gorm"
 )
 

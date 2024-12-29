@@ -8,8 +8,8 @@ import (
 
 	"github.com/miyamo2/altnrslog"
 
-	"github.com/miyamo2/blogapi.miyamo.today/core/db"
-	"github.com/miyamo2/blogapi.miyamo.today/core/log"
+	"blogapi.miyamo.today/core/db"
+	"blogapi.miyamo.today/core/log"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/gorm"
 )
