@@ -11,6 +11,8 @@ connectrpc.com/grpcreflect v1.2.0/go.mod h1:nwSOKmE8nU5u/CidgHtPYk1PFI3U9ignz7iD
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Code-Hex/synchro v0.5.2 h1:xBk/EIsqfu+yiuX9XC39xLXWm9mcLJ3zegem9itybz8=
 github.com/Code-Hex/synchro v0.5.2/go.mod h1:F9Z4Uf1SP7V5K1xPM17h19sS8DmuH6OFt8LI917ZpQ4=
+github.com/Code-Hex/synchro v0.5.3 h1:BRpfrQUBXDShRnF9JodEnbezlTopUOy5qcy6u1D5700=
+github.com/Code-Hex/synchro v0.5.3/go.mod h1:USpQ++dx1+FbEeaDWiTAwOQVALdTel2y6Hy61knSJ6c=
 github.com/DATA-DOG/go-sqlmock v1.5.2 h1:OcvFkGmslmlZibjAjaHm3L//6LiuBgolP7OputlJIzU=
 github.com/DATA-DOG/go-sqlmock v1.5.2/go.mod h1:88MAG/4G7SMwSE3CeA0ZKzrT5CiOU3OJ+JlNzwDqpNU=
 github.com/Masterminds/semver/v3 v3.1.1 h1:hLg3sBzpNErnxhQtUy/mmLR2I9foDujNK030IGemrRc=
