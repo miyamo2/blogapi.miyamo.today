@@ -1,6 +1,6 @@
 module blogapi.miyamo.today/tag-service
 
-go 1.23
+go 1.23.4
 
 require (
 	blogapi.miyamo.today/core v0.24.0
@@ -8,7 +8,7 @@ require (
 	connectrpc.com/connect v1.17.0
 	connectrpc.com/grpchealth v1.3.0
 	connectrpc.com/grpcreflect v1.2.0
-	github.com/Code-Hex/synchro v0.5.2
+	github.com/Code-Hex/synchro v0.5.3
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/cockroachdb/errors v1.11.3
 	github.com/goccy/go-json v0.10.4
