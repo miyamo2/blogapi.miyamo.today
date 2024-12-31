@@ -6,7 +6,7 @@ require (
 	blogapi.miyamo.today/core v0.24.0
 	blogapi.miyamo.today/core/echo v0.4.0
 	blogapi.miyamo.today/core/graphql v0.4.0
-	github.com/99designs/gqlgen v0.17.61
+	github.com/99designs/gqlgen v0.17.62
 	github.com/Code-Hex/synchro v0.5.3
 	github.com/cockroachdb/errors v1.11.3
 	github.com/goccy/go-json v0.10.4
