@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	blogapi.miyamo.today/core v0.24.0
-	github.com/99designs/gqlgen v0.17.61
+	github.com/99designs/gqlgen v0.17.62
 	github.com/Code-Hex/synchro v0.5.3
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/newrelic/go-agent/v3 v3.35.1
@@ -17,7 +17,7 @@ require (
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
-	github.com/vektah/gqlparser/v2 v2.5.20 // indirect
+	github.com/vektah/gqlparser/v2 v2.5.21 // indirect
 	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
