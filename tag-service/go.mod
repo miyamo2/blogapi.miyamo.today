@@ -5,7 +5,7 @@ go 1.23.4
 require (
 	blogapi.miyamo.today/core v0.24.0
 	blogapi.miyamo.today/core/echo v0.4.0
-	connectrpc.com/connect v1.17.0
+	connectrpc.com/connect v1.18.1
 	connectrpc.com/grpchealth v1.3.0
 	connectrpc.com/grpcreflect v1.2.0
 	github.com/Code-Hex/synchro v0.5.3
