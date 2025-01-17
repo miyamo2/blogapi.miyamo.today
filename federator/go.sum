@@ -93,6 +93,8 @@ github.com/newrelic/csec-go-agent v1.6.0/go.mod h1:LiLGm6a+q+hkmTnrxrYw1ToToirTh
 github.com/newrelic/go-agent/v3 v3.0.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
 github.com/newrelic/go-agent/v3 v3.35.1 h1:N43qBNDILmnwLDCSfnE1yy6adyoVEU95nAOtdUgG4vA=
 github.com/newrelic/go-agent/v3 v3.35.1/go.mod h1:GNTda53CohAhkgsc7/gqSsJhDZjj8vaky5u+vKz7wqM=
+github.com/newrelic/go-agent/v3 v3.36.0 h1:PdvJZiUu45qg2qrOeia0gYr1vaZ2Ro6QIlqlgHObHXo=
+github.com/newrelic/go-agent/v3 v3.36.0/go.mod h1:GNTda53CohAhkgsc7/gqSsJhDZjj8vaky5u+vKz7wqM=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1 h1:QHUFxBPgC8YYcCRCGfteWJUnaQjetEFTmd67KQ44t1M=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.1/go.mod h1:eATzimYSQLsG+VFK2xJXWmniC1+zr44K7Owz5WEAoqc=
 github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.0 h1:ugrng2OpXAEmwCQgLNmIGM8m0MZiitpswBVotVjyivA=
@@ -101,6 +103,8 @@ github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.2 h1:eGz53UYAOJJeiri
 github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.2/go.mod h1:nSDnTXhoJA7Nb4NO03amTIyr2M57/a79I635hHuqX6c=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4 h1:W2ieA1YqYINmo1CrHTmG48I+WQ8F9tiG85kIGKJcEmI=
 github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4/go.mod h1:rSwAuMNUCW8w5uLIQ46h0mV44yv53yuRgZIW6wylA7c=
+github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.5 h1:wekCqkQLJbYHim2exa1K+Rqsl07J3e3NlnfrYc7pwV4=
+github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.5/go.mod h1:dDoaVvDchfHQjY9uZxARWym0hquX+80nCQHRNu0RN3c=
 github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0 h1:TmAihIxCqgz3v9OR19J7mK2ggEQjGdhz2FEOvszU1SI=
 github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0/go.mod h1:yXUqcAzlKNVIsSyoaI2ILdpvBeMCz3Ko/ASl4Vbg2i4=
 github.com/newrelic/go-agent/v3/integrations/nrsecurityagent v1.1.0 h1:gqkTDYUHWUyiG+u0PJQCRh98rcHLxP/w7GtIbJDVULY=
