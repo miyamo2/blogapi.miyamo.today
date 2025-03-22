@@ -27,7 +27,7 @@ require (
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	github.com/oklog/ulid/v2 v2.1.0
 	go.uber.org/mock v0.5.0
-	golang.org/x/net v0.33.0
+	golang.org/x/net v0.36.0
 	google.golang.org/protobuf v1.36.5
 	gorm.io/gorm v1.25.12
 )
@@ -75,9 +75,9 @@ require (
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241223144023-3abc09e42ca8 // indirect
 	google.golang.org/grpc v1.70.0 // indirect
 	gorm.io/plugin/dbresolver v1.5.3 // indirect
