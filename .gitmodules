@@ -4,9 +4,6 @@
 [submodule "protogen/.proto"]
 	path = protogen/.proto
 	url = https://github.com/miyamo2/proto.miyamo.today
-[submodule "article-service/.proto"]
-	path = article-service/.proto
-	url = https://github.com/miyamo2/proto.miyamo.today
 [submodule "tag-service/.proto"]
 	path = tag-service/.proto
 	url = https://github.com/miyamo2/proto.miyamo.today
@@ -15,4 +12,7 @@
 	url = https://github.com/miyamo2/proto.miyamo.today
 [submodule "blogging-event-service/.proto"]
 	path = blogging-event-service/.proto
+	url = https://github.com/miyamo2/proto.miyamo.today
+[submodule "article-service/.proto"]
+	path = article-service/.proto
 	url = https://github.com/miyamo2/proto.miyamo.today
