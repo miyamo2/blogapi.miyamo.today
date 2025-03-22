@@ -1,6 +1,6 @@
 module blogapi.miyamo.today/core/graphql
 
-go 1.23.4
+go 1.24.0
 
 require (
 	blogapi.miyamo.today/core v0.24.0
