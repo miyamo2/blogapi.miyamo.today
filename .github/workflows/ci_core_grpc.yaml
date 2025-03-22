@@ -29,5 +29,6 @@ jobs:
       - uses: ./.github/custom_actions/ci/
         with:
           target: core/grpc
-          upload_codecov: true
+          github_workspace: ${{ github.workspace }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 

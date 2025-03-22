@@ -3,8 +3,14 @@ inputs:
   target:
     description: "target to test"
     required: true
-  upload_codecov:
-    description: "If true, upload coverage to Codecov. otherwise do not."
+  github_token:
+    description: "SSIA"
+    required: true
+  codecov_token:
+    description: "SSIA"
+  github_workspace:
+    description: "github.workspace"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -37,7 +43,7 @@ runs:
 
     - name: staticcheck with reviewdog
       env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
       working-directory: ${{ inputs.target }}
       shell: bash
       run: |
@@ -52,12 +58,12 @@ runs:
         exit ${PIPESTATUS[0]}
 
     - name: Upload unit test coverage to Codecov
-      if: ${{ inputs.upload_codecov == 'true' }}
+      if: ${{ inputs.codecov_token != '' }}
       uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # v5.4.0
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        directory: ${{ github.workspace }}
-        file: ${{ github.workspace }}/${{ inputs.target }}/coverage
+        token: ${{ inputs.codecov_token }}
+        directory: ${{ inputs.github_workspace }}
+        file: ${{ inputs.github_workspace }}/${{ inputs.target }}/coverage
         fail_ci_if_error: false
         verbose: true
         flags: ${{ inputs.target }}

@@ -28,6 +28,8 @@ jobs:
       - uses: ./.github/custom_actions/ci/
         with:
           target: read-model-updater
+          github_workspace: ${{ github.workspace }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up aws cli
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
