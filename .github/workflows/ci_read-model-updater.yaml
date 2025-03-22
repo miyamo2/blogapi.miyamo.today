@@ -22,39 +22,12 @@ permissions: write-all
 jobs:
   ci:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        goversion: [">=1.23"]
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Setup Go
-        uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
+      - use: ./.github/custom_actions/ci/
         with:
-          go-version: ${{ matrix.goversion }}
-
-      - name: Go Build
-        working-directory: ./read-model-updater
-        run: |
-          go mod tidy
-          go build -o ./bin/cmd ./cmd/main.go
-
-      - name: Setup reviewdog
-        uses: reviewdog/action-setup@e04ffabe3898a0af8d0fb1af00c188831c4b5893 # v1.3.2
-        with:
-          reviewdog_version: latest
-
-      - name: Setup staticcheck
-        working-directory: ./read-model-updater
-        run: |
-          go install honnef.co/go/tools/cmd/staticcheck@latest
-
-      - name: staticcheck with reviewdog
-        working-directory: ./read-model-updater
-        env:
-          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          staticcheck ./... | reviewdog -f=staticcheck -reporter=github-pr-check -level warning
+          target: read-model-updater
 
       - name: Set up aws cli
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
