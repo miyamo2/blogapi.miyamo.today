@@ -21,7 +21,7 @@ require (
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	github.com/vektah/gqlparser/v2 v2.5.21
 	go.uber.org/mock v0.5.0
-	google.golang.org/protobuf v1.36.2
+	google.golang.org/protobuf v1.36.5
 )
 
 require (
