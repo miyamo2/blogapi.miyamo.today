@@ -19,6 +19,7 @@ runs:
 
     - name: Go Build
       working-directory: ${{ inputs.target }}
+      shell: bash
       run: |
         go mod tidy
         go build -v ./...
@@ -30,6 +31,7 @@ runs:
 
     - name: Setup staticcheck
       working-directory: ${{ inputs.target }}
+      shell: bash
       run: |
         go install honnef.co/go/tools/cmd/staticcheck@latest
 
@@ -37,11 +39,13 @@ runs:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       working-directory: ${{ inputs.target }}
+      shell: bash
       run: |
         staticcheck ./... | reviewdog -f=staticcheck -reporter=github-pr-check -level warning
 
     - name: Go Test
       working-directory: ${{ inputs.target }}
+      shell: bash
       run: |
         TARGET=$(go list ./... | grep -v "mock" | grep -v "infra/fw/gqlgen" | grep -v "configs" | grep -v "infra/grpc")
         go test $TARGET -v -coverprofile=coverage.out
