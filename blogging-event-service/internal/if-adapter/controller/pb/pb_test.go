@@ -6,9 +6,11 @@ import (
 	mpresenter "blogapi.miyamo.today/blogging-event-service/internal/mock/if-adapter/controller/pb/presenter"
 	musecase "blogapi.miyamo.today/blogging-event-service/internal/mock/if-adapter/controller/pb/usecase"
 	"blogapi.miyamo.today/blogging-event-service/internal/pkg"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/cockroachdb/errors"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/testing/protocmp"
 	"testing"
@@ -17,10 +19,10 @@ import (
 func TestBloggingEventServiceServer_CreateArticle(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.CreateArticleRequest
+		in  *connect.Request[grpc.CreateArticleRequest]
 	}
 	type want struct {
-		response *grpc.BloggingEventResponse
+		response *connect.Response[grpc.BloggingEventResponse]
 		err      error
 	}
 	type testCase struct {
@@ -50,15 +52,15 @@ func TestBloggingEventServiceServer_CreateArticle(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.CreateArticleRequest{
+				in: connect.NewRequest(&grpc.CreateArticleRequest{
 					Title:        "title",
 					Body:         "body",
 					ThumbnailUrl: "https://example.com/example.jpg",
 					TagNames:     []string{"tag1", "tag2"},
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"},
+				response: connect.NewResponse(&grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"}),
 			},
 		},
 		"unhappy_path/usecase-returns-error": {
@@ -77,12 +79,12 @@ func TestBloggingEventServiceServer_CreateArticle(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.CreateArticleRequest{
+				in: connect.NewRequest(&grpc.CreateArticleRequest{
 					Title:        "title",
 					Body:         "body",
 					ThumbnailUrl: "https://example.com/example.jpg",
 					TagNames:     []string{"tag1", "tag2"},
-				},
+				}),
 			},
 			want: want{
 				err: errInUsecase,
@@ -105,12 +107,12 @@ func TestBloggingEventServiceServer_CreateArticle(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.CreateArticleRequest{
+				in: connect.NewRequest(&grpc.CreateArticleRequest{
 					Title:        "title",
 					Body:         "body",
 					ThumbnailUrl: "https://example.com/example.jpg",
 					TagNames:     []string{"tag1", "tag2"},
-				},
+				}),
 			},
 			want: want{
 				err: errInConverter,
@@ -124,15 +126,19 @@ func TestBloggingEventServiceServer_CreateArticle(t *testing.T) {
 			out := tt.outDto
 			u := musecase.NewMockCreateArticle(ctrl)
 			tt.setupUsecase(out, u)
-			response := tt.want.response
+
+			var message *grpc.BloggingEventResponse
+			if tt.want.response != nil {
+				message = tt.want.response.Msg
+			}
 			conv := mpresenter.NewMockToCreateArticleResponse(ctrl)
-			tt.setupConverter(out, response, conv)
+			tt.setupConverter(out, message, conv)
 			s := NewBloggingEventServiceServer(WithCreateArticleUsecase(u), WithCreateArticleConverter(conv))
 			got, err := s.CreateArticle(tt.args.ctx, tt.args.in)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.BloggingEventResponse]{})}...); diff != "" {
 				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -142,10 +148,10 @@ func TestBloggingEventServiceServer_CreateArticle(t *testing.T) {
 func TestBloggingEventServiceServer_UpdateArticleTitle(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.UpdateArticleTitleRequest
+		in  *connect.Request[grpc.UpdateArticleTitleRequest]
 	}
 	type want struct {
-		response *grpc.BloggingEventResponse
+		response *connect.Response[grpc.BloggingEventResponse]
 		err      error
 	}
 	type testCase struct {
@@ -176,13 +182,14 @@ func TestBloggingEventServiceServer_UpdateArticleTitle(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.UpdateArticleTitleRequest{
-					Id:    "articleID",
-					Title: "title",
-				},
+				in: connect.NewRequest(
+					&grpc.UpdateArticleTitleRequest{
+						Id:    "articleID",
+						Title: "title",
+					}),
 			},
 			want: want{
-				response: &grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"},
+				response: connect.NewResponse(&grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"}),
 			},
 		},
 		"unhappy_path/usecase-returns-error": {
@@ -201,10 +208,10 @@ func TestBloggingEventServiceServer_UpdateArticleTitle(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.UpdateArticleTitleRequest{
+				in: connect.NewRequest(&grpc.UpdateArticleTitleRequest{
 					Id:    "articleID",
 					Title: "title",
-				},
+				}),
 			},
 			want: want{
 				err: errInUsecase,
@@ -227,10 +234,10 @@ func TestBloggingEventServiceServer_UpdateArticleTitle(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.UpdateArticleTitleRequest{
+				in: connect.NewRequest(&grpc.UpdateArticleTitleRequest{
 					Id:    "articleID",
 					Title: "title",
-				},
+				}),
 			},
 			want: want{
 				err: errInConverter,
@@ -246,14 +253,18 @@ func TestBloggingEventServiceServer_UpdateArticleTitle(t *testing.T) {
 			u := musecase.NewMockUpdateArticleTitle(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
+			var message *grpc.BloggingEventResponse
+			if response != nil {
+				message = response.Msg
+			}
 			conv := mpresenter.NewMockToUpdateArticleTitleResponse(ctrl)
-			tt.setupConverter(out, response, conv)
+			tt.setupConverter(out, message, conv)
 			s := NewBloggingEventServiceServer(WithUpdateArticleTitleUsecase(u), WithUpdateArticleTitleConverter(conv))
 			got, err := s.UpdateArticleTitle(tt.args.ctx, tt.args.in)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.BloggingEventResponse]{})}...); diff != "" {
 				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -263,10 +274,10 @@ func TestBloggingEventServiceServer_UpdateArticleTitle(t *testing.T) {
 func TestBloggingEventServiceServer_UpdateArticleBody(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.UpdateArticleBodyRequest
+		in  *connect.Request[grpc.UpdateArticleBodyRequest]
 	}
 	type want struct {
-		response *grpc.BloggingEventResponse
+		response *connect.Response[grpc.BloggingEventResponse]
 		err      error
 	}
 	type testCase struct {
@@ -297,13 +308,13 @@ func TestBloggingEventServiceServer_UpdateArticleBody(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.UpdateArticleBodyRequest{
+				in: connect.NewRequest(&grpc.UpdateArticleBodyRequest{
 					Id:   "articleID",
 					Body: "body",
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"},
+				response: connect.NewResponse(&grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"}),
 			},
 		},
 		"unhappy_path/usecase-returns-error": {
@@ -322,10 +333,10 @@ func TestBloggingEventServiceServer_UpdateArticleBody(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.UpdateArticleBodyRequest{
+				in: connect.NewRequest(&grpc.UpdateArticleBodyRequest{
 					Id:   "articleID",
 					Body: "body",
-				},
+				}),
 			},
 			want: want{
 				err: errInUsecase,
@@ -348,10 +359,10 @@ func TestBloggingEventServiceServer_UpdateArticleBody(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.UpdateArticleBodyRequest{
+				in: connect.NewRequest(&grpc.UpdateArticleBodyRequest{
 					Id:   "articleID",
 					Body: "body",
-				},
+				}),
 			},
 			want: want{
 				err: errInConverter,
@@ -367,14 +378,18 @@ func TestBloggingEventServiceServer_UpdateArticleBody(t *testing.T) {
 			u := musecase.NewMockUpdateArticleBody(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
+			var message *grpc.BloggingEventResponse
+			if response != nil {
+				message = response.Msg
+			}
 			conv := mpresenter.NewMockToUpdateArticleBodyResponse(ctrl)
-			tt.setupConverter(out, response, conv)
+			tt.setupConverter(out, message, conv)
 			s := NewBloggingEventServiceServer(WithUpdateArticleBodyUsecase(u), WithUpdateArticleBodyConverter(conv))
 			got, err := s.UpdateArticleBody(tt.args.ctx, tt.args.in)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.BloggingEventResponse]{})}...); diff != "" {
 				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -384,10 +399,10 @@ func TestBloggingEventServiceServer_UpdateArticleBody(t *testing.T) {
 func TestBloggingEventServiceServer_UpdateArticleThumbnail(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.UpdateArticleThumbnailRequest
+		in  *connect.Request[grpc.UpdateArticleThumbnailRequest]
 	}
 	type want struct {
-		response *grpc.BloggingEventResponse
+		response *connect.Response[grpc.BloggingEventResponse]
 		err      error
 	}
 	type testCase struct {
@@ -418,13 +433,13 @@ func TestBloggingEventServiceServer_UpdateArticleThumbnail(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.UpdateArticleThumbnailRequest{
+				in: connect.NewRequest(&grpc.UpdateArticleThumbnailRequest{
 					Id:           "articleID",
 					ThumbnailUrl: "https://example.com/example.jpg",
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"},
+				response: connect.NewResponse(&grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"}),
 			},
 		},
 		"unhappy_path/usecase-returns-error": {
@@ -443,10 +458,10 @@ func TestBloggingEventServiceServer_UpdateArticleThumbnail(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.UpdateArticleThumbnailRequest{
+				in: connect.NewRequest(&grpc.UpdateArticleThumbnailRequest{
 					Id:           "articleID",
 					ThumbnailUrl: "https://example.com/example.jpg",
-				},
+				}),
 			},
 			want: want{
 				err: errInUsecase,
@@ -469,10 +484,10 @@ func TestBloggingEventServiceServer_UpdateArticleThumbnail(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.UpdateArticleThumbnailRequest{
+				in: connect.NewRequest(&grpc.UpdateArticleThumbnailRequest{
 					Id:           "articleID",
 					ThumbnailUrl: "https://example.com/example.jpg",
-				},
+				}),
 			},
 			want: want{
 				err: errInConverter,
@@ -488,14 +503,18 @@ func TestBloggingEventServiceServer_UpdateArticleThumbnail(t *testing.T) {
 			u := musecase.NewMockUpdateArticleThumbnail(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
+			var message *grpc.BloggingEventResponse
+			if response != nil {
+				message = response.Msg
+			}
 			conv := mpresenter.NewMockToUpdateArticleThumbnailResponse(ctrl)
-			tt.setupConverter(out, response, conv)
+			tt.setupConverter(out, message, conv)
 			s := NewBloggingEventServiceServer(WithUpdateArticleThumbnailUsecase(u), WithUpdateArticleThumbnailConverter(conv))
 			got, err := s.UpdateArticleThumbnail(tt.args.ctx, tt.args.in)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.BloggingEventResponse]{})}...); diff != "" {
 				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -505,10 +524,10 @@ func TestBloggingEventServiceServer_UpdateArticleThumbnail(t *testing.T) {
 func TestBloggingEventServiceServer_AttachTags(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.AttachTagsRequest
+		in  *connect.Request[grpc.AttachTagsRequest]
 	}
 	type want struct {
-		response *grpc.BloggingEventResponse
+		response *connect.Response[grpc.BloggingEventResponse]
 		err      error
 	}
 	type testCase struct {
@@ -539,13 +558,13 @@ func TestBloggingEventServiceServer_AttachTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.AttachTagsRequest{
+				in: connect.NewRequest(&grpc.AttachTagsRequest{
 					Id:       "articleID",
 					TagNames: []string{"tag1", "tag2"},
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"},
+				response: connect.NewResponse(&grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"}),
 			},
 		},
 		"unhappy_path/usecase-returns-error": {
@@ -564,10 +583,10 @@ func TestBloggingEventServiceServer_AttachTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.AttachTagsRequest{
+				in: connect.NewRequest(&grpc.AttachTagsRequest{
 					Id:       "articleID",
 					TagNames: []string{"tag1", "tag2"},
-				},
+				}),
 			},
 			want: want{
 				err: errInUsecase,
@@ -590,10 +609,10 @@ func TestBloggingEventServiceServer_AttachTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.AttachTagsRequest{
+				in: connect.NewRequest(&grpc.AttachTagsRequest{
 					Id:       "articleID",
 					TagNames: []string{"tag1", "tag2"},
-				},
+				}),
 			},
 			want: want{
 				err: errInConverter,
@@ -609,14 +628,18 @@ func TestBloggingEventServiceServer_AttachTags(t *testing.T) {
 			u := musecase.NewMockAttachTags(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
+			var message *grpc.BloggingEventResponse
+			if response != nil {
+				message = response.Msg
+			}
 			conv := mpresenter.NewMockToAttachTagsResponse(ctrl)
-			tt.setupConverter(out, response, conv)
+			tt.setupConverter(out, message, conv)
 			s := NewBloggingEventServiceServer(WithAttachTagsUsecase(u), WithAttachTagsConverter(conv))
 			got, err := s.AttachTags(tt.args.ctx, tt.args.in)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.BloggingEventResponse]{})}...); diff != "" {
 				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -626,10 +649,10 @@ func TestBloggingEventServiceServer_AttachTags(t *testing.T) {
 func TestBloggingEventServiceServer_DetachTags(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.DetachTagsRequest
+		in  *connect.Request[grpc.DetachTagsRequest]
 	}
 	type want struct {
-		response *grpc.BloggingEventResponse
+		response *connect.Response[grpc.BloggingEventResponse]
 		err      error
 	}
 	type testCase struct {
@@ -660,13 +683,13 @@ func TestBloggingEventServiceServer_DetachTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.DetachTagsRequest{
+				in: connect.NewRequest(&grpc.DetachTagsRequest{
 					Id:       "articleID",
 					TagNames: []string{"tag1", "tag2"},
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"},
+				response: connect.NewResponse(&grpc.BloggingEventResponse{EventId: "eventID", ArticleId: "articleID"}),
 			},
 		},
 		"unhappy_path/usecase-returns-error": {
@@ -685,10 +708,10 @@ func TestBloggingEventServiceServer_DetachTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.DetachTagsRequest{
+				in: connect.NewRequest(&grpc.DetachTagsRequest{
 					Id:       "articleID",
 					TagNames: []string{"tag1", "tag2"},
-				},
+				}),
 			},
 			want: want{
 				err: errInUsecase,
@@ -711,10 +734,10 @@ func TestBloggingEventServiceServer_DetachTags(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.DetachTagsRequest{
+				in: connect.NewRequest(&grpc.DetachTagsRequest{
 					Id:       "articleID",
 					TagNames: []string{"tag1", "tag2"},
-				},
+				}),
 			},
 			want: want{
 				err: errInConverter,
@@ -730,14 +753,18 @@ func TestBloggingEventServiceServer_DetachTags(t *testing.T) {
 			u := musecase.NewMockDetachTags(ctrl)
 			tt.setupUsecase(out, u)
 			response := tt.want.response
+			var message *grpc.BloggingEventResponse
+			if response != nil {
+				message = response.Msg
+			}
 			conv := mpresenter.NewMockToDetachTagsResponse(ctrl)
-			tt.setupConverter(out, response, conv)
+			tt.setupConverter(out, message, conv)
 			s := NewBloggingEventServiceServer(WithDetachTagsUsecase(u), WithDetachTagsConverter(conv))
 			got, err := s.DetachTags(tt.args.ctx, tt.args.in)
 			if !errors.Is(err, tt.want.err) {
 				t.Errorf("CreateArticle() error = %v, wantErr %v", err, tt.want.err)
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.BloggingEventResponse]{})}...); diff != "" {
 				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
 			}
 		})

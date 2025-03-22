@@ -17,7 +17,6 @@ import (
 func GetDependencies() *Dependencies {
 	config := provider.AWSConfig()
 	application := provider.NewRelic()
-	server := provider.GRPCServer(application)
 	bloggingEventCommandService := provider.BloggingEventCommandService()
 	createArticle := provider.CreateArticleUsecase(bloggingEventCommandService)
 	converter := pb.NewConverter()
@@ -30,7 +29,8 @@ func GetDependencies() *Dependencies {
 	uploader := s3.NewUploader(client)
 	uploadImage := provider.UploadImageUsecase(uploader)
 	bloggingEventServiceServer := provider.NewBloggingEventServiceServer(createArticle, converter, updateArticleTitle, converter, updateArticleBody, converter, updateArticleThumbnail, converter, attachTags, converter, detachTags, converter, uploadImage, converter)
+	echo := provider.Echo(bloggingEventServiceServer, application)
 	dialector := provider.GormDialector(config)
-	dependencies := NewDependencies(config, server, application, bloggingEventServiceServer, dialector)
+	dependencies := NewDependencies(config, application, echo, dialector)
 	return dependencies
 }

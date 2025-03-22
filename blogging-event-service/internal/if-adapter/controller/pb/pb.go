@@ -5,29 +5,29 @@ import (
 	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/presenters"
 	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/usecase"
 	grpcgen "blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
+	"blogapi.miyamo.today/blogging-event-service/internal/infra/grpc/grpcconnect"
 	"blogapi.miyamo.today/core/log"
 	"bytes"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"google.golang.org/grpc"
-	"io"
 	"log/slog"
 	"net/url"
 )
 
-var _ grpcgen.BloggingEventServiceServer = (*BloggingEventServiceServer)(nil)
+var _ grpcconnect.BloggingEventServiceHandler = (*BloggingEventServiceServer)(nil)
 
 // BloggingEventServiceServer is implementation of grpc.BloggingEventServiceServer
 type BloggingEventServiceServer struct {
 	bloggingEventServiceServerConfig
-	grpcgen.UnimplementedBloggingEventServiceServer
+	grpcconnect.UnimplementedBloggingEventServiceHandler
 }
 
 // CreateArticle is implementation of grpc.BloggingEventServiceServer.CreateArticle
-func (s *BloggingEventServiceServer) CreateArticle(ctx context.Context, req *grpcgen.CreateArticleRequest) (*grpcgen.BloggingEventResponse, error) {
+func (s *BloggingEventServiceServer) CreateArticle(ctx context.Context, req *connect.Request[grpcgen.CreateArticleRequest]) (*connect.Response[grpcgen.BloggingEventResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAllArticles").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -36,10 +36,11 @@ func (s *BloggingEventServiceServer) CreateArticle(ctx context.Context, req *grp
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger = log.DefaultLogger()
 	}
-	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters", slog.String("title", req.GetTitle()), slog.String("body", req.GetBody()), slog.String("thumbnail", req.GetThumbnailUrl()), slog.Any("tagNames", req.GetTagNames())))
 
-	inDto := dto.NewCreateArticleInDto(req.GetTitle(), req.GetBody(), req.GetThumbnailUrl(), req.GetTagNames())
+	logger.InfoContext(ctx, "BEGIN",
+		slog.Group("parameters", slog.String("title", req.Msg.GetTitle()), slog.String("body", req.Msg.GetBody()), slog.String("thumbnail", req.Msg.GetThumbnailUrl()), slog.Any("tagNames", req.Msg.GetTagNames())))
+
+	inDto := dto.NewCreateArticleInDto(req.Msg.GetTitle(), req.Msg.GetBody(), req.Msg.GetThumbnailUrl(), req.Msg.GetTagNames())
 	outDto, err := s.createArticleUsecase.Execute(ctx, &inDto)
 	if err != nil {
 		return nil, err
@@ -56,11 +57,11 @@ func (s *BloggingEventServiceServer) CreateArticle(ctx context.Context, req *grp
 	}
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("grpc.BloggingEventResponse", *response)))
-	return response, nil
+			slog.String("grpc.BloggingEventResponse", response.String())))
+	return connect.NewResponse(response), nil
 }
 
-func (s *BloggingEventServiceServer) UpdateArticleTitle(ctx context.Context, request *grpcgen.UpdateArticleTitleRequest) (*grpcgen.BloggingEventResponse, error) {
+func (s *BloggingEventServiceServer) UpdateArticleTitle(ctx context.Context, request *connect.Request[grpcgen.UpdateArticleTitleRequest]) (*connect.Response[grpcgen.BloggingEventResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("UpdateArticleTitle").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -70,9 +71,9 @@ func (s *BloggingEventServiceServer) UpdateArticleTitle(ctx context.Context, req
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters", slog.String("article id", request.GetId()), slog.String("title", request.GetTitle())))
+		slog.Group("parameters", slog.String("article id", request.Msg.GetId()), slog.String("title", request.Msg.GetTitle())))
 
-	inDto := dto.NewUpdateArticleTitleInDto(request.GetId(), request.GetTitle())
+	inDto := dto.NewUpdateArticleTitleInDto(request.Msg.GetId(), request.Msg.GetTitle())
 	outDto, err := s.updateArticleTitleUsecase.Execute(ctx, &inDto)
 	if err != nil {
 		return nil, err
@@ -89,11 +90,11 @@ func (s *BloggingEventServiceServer) UpdateArticleTitle(ctx context.Context, req
 	}
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("grpc.BloggingEventResponse", *response)))
-	return response, nil
+			slog.String("grpc.BloggingEventResponse", response.String())))
+	return connect.NewResponse(response), nil
 }
 
-func (s *BloggingEventServiceServer) UpdateArticleBody(ctx context.Context, request *grpcgen.UpdateArticleBodyRequest) (*grpcgen.BloggingEventResponse, error) {
+func (s *BloggingEventServiceServer) UpdateArticleBody(ctx context.Context, request *connect.Request[grpcgen.UpdateArticleBodyRequest]) (*connect.Response[grpcgen.BloggingEventResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("UpdateArticleBody").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -103,9 +104,9 @@ func (s *BloggingEventServiceServer) UpdateArticleBody(ctx context.Context, requ
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters", slog.String("article id", request.GetId()), slog.String("body", request.GetBody())))
+		slog.Group("parameters", slog.String("article id", request.Msg.GetId()), slog.String("body", request.Msg.GetBody())))
 
-	inDto := dto.NewUpdateArticleBodyInDto(request.GetId(), request.GetBody())
+	inDto := dto.NewUpdateArticleBodyInDto(request.Msg.GetId(), request.Msg.GetBody())
 	outDto, err := s.updateArticleBodyUsecase.Execute(ctx, &inDto)
 	if err != nil {
 		return nil, err
@@ -122,11 +123,11 @@ func (s *BloggingEventServiceServer) UpdateArticleBody(ctx context.Context, requ
 	}
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("grpc.BloggingEventResponse", *response)))
-	return response, nil
+			slog.String("grpc.BloggingEventResponse", response.String())))
+	return connect.NewResponse(response), nil
 }
 
-func (s *BloggingEventServiceServer) UpdateArticleThumbnail(ctx context.Context, request *grpcgen.UpdateArticleThumbnailRequest) (*grpcgen.BloggingEventResponse, error) {
+func (s *BloggingEventServiceServer) UpdateArticleThumbnail(ctx context.Context, request *connect.Request[grpcgen.UpdateArticleThumbnailRequest]) (*connect.Response[grpcgen.BloggingEventResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("UpdateArticleThumbnail").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -136,15 +137,15 @@ func (s *BloggingEventServiceServer) UpdateArticleThumbnail(ctx context.Context,
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters", slog.String("article id", request.GetId()), slog.String("thumbnail", request.GetThumbnailUrl())))
+		slog.Group("parameters", slog.String("article id", request.Msg.GetId()), slog.String("thumbnail", request.Msg.GetThumbnailUrl())))
 
-	thumbnailUrl, err := url.Parse(request.GetThumbnailUrl())
+	thumbnailUrl, err := url.Parse(request.Msg.GetThumbnailUrl())
 	if err != nil {
 		err = errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	inDto := dto.NewUpdateArticleThumbnailInDto(request.GetId(), *thumbnailUrl)
+	inDto := dto.NewUpdateArticleThumbnailInDto(request.Msg.GetId(), *thumbnailUrl)
 	outDto, err := s.updateArticleThumbnailUsecase.Execute(ctx, &inDto)
 	if err != nil {
 		return nil, err
@@ -161,11 +162,11 @@ func (s *BloggingEventServiceServer) UpdateArticleThumbnail(ctx context.Context,
 	}
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("grpc.BloggingEventResponse", *response)))
-	return response, nil
+			slog.String("grpc.BloggingEventResponse", response.String())))
+	return connect.NewResponse(response), nil
 }
 
-func (s *BloggingEventServiceServer) AttachTags(ctx context.Context, request *grpcgen.AttachTagsRequest) (*grpcgen.BloggingEventResponse, error) {
+func (s *BloggingEventServiceServer) AttachTags(ctx context.Context, request *connect.Request[grpcgen.AttachTagsRequest]) (*connect.Response[grpcgen.BloggingEventResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("AttachTag").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -175,9 +176,9 @@ func (s *BloggingEventServiceServer) AttachTags(ctx context.Context, request *gr
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters", slog.String("article id", request.GetId()), slog.Any("attach_tag", request.GetTagNames())))
+		slog.Group("parameters", slog.String("article id", request.Msg.GetId()), slog.Any("attach_tag", request.Msg.GetTagNames())))
 
-	inDto := dto.NewAttachTagsInDto(request.GetId(), request.GetTagNames())
+	inDto := dto.NewAttachTagsInDto(request.Msg.GetId(), request.Msg.GetTagNames())
 	outDto, err := s.attachTagUsecase.Execute(ctx, &inDto)
 	if err != nil {
 		err = errors.WithStack(err)
@@ -196,11 +197,11 @@ func (s *BloggingEventServiceServer) AttachTags(ctx context.Context, request *gr
 	}
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("grpc.BloggingEventResponse", *response)))
-	return response, nil
+			slog.String("grpc.BloggingEventResponse", response.String())))
+	return connect.NewResponse(response), nil
 }
 
-func (s *BloggingEventServiceServer) DetachTags(ctx context.Context, request *grpcgen.DetachTagsRequest) (*grpcgen.BloggingEventResponse, error) {
+func (s *BloggingEventServiceServer) DetachTags(ctx context.Context, request *connect.Request[grpcgen.DetachTagsRequest]) (*connect.Response[grpcgen.BloggingEventResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("DetachTag").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -210,9 +211,9 @@ func (s *BloggingEventServiceServer) DetachTags(ctx context.Context, request *gr
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters", slog.String("article id", request.GetId()), slog.Any("detach_tag", request.GetTagNames())))
+		slog.Group("parameters", slog.String("article id", request.Msg.GetId()), slog.Any("detach_tag", request.Msg.GetTagNames())))
 
-	inDto := dto.NewDetachTagsInDto(request.GetId(), request.GetTagNames())
+	inDto := dto.NewDetachTagsInDto(request.Msg.GetId(), request.Msg.GetTagNames())
 	outDto, err := s.detachTagUsecase.Execute(ctx, &inDto)
 	if err != nil {
 		err = errors.WithStack(err)
@@ -231,13 +232,11 @@ func (s *BloggingEventServiceServer) DetachTags(ctx context.Context, request *gr
 	}
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("grpc.BloggingEventResponse", *response)))
-	return response, nil
+			slog.String("grpc.BloggingEventResponse", response.String())))
+	return connect.NewResponse(response), nil
 }
 
-func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStreamingServer[grpcgen.UploadImageRequest, grpcgen.UploadImageResponse]) (err error) {
-	ctx := streamingServer.Context()
-
+func (s *BloggingEventServiceServer) UploadImage(ctx context.Context, streamingServer *connect.ClientStream[grpcgen.UploadImageRequest]) (*connect.Response[grpcgen.UploadImageResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("DetachTag").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -255,65 +254,52 @@ func (s *BloggingEventServiceServer) UploadImage(streamingServer grpc.ClientStre
 	)
 	buf := bytes.NewBuffer(binary)
 
-	streamOngoing := true
-	for streamOngoing {
-		req, streamingErr := streamingServer.Recv()
-		switch {
-		case errors.Is(streamingErr, io.EOF):
-			logger.InfoContext(ctx, "Stream EOF")
-			streamOngoing = false
-		case streamingErr != nil:
-			err = streamingErr
-			err = errors.WithStack(err)
-			nrtx.NoticeError(nrpkgerrors.Wrap(err))
-			streamingServer.SendAndClose(&grpcgen.UploadImageResponse{})
-			logger.WarnContext(ctx, "END",
-				slog.Group("return",
-					slog.Any("grpc.UploadImageResponse", nil),
-					slog.Any("error", err)))
-			return
-		}
-		if req == nil {
-			continue
-		}
-		if data := req.GetData(); len(data) > 0 {
+	for streamingServer.Receive() {
+		messege := streamingServer.Msg()
+		if data := messege.GetData(); len(data) > 0 {
 			logger.InfoContext(ctx, "Received data", slog.Group("data", slog.String("data", string(data))))
 			buf.Write(data)
 		}
-		if meta := req.GetMeta(); meta != nil {
+		if meta := messege.GetMeta(); meta != nil {
 			logger.InfoContext(ctx, "Received meta", slog.Group("meta", slog.String("name", meta.GetName())))
 			fileName = meta.GetName()
 			contentType = meta.GetContentType()
 		}
 	}
 
+	if err := streamingServer.Err(); err != nil {
+		err = errors.WithStack(err)
+		logger.WarnContext(ctx, "END",
+			slog.Group("return",
+				slog.Any("grpc.UploadImageResponse", nil),
+				slog.Any("error", err)))
+		return nil, err
+	}
+
 	inDto := dto.NewUploadImageInDto(fileName, buf.Bytes(), contentType)
 	outDto, err := s.uploadImageUsecase.Execute(ctx, &inDto)
 	if err != nil {
 		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		streamingServer.SendAndClose(&grpcgen.UploadImageResponse{})
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("grpc.UploadImageResponse", nil),
 				slog.Any("error", err)))
-		return
+		return nil, err
 	}
 	response, err := s.uploadImageConverter.ToUploadImageResponse(ctx, outDto)
 	if err != nil {
 		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
 				slog.Any("grpc.UploadImageResponse", nil),
 				slog.Any("error", err)))
-		streamingServer.SendAndClose(&grpcgen.UploadImageResponse{})
-		return
+		return nil, err
 	}
-	return streamingServer.SendAndClose(response)
+	logger.InfoContext(ctx, "END",
+		slog.Group("return",
+			slog.Any("grpc.UploadImageResponse", response.String())))
+	return connect.NewResponse(response), nil
 }
-
-func (s *BloggingEventServiceServer) mustEmbedUnimplementedBloggingEventServiceServer() {}
 
 type bloggingEventServiceServerConfig struct {
 	createArticleUsecase            usecase.CreateArticle

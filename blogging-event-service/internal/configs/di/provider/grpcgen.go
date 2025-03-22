@@ -4,12 +4,13 @@ import (
 	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb"
 	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/presenters"
 	"blogapi.miyamo.today/blogging-event-service/internal/if-adapter/controller/pb/usecase"
-	"blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
+	_ "blogapi.miyamo.today/blogging-event-service/internal/infra/grpc"
+	"blogapi.miyamo.today/blogging-event-service/internal/infra/grpc/grpcconnect"
 	"github.com/google/wire"
 )
 
 // compatibility check
-var _ grpc.BloggingEventServiceServer = (*pb.BloggingEventServiceServer)(nil)
+var _ grpcconnect.BloggingEventServiceHandler = (*pb.BloggingEventServiceServer)(nil)
 
 func NewBloggingEventServiceServer(
 	createArticleUsecase usecase.CreateArticle,
@@ -46,5 +47,5 @@ func NewBloggingEventServiceServer(
 
 var BloggingEventServiceServerSet = wire.NewSet(
 	NewBloggingEventServiceServer,
-	wire.Bind(new(grpc.BloggingEventServiceServer), new(*pb.BloggingEventServiceServer)),
+	wire.Bind(new(grpcconnect.BloggingEventServiceHandler), new(*pb.BloggingEventServiceServer)),
 )

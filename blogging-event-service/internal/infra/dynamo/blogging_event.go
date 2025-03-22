@@ -6,7 +6,6 @@ import (
 	"blogapi.miyamo.today/core/db"
 	gw "blogapi.miyamo.today/core/db/gorm"
 	"context"
-	"fmt"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/sqldav"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
@@ -55,8 +54,8 @@ func (s *BloggingEventCommandService) CreateArticle(ctx context.Context, in mode
 
 		tx = tx.WithContext(ctx)
 
-		eventID := fmt.Sprintf("%s", s.ulidGen())
-		articleID := fmt.Sprintf("%s", s.ulidGen())
+		eventID := s.ulidGen().String()
+		articleID := s.ulidGen().String()
 
 		event := bloggingEventCreateArticle{
 			EventID:   eventID,
@@ -100,7 +99,7 @@ func (s *BloggingEventCommandService) UpdateArticleTitle(ctx context.Context, in
 
 		tx = tx.WithContext(ctx)
 
-		eventID := fmt.Sprintf("%s", s.ulidGen())
+		eventID := s.ulidGen().String()
 		articleID := in.ArticleID()
 
 		event := bloggingEventUpdateArticleTitle{
@@ -141,7 +140,7 @@ func (s *BloggingEventCommandService) UpdateArticleBody(ctx context.Context, in 
 
 		tx = tx.WithContext(ctx)
 
-		eventID := fmt.Sprintf("%s", s.ulidGen())
+		eventID := s.ulidGen().String()
 		articleID := in.ArticleID()
 
 		event := bloggingEventUpdateArticleBody{
@@ -182,7 +181,7 @@ func (s *BloggingEventCommandService) UpdateArticleThumbnail(ctx context.Context
 
 		tx = tx.WithContext(ctx)
 
-		eventID := fmt.Sprintf("%s", s.ulidGen())
+		eventID := s.ulidGen().String()
 		articleID := command.ArticleID()
 		thumbnail := command.Thumbnail()
 
@@ -224,7 +223,7 @@ func (s *BloggingEventCommandService) AttachTags(ctx context.Context, command mo
 
 		tx = tx.WithContext(ctx)
 
-		eventID := fmt.Sprintf("%s", s.ulidGen())
+		eventID := s.ulidGen().String()
 		articleID := command.ArticleID()
 
 		event := bloggingEventAttachTags{
@@ -265,7 +264,7 @@ func (s *BloggingEventCommandService) DetachTags(ctx context.Context, command mo
 
 		tx = tx.WithContext(ctx)
 
-		eventID := fmt.Sprintf("%s", s.ulidGen())
+		eventID := s.ulidGen().String()
 		articleID := command.ArticleID()
 
 		event := bloggingEventDetachTags{
