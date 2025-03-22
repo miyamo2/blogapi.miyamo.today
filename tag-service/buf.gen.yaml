@@ -5,7 +5,9 @@ managed:
     - file_option: go_package
       value: blogapi.miyamo.today/tag-service/internal/infra/grpc
 plugins:
-  - local: protoc-gen-go
+  - remote: buf.build/protocolbuffers/go
     out: ../../
-  - local: protoc-gen-connect-go
+  - remote: buf.build/connectrpc/go
     out: ../../
+inputs:
+  - directory: .proto

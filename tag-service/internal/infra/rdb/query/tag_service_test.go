@@ -207,7 +207,6 @@ func TestTagService_GetAll(t *testing.T) {
 		args        args
 		execOpt     func() []db.ExecuteOption
 		want        error
-		wantErr     bool
 		expectedOut *db.MultipleStatementResult[model.Tag]
 	}
 	tagTable := []string{
