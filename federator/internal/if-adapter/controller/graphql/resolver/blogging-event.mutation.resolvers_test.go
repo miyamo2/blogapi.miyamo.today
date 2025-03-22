@@ -45,7 +45,6 @@ func Test_mutationResolver_CreateArticle(t *testing.T) {
 		converterResult    converterResult
 		args               args
 		want               want
-		wantErr            bool
 	}
 	errFailedToUsecase := errors.New("failed to usecase")
 	errFailedToConverter := errors.New("failed to converter")
@@ -257,7 +256,6 @@ func Test_mutationResolver_UpdateArticleTitle(t *testing.T) {
 		converterResult    converterResult
 		args               args
 		want               want
-		wantErr            bool
 	}
 	errFailedToUsecase := errors.New("failed to usecase")
 	errFailedToConverter := errors.New("failed to converter")
@@ -454,7 +452,6 @@ func Test_mutationResolver_UpdateArticleBody(t *testing.T) {
 		converterResult    converterResult
 		args               args
 		want               want
-		wantErr            bool
 	}
 	errFailedToUsecase := errors.New("failed to usecase")
 	errFailedToConverter := errors.New("failed to converter")
@@ -654,7 +651,6 @@ func Test_mutationResolver_UpdateArticleThumbnail(t *testing.T) {
 		converterResult    converterResult
 		args               args
 		want               want
-		wantErr            bool
 	}
 	errFailedToUsecase := errors.New("failed to usecase")
 	errFailedToConverter := errors.New("failed to converter")
@@ -847,7 +843,6 @@ func Test_mutationResolver_AttachTags(t *testing.T) {
 		converterResult    converterResult
 		args               args
 		want               want
-		wantErr            bool
 	}
 	errFailedToUsecase := errors.New("failed to usecase")
 	errFailedToConverter := errors.New("failed to converter")
@@ -1040,7 +1035,6 @@ func Test_mutationResolver_DetachTags(t *testing.T) {
 		converterResult    converterResult
 		args               args
 		want               want
-		wantErr            bool
 	}
 	errFailedToUsecase := errors.New("failed to usecase")
 	errFailedToConverter := errors.New("failed to converter")
@@ -1233,7 +1227,6 @@ func Test_mutationResolver_UploadImage(t *testing.T) {
 		converterResult    converterResult
 		args               args
 		want               want
-		wantErr            bool
 	}
 
 	errFailedToUsecase := errors.New("failed to usecase")

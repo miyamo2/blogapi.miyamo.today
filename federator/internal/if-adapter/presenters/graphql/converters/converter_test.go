@@ -188,10 +188,9 @@ func TestConverter_articleNodeFromArticleTagDTO(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		sut     func() *Converter
-		args    args
-		want    want
-		wantErr bool
+		sut  func() *Converter
+		args args
+		want want
 	}
 	tests := map[string]testCase{
 		"happy_path/single_tag": {
@@ -1409,10 +1408,9 @@ func TestConverter_ToTag(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		sut     func() *Converter
-		args    args
-		want    want
-		wantErr bool
+		sut  func() *Converter
+		args args
+		want want
 	}
 	tests := map[string]testCase{
 		"happy_path/single_article": {
@@ -1567,10 +1565,9 @@ func TestConverter_tagNodeFromTagArticleDTO(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		sut     func() *Converter
-		args    args
-		want    want
-		wantErr bool
+		sut  func() *Converter
+		args args
+		want want
 	}
 
 	tests := map[string]testCase{
@@ -1728,10 +1725,9 @@ func TestConverter_ToTags(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		sut     func() *Converter
-		args    args
-		want    want
-		wantErr bool
+		sut  func() *Converter
+		args args
+		want want
 	}
 	ptrue := func() *bool {
 		v := true
