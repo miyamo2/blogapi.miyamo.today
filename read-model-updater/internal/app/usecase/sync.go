@@ -99,7 +99,6 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 			return
 		}
 		done <- struct{}{}
-		return
 	}()
 	select {
 	case <-ctx.Done():
