@@ -2,9 +2,11 @@ package pb
 
 import (
 	"blogapi.miyamo.today/article-service/internal/infra/grpc"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
 
@@ -21,10 +23,10 @@ import (
 func TestArticleServiceServer_GetArticleById(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.GetArticleByIdRequest
+		in  *connect.Request[grpc.GetArticleByIdRequest]
 	}
 	type want struct {
-		response *grpc.GetArticleByIdResponse
+		response *connect.Response[grpc.GetArticleByIdResponse]
 		err      error
 	}
 	type testCase struct {
@@ -33,7 +35,6 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 		setupConverter func(from dto.GetByIdOutDto, res *grpc.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter)
 		args           args
 		want           want
-		wantErr        bool
 	}
 	errGetArticleById := errors.New("error get article by id")
 	tests := map[string]testCase{
@@ -61,12 +62,12 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetArticleByIdRequest{
+				in: connect.NewRequest(&grpc.GetArticleByIdRequest{
 					Id: "1",
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetArticleByIdResponse{
+				response: connect.NewResponse(&grpc.GetArticleByIdResponse{
 					Article: &grpc.Article{
 						Id:           "1",
 						Title:        "happy_path/article_has_tag",
@@ -81,7 +82,7 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -98,15 +99,14 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetArticleByIdRequest{
+				in: connect.NewRequest(&grpc.GetArticleByIdRequest{
 					Id: "1",
-				},
+				}),
 			},
 			want: want{
 				response: nil,
 				err:      errGetArticleById,
 			},
-			wantErr: true,
 		},
 		"unhappy_path/failed_to_convert": {
 			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
@@ -122,15 +122,14 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetArticleByIdRequest{
+				in: connect.NewRequest(&grpc.GetArticleByIdRequest{
 					Id: "1",
-				},
+				}),
 			},
 			want: want{
 				response: nil,
 				err:      ErrConversionToGetArticleByIdFailed,
 			},
-			wantErr: true,
 		},
 	}
 	for name, tt := range tests {
@@ -142,21 +141,18 @@ func TestArticleServiceServer_GetArticleById(t *testing.T) {
 			tt.setupUsecase(out, u)
 			response := tt.want.response
 			conv := mpresenter.NewMockToGetByIdConverter(ctrl)
-			tt.setupConverter(out, response, conv)
+			var message *grpc.GetArticleByIdResponse
+			if response != nil {
+				message = response.Msg
+			}
+			tt.setupConverter(out, message, conv)
 			s := NewArticleServiceServer(u, nil, nil, nil, conv, nil, nil, nil)
 			got, err := s.GetArticleById(tt.args.ctx, tt.args.in)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("GetArticleById() expected to return an error, but it was nil. want: %+v", err)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("GetArticleById() error = %v, want %v", err, tt.want.err)
-					return
-				}
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetArticleById() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.GetArticleByIdResponse]{})}...); diff != "" {
 				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -168,7 +164,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 		ctx context.Context
 	}
 	type want struct {
-		response *grpc.GetAllArticlesResponse
+		response *connect.Response[grpc.GetAllArticlesResponse]
 		err      error
 	}
 	type testCase struct {
@@ -177,7 +173,6 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 		setupConverter func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter)
 		args           args
 		want           want
-		wantErr        bool
 	}
 	errGetAllArticles := errors.New("error get all articles")
 	tests := map[string]testCase{
@@ -225,7 +220,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 				ctx: context.Background(),
 			},
 			want: want{
-				response: &grpc.GetAllArticlesResponse{
+				response: connect.NewResponse(&grpc.GetAllArticlesResponse{
 					Articles: []*grpc.Article{
 						{
 							Id:           "1",
@@ -264,7 +259,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -300,7 +295,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 				ctx: context.Background(),
 			},
 			want: want{
-				response: &grpc.GetAllArticlesResponse{
+				response: connect.NewResponse(&grpc.GetAllArticlesResponse{
 					Articles: []*grpc.Article{
 						{
 							Id:           "1",
@@ -321,7 +316,7 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 							},
 						},
 					},
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -342,9 +337,9 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 				ctx: context.Background(),
 			},
 			want: want{
-				response: &grpc.GetAllArticlesResponse{
+				response: connect.NewResponse(&grpc.GetAllArticlesResponse{
 					Articles: []*grpc.Article{},
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -367,7 +362,6 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 				response: nil,
 				err:      errGetAllArticles,
 			},
-			wantErr: true,
 		},
 		"unhappy_path/failed_to_convert": {
 			outDto: dto.GetAllOutDto{},
@@ -401,22 +395,20 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 			tt.setupUsecase(out, u)
 			response := tt.want.response
 			conv := mpresenter.NewMockToGetAllConverter(ctrl)
-			tt.setupConverter(out, response, conv)
+
+			var message *grpc.GetAllArticlesResponse
+			if response != nil {
+				message = response.Msg
+			}
+			tt.setupConverter(out, message, conv)
 			s := NewArticleServiceServer(nil, u, nil, nil, nil, conv, nil, nil)
 
-			got, err := s.GetAllArticles(tt.args.ctx, &emptypb.Empty{})
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("GetAllArticles() expected to return an error, but it was nil. want: %+v", err)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("GetAllArticles() error = %v, want %v", err, tt.want.err)
-					return
-				}
+			got, err := s.GetAllArticles(tt.args.ctx, connect.NewRequest(&emptypb.Empty{}))
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetAllArticles() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.GetAllArticlesResponse]{})}...); diff != "" {
 				t.Errorf("GetAllArticles() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -426,10 +418,10 @@ func TestArticleServiceServer_GetAllArticles(t *testing.T) {
 func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.GetNextArticlesRequest
+		in  *connect.Request[grpc.GetNextArticlesRequest]
 	}
 	type want struct {
-		response *grpc.GetNextArticlesResponse
+		response *connect.Response[grpc.GetNextArticlesResponse]
 		err      error
 	}
 	type testCase struct {
@@ -438,7 +430,6 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 		setupConverter func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter)
 		args           args
 		want           want
-		wantErr        bool
 	}
 	cursor := "0"
 	pCursor := &cursor
@@ -486,13 +477,13 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextArticlesRequest{
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
 					First: 2,
 					After: &cursor,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextArticlesResponse{
+				response: connect.NewResponse(&grpc.GetNextArticlesResponse{
 					Articles: []*grpc.Article{
 						{
 							Id:           "1",
@@ -532,7 +523,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -566,13 +557,13 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextArticlesRequest{
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
 					First: 1,
 					After: pCursor,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextArticlesResponse{
+				response: connect.NewResponse(&grpc.GetNextArticlesResponse{
 					Articles: []*grpc.Article{
 						{
 							Id:           "1",
@@ -594,7 +585,7 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -613,16 +604,16 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextArticlesRequest{
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
 					First: 2,
 					After: pCursor,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetNextArticlesResponse{
+				response: connect.NewResponse(&grpc.GetNextArticlesResponse{
 					Articles:    []*grpc.Article{},
 					StillExists: false,
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -640,16 +631,15 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextArticlesRequest{
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
 					First: 2,
 					After: pCursor,
-				},
+				}),
 			},
 			want: want{
 				response: nil,
 				err:      errGetAllArticles,
 			},
-			wantErr: true,
 		},
 		"unhappy_path/failed_to_convert": {
 			outDto: dto.GetNextOutDto{},
@@ -667,10 +657,10 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetNextArticlesRequest{
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
 					First: 1,
 					After: pCursor,
-				},
+				}),
 			},
 			want: want{
 				response: nil,
@@ -687,22 +677,20 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 			tt.setupUsecase(out, u)
 			response := tt.want.response
 			conv := mpresenter.NewMockToGetNextConverter(ctrl)
-			tt.setupConverter(out, response, conv)
+
+			var message *grpc.GetNextArticlesResponse
+			if response != nil {
+				message = response.Msg
+			}
+			tt.setupConverter(out, message, conv)
 			s := NewArticleServiceServer(nil, nil, u, nil, nil, nil, conv, nil)
 
 			got, err := s.GetNextArticles(tt.args.ctx, tt.args.in)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("GetNextArticles() expected to return an error, but it was nil. want: %+v", err)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("GetNextArticles() error = %v, want %v", err, tt.want.err)
-					return
-				}
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetNextArticles() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.GetNextArticlesResponse]{})}...); diff != "" {
 				t.Errorf("GetNextArticles() got = %v, want %v", got, tt.want.response)
 			}
 		})
@@ -712,10 +700,10 @@ func TestArticleServiceServer_GetNextArticles(t *testing.T) {
 func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 	type args struct {
 		ctx context.Context
-		in  *grpc.GetPrevArticlesRequest
+		in  *connect.Request[grpc.GetPrevArticlesRequest]
 	}
 	type want struct {
-		response *grpc.GetPrevArticlesResponse
+		response *connect.Response[grpc.GetPrevArticlesResponse]
 		err      error
 	}
 	type testCase struct {
@@ -724,7 +712,6 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 		setupConverter func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter)
 		args           args
 		want           want
-		wantErr        bool
 	}
 	cursor := "0"
 	pCursor := &cursor
@@ -772,13 +759,13 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevArticlesRequest{
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
 					Last:   2,
 					Before: &cursor,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevArticlesResponse{
+				response: connect.NewResponse(&grpc.GetPrevArticlesResponse{
 					Articles: []*grpc.Article{
 						{
 							Id:           "1",
@@ -818,7 +805,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -852,13 +839,13 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevArticlesRequest{
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
 					Last:   1,
 					Before: pCursor,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevArticlesResponse{
+				response: connect.NewResponse(&grpc.GetPrevArticlesResponse{
 					Articles: []*grpc.Article{
 						{
 							Id:           "1",
@@ -880,7 +867,7 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 						},
 					},
 					StillExists: true,
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -899,16 +886,16 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevArticlesRequest{
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
 					Last:   2,
 					Before: pCursor,
-				},
+				}),
 			},
 			want: want{
-				response: &grpc.GetPrevArticlesResponse{
+				response: connect.NewResponse(&grpc.GetPrevArticlesResponse{
 					Articles:    []*grpc.Article{},
 					StillExists: false,
-				},
+				}),
 				err: nil,
 			},
 		},
@@ -926,16 +913,15 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevArticlesRequest{
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
 					Last:   2,
 					Before: pCursor,
-				},
+				}),
 			},
 			want: want{
 				response: nil,
 				err:      errGetAllArticles,
 			},
-			wantErr: true,
 		},
 		"unhappy_path/failed_to_convert": {
 			outDto: dto.GetPrevOutDto{},
@@ -953,10 +939,10 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			},
 			args: args{
 				ctx: context.Background(),
-				in: &grpc.GetPrevArticlesRequest{
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
 					Last:   1,
 					Before: pCursor,
-				},
+				}),
 			},
 			want: want{
 				response: nil,
@@ -973,22 +959,20 @@ func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
 			tt.setupUsecase(out, u)
 			response := tt.want.response
 			conv := mpresenter.NewMockToGetPrevConverter(ctrl)
-			tt.setupConverter(out, response, conv)
+
+			var message *grpc.GetPrevArticlesResponse
+			if response != nil {
+				message = response.Msg
+			}
+			tt.setupConverter(out, message, conv)
 			s := NewArticleServiceServer(nil, nil, nil, u, nil, nil, nil, conv)
 
 			got, err := s.GetPrevArticles(tt.args.ctx, tt.args.in)
-			if tt.wantErr {
-				if err == nil {
-					t.Errorf("GetPrevArticles() expected to return an error, but it was nil. want: %+v", err)
-					return
-				}
-				if !errors.Is(err, tt.want.err) {
-					t.Errorf("GetPrevArticles() error = %v, want %v", err, tt.want.err)
-					return
-				}
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetPrevArticles() error = %v, want %v", err, tt.want.err)
 				return
 			}
-			if diff := cmp.Diff(got, tt.want.response, protocmp.Transform()); diff != "" {
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.GetPrevArticlesResponse]{})}...); diff != "" {
 				t.Errorf("GetPrevArticles() got = %v, want %v", got, tt.want.response)
 			}
 		})

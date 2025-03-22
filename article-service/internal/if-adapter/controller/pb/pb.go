@@ -1,6 +1,8 @@
 package pb
 
 import (
+	"blogapi.miyamo.today/article-service/internal/infra/grpc/grpcconnect"
+	"connectrpc.com/connect"
 	"context"
 	"log/slog"
 
@@ -16,9 +18,11 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// compatibility check
+var _ grpcconnect.ArticleServiceHandler = (*ArticleServiceServer)(nil)
+
 // ArticleServiceServer is implementation of grpc.ArticleServiceServer
 type ArticleServiceServer struct {
-	grpc.UnimplementedArticleServiceServer
 	getByIdUsecase usecase.GetById
 	getAllUsecase  usecase.GetAll
 	getNextUsecase usecase.GetNext
@@ -37,7 +41,7 @@ var (
 )
 
 // GetAllArticles is implementation of grpc.ArticleServiceServer.GetAllArticles
-func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.Empty) (*grpc.GetAllArticlesResponse, error) {
+func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *connect.Request[emptypb.Empty]) (*connect.Response[grpc.GetAllArticlesResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAllArticles").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -48,7 +52,7 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
-			slog.String("in", in.String())))
+			slog.String("in", in.Msg.String())))
 	oDto, err := s.getAllUsecase.Execute(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
@@ -66,11 +70,11 @@ func (s *ArticleServiceServer) GetAllArticles(ctx context.Context, in *emptypb.E
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("error", nil)))
-	return res, nil
+	return connect.NewResponse(res), nil
 }
 
 // GetNextArticles is implementation of grpc.ArticleServiceServer.GetNextArticles
-func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *grpc.GetNextArticlesRequest) (*grpc.GetNextArticlesResponse, error) {
+func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *connect.Request[grpc.GetNextArticlesRequest]) (*connect.Response[grpc.GetNextArticlesResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetNextArticles").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -81,8 +85,8 @@ func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *grpc.Get
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
-			slog.String("in", in.String())))
-	oDto, err := s.getNextUsecase.Execute(ctx, dto.NewGetNextInDto(int(in.First), in.After))
+			slog.String("in", in.Msg.String())))
+	oDto, err := s.getNextUsecase.Execute(ctx, dto.NewGetNextInDto(int(in.Msg.First), in.Msg.After))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.InfoContext(ctx, "END",
@@ -99,11 +103,11 @@ func (s *ArticleServiceServer) GetNextArticles(ctx context.Context, in *grpc.Get
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("error", nil)))
-	return res, nil
+	return connect.NewResponse(res), nil
 }
 
 // GetArticleById is implementation of grpc.ArticleServiceServer.GetArticleById
-func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *grpc.GetArticleByIdRequest) (*grpc.GetArticleByIdResponse, error) {
+func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *connect.Request[grpc.GetArticleByIdRequest]) (*connect.Response[grpc.GetArticleByIdResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetArticleById").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -114,8 +118,8 @@ func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *grpc.GetA
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
-			slog.String("in", in.String())))
-	oDto, err := s.getByIdUsecase.Execute(ctx, dto.NewGetByIdInDto(in.GetId()))
+			slog.String("in", in.Msg.String())))
+	oDto, err := s.getByIdUsecase.Execute(ctx, dto.NewGetByIdInDto(in.Msg.GetId()))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.InfoContext(ctx, "END",
@@ -132,11 +136,11 @@ func (s *ArticleServiceServer) GetArticleById(ctx context.Context, in *grpc.GetA
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("error", nil)))
-	return res, nil
+	return connect.NewResponse(res), nil
 }
 
 // GetPrevArticles is implementation of grpc.ArticleServiceServer.GetPrevArticles
-func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *grpc.GetPrevArticlesRequest) (*grpc.GetPrevArticlesResponse, error) {
+func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *connect.Request[grpc.GetPrevArticlesRequest]) (*connect.Response[grpc.GetPrevArticlesResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetPrevArticles").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -147,8 +151,8 @@ func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *grpc.Get
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters",
-			slog.String("in", in.String())))
-	oDto, err := s.getPrevUsecase.Execute(ctx, dto.NewGetPrevInDto(int(in.Last), in.Before))
+			slog.String("in", in.Msg.String())))
+	oDto, err := s.getPrevUsecase.Execute(ctx, dto.NewGetPrevInDto(int(in.Msg.Last), in.Msg.Before))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.InfoContext(ctx, "END",
@@ -165,7 +169,7 @@ func (s *ArticleServiceServer) GetPrevArticles(ctx context.Context, in *grpc.Get
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("error", nil)))
-	return res, nil
+	return connect.NewResponse(res), nil
 }
 
 // NewArticleServiceServer is constructor of ArticleServiceServer
