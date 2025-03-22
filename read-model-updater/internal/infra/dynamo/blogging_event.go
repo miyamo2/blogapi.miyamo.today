@@ -70,7 +70,7 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, 
 		// recover ulid.MustParseStrict
 		defer func() {
 			if rec := recover(); rec != nil {
-				err = fmt.Errorf("recovered: %w", rec)
+				err = fmt.Errorf("recovered: %v", rec)
 				err = errors.WithStack(err)
 			}
 		}()
