@@ -16,7 +16,7 @@ require (
 	github.com/miyamo2/dynmgrm v0.10.0
 	github.com/miyamo2/godynamo v1.4.0
 	github.com/miyamo2/sqldav v0.2.1
-	github.com/newrelic/go-agent/v3 v3.35.1
+	github.com/newrelic/go-agent/v3 v3.38.0
 	github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2 v1.2.3
 	github.com/newrelic/go-agent/v3/integrations/nrgrpc v1.4.4
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
