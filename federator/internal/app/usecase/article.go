@@ -3,6 +3,8 @@ package usecase
 import (
 	"blogapi.miyamo.today/core/log"
 	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/article"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/article/articleconnect"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -19,7 +21,7 @@ import (
 // Article is a use-case of getting an article by id.
 type Article struct {
 	// articleServiceClient is a client of article service.
-	articleServiceClient grpc.ArticleServiceClient
+	articleServiceClient articleconnect.ArticleServiceClient
 }
 
 // Execute gets an article by id.
@@ -37,9 +39,10 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDTO) (dto.Article
 		slog.Group("parameters", slog.Any("in", in)))
 	response, err := u.articleServiceClient.GetArticleById(
 		newrelic.NewContext(ctx, nrtx),
-		&grpc.GetArticleByIdRequest{
-			Id: in.ID(),
-		})
+		connect.NewRequest(
+			&grpc.GetArticleByIdRequest{
+				Id: in.ID(),
+			}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -48,8 +51,11 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDTO) (dto.Article
 				slog.Any("error", err)))
 		return dto.ArticleOutDTO{}, err
 	}
-	articlePB := response.Article
+
+	message := response.Msg
+	articlePB := message.Article
 	tagPBs := articlePB.GetTags()
+
 	tagDTOs := make([]dto.Tag, 0, len(tagPBs))
 	for _, tag := range tagPBs {
 		tagDTOs = append(tagDTOs, dto.NewTag(
@@ -85,7 +91,7 @@ func (u *Article) Execute(ctx context.Context, in dto.ArticleInDTO) (dto.Article
 }
 
 // NewArticle is a constructor of CreateArticle.
-func NewArticle(articleServiceClient grpc.ArticleServiceClient) *Article {
+func NewArticle(articleServiceClient articleconnect.ArticleServiceClient) *Article {
 	return &Article{
 		articleServiceClient: articleServiceClient,
 	}

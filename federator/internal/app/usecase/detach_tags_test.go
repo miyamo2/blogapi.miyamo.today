@@ -3,8 +3,10 @@ package usecase
 import (
 	blogapictx "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
-	mgrpc "blogapi.miyamo.today/federator/internal/mock/infra/grpc/bloggingevent"
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event/blogging_eventconnect"
+	mbloggingeventconnect "blogapi.miyamo.today/federator/internal/mock/infra/grpc/blogging_event/blogging_eventconnect"
+	"connectrpc.com/connect"
 	"context"
 	"fmt"
 	"github.com/cockroachdb/errors"
@@ -24,9 +26,9 @@ func TestDetachTags_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		bloggingEventServiceClient func(t *testing.T, ctrl *gomock.Controller, req *grpc.DetachTagsRequest) grpc.BloggingEventServiceClient
+		bloggingEventServiceClient func(t *testing.T, ctrl *gomock.Controller, req *connect.Request[grpc.DetachTagsRequest]) blogging_eventconnect.BloggingEventServiceClient
 		args                       args
-		expectedReq                *grpc.DetachTagsRequest
+		expectedReq                *connect.Request[grpc.DetachTagsRequest]
 		want                       want
 	}
 	errTestDetachTags := errors.New("test error")
@@ -42,17 +44,17 @@ func TestDetachTags_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path": {
-			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *grpc.DetachTagsRequest) grpc.BloggingEventServiceClient {
-				bloggingEventServiceClient := mgrpc.NewMockBloggingEventServiceClient(ctrl)
+			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *connect.Request[grpc.DetachTagsRequest]) blogging_eventconnect.BloggingEventServiceClient {
+				bloggingEventServiceClient := mbloggingeventconnect.NewMockBloggingEventServiceClient(ctrl)
 				bloggingEventServiceClient.EXPECT().
 					DetachTags(gomock.Any(), NewDetachTagsRequestMatcher(t, req)).
-					Return(&grpc.BloggingEventResponse{EventId: "Event1", ArticleId: "Article1"}, nil).Times(1)
+					Return(connect.NewResponse(&grpc.BloggingEventResponse{EventId: "Event1", ArticleId: "Article1"}), nil).Times(1)
 				return bloggingEventServiceClient
 			},
-			expectedReq: &grpc.DetachTagsRequest{
+			expectedReq: connect.NewRequest(&grpc.DetachTagsRequest{
 				Id:       "Article1",
 				TagNames: []string{"Tag1"},
-			},
+			}),
 			args: args{
 				ctx: mockBlogAPIContext(),
 				in:  dto.NewDetachTagsInDTO("Article1", []string{"Tag1"}, "ClientMutationID1"),
@@ -62,17 +64,17 @@ func TestDetachTags_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path:grpc-return-error": {
-			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *grpc.DetachTagsRequest) grpc.BloggingEventServiceClient {
-				bloggingEventServiceClient := mgrpc.NewMockBloggingEventServiceClient(ctrl)
+			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *connect.Request[grpc.DetachTagsRequest]) blogging_eventconnect.BloggingEventServiceClient {
+				bloggingEventServiceClient := mbloggingeventconnect.NewMockBloggingEventServiceClient(ctrl)
 				bloggingEventServiceClient.EXPECT().
 					DetachTags(gomock.Any(), NewDetachTagsRequestMatcher(t, req)).
 					Return(nil, errTestDetachTags).Times(1)
 				return bloggingEventServiceClient
 			},
-			expectedReq: &grpc.DetachTagsRequest{
+			expectedReq: connect.NewRequest(&grpc.DetachTagsRequest{
 				Id:       "Article1",
 				TagNames: []string{"Tag1"},
-			},
+			}),
 			args: args{
 				ctx: mockBlogAPIContext(),
 				in:  dto.NewDetachTagsInDTO("Article1", []string{"Tag1"}, "ClientMutationID1"),
@@ -100,7 +102,7 @@ func TestDetachTags_Execute(t *testing.T) {
 	}
 }
 
-func NewDetachTagsRequestMatcher(t *testing.T, expect *grpc.DetachTagsRequest) gomock.Matcher {
+func NewDetachTagsRequestMatcher(t *testing.T, expect *connect.Request[grpc.DetachTagsRequest]) gomock.Matcher {
 	return &DetachTagsRequestMatcher{
 		expect: expect,
 		t:      t,
@@ -109,17 +111,17 @@ func NewDetachTagsRequestMatcher(t *testing.T, expect *grpc.DetachTagsRequest) g
 
 type DetachTagsRequestMatcher struct {
 	gomock.Matcher
-	expect *grpc.DetachTagsRequest
+	expect *connect.Request[grpc.DetachTagsRequest]
 	t      *testing.T
 }
 
 func (m *DetachTagsRequestMatcher) Matches(x interface{}) bool {
 	switch x := x.(type) {
-	case *grpc.DetachTagsRequest:
+	case *connect.Request[grpc.DetachTagsRequest]:
 		if x == nil {
 			return m.expect == nil
 		}
-		diff := cmp.Diff(x, m.expect, protocmp.Transform())
+		diff := cmp.Diff(x.Msg, m.expect.Msg, protocmp.Transform())
 		if diff != "" {
 			m.t.Errorf("DetachTagsRequest mismatch (-want +got):\n%s", diff)
 			return false

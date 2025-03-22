@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"blogapi.miyamo.today/core/log"
-	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event/blogging_eventconnect"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
@@ -16,7 +18,7 @@ import (
 // UpdateArticleTitle is a use-case for updating an article title.
 type UpdateArticleTitle struct {
 	// bloggingEventServiceClient is a client of article service.
-	bloggingEventServiceClient grpc.BloggingEventServiceClient
+	bloggingEventServiceClient blogging_eventconnect.BloggingEventServiceClient
 }
 
 // Execute updates an article title.
@@ -35,10 +37,10 @@ func (u *UpdateArticleTitle) Execute(ctx context.Context, in dto.UpdateArticleTi
 
 	response, err := u.bloggingEventServiceClient.UpdateArticleTitle(
 		newrelic.NewContext(ctx, nrtx),
-		&grpc.UpdateArticleTitleRequest{
+		connect.NewRequest(&grpc.UpdateArticleTitleRequest{
 			Id:    in.ID(),
 			Title: in.Title(),
-		})
+		}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -48,7 +50,8 @@ func (u *UpdateArticleTitle) Execute(ctx context.Context, in dto.UpdateArticleTi
 		return dto.UpdateArticleTitleOutDTO{}, err
 	}
 
-	out := dto.NewUpdateArticleTitleOutDTO(response.EventId, response.ArticleId, in.ClientMutationID())
+	message := response.Msg
+	out := dto.NewUpdateArticleTitleOutDTO(message.EventId, message.ArticleId, in.ClientMutationID())
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.UpdateArticleTitleOutDTO", out),
@@ -57,7 +60,7 @@ func (u *UpdateArticleTitle) Execute(ctx context.Context, in dto.UpdateArticleTi
 }
 
 // NewUpdateArticleTitle is a constructor of UpdateArticleTitle.
-func NewUpdateArticleTitle(bloggingEventServiceClient grpc.BloggingEventServiceClient) *UpdateArticleTitle {
+func NewUpdateArticleTitle(bloggingEventServiceClient blogging_eventconnect.BloggingEventServiceClient) *UpdateArticleTitle {
 	return &UpdateArticleTitle{
 		bloggingEventServiceClient: bloggingEventServiceClient,
 	}

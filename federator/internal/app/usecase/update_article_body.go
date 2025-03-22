@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"blogapi.miyamo.today/core/log"
-	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event/blogging_eventconnect"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
@@ -16,7 +18,7 @@ import (
 // UpdateArticleBody is a use-case for updating an article body.
 type UpdateArticleBody struct {
 	// bloggingEventServiceClient is a client of article service.
-	bloggingEventServiceClient grpc.BloggingEventServiceClient
+	bloggingEventServiceClient blogging_eventconnect.BloggingEventServiceClient
 }
 
 // Execute updates an article body.
@@ -35,10 +37,10 @@ func (u *UpdateArticleBody) Execute(ctx context.Context, in dto.UpdateArticleBod
 
 	response, err := u.bloggingEventServiceClient.UpdateArticleBody(
 		newrelic.NewContext(ctx, nrtx),
-		&grpc.UpdateArticleBodyRequest{
+		connect.NewRequest(&grpc.UpdateArticleBodyRequest{
 			Id:   in.ID(),
 			Body: in.Content(),
-		})
+		}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -48,7 +50,8 @@ func (u *UpdateArticleBody) Execute(ctx context.Context, in dto.UpdateArticleBod
 		return dto.UpdateArticleBodyOutDTO{}, err
 	}
 
-	out := dto.NewUpdateArticleBodyOutDTO(response.EventId, response.ArticleId, in.ClientMutationID())
+	message := response.Msg
+	out := dto.NewUpdateArticleBodyOutDTO(message.EventId, message.ArticleId, in.ClientMutationID())
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.UpdateArticleBodyOutDTO", out),
@@ -57,7 +60,7 @@ func (u *UpdateArticleBody) Execute(ctx context.Context, in dto.UpdateArticleBod
 }
 
 // NewUpdateArticleBody is a constructor of UpdateArticleBody.
-func NewUpdateArticleBody(bloggingEventServiceClient grpc.BloggingEventServiceClient) *UpdateArticleBody {
+func NewUpdateArticleBody(bloggingEventServiceClient blogging_eventconnect.BloggingEventServiceClient) *UpdateArticleBody {
 	return &UpdateArticleBody{
 		bloggingEventServiceClient: bloggingEventServiceClient,
 	}

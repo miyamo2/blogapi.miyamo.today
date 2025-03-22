@@ -3,8 +3,10 @@ package usecase
 import (
 	blogapictx "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
-	mgrpc "blogapi.miyamo.today/federator/internal/mock/infra/grpc/bloggingevent"
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event/blogging_eventconnect"
+	mbloggingeventconnect "blogapi.miyamo.today/federator/internal/mock/infra/grpc/blogging_event/blogging_eventconnect"
+	"connectrpc.com/connect"
 	"context"
 	"fmt"
 	"github.com/cockroachdb/errors"
@@ -24,9 +26,9 @@ func TestUpdateArticleBody_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		bloggingEventServiceClient func(t *testing.T, ctrl *gomock.Controller, req *grpc.UpdateArticleBodyRequest) grpc.BloggingEventServiceClient
+		bloggingEventServiceClient func(t *testing.T, ctrl *gomock.Controller, req *connect.Request[grpc.UpdateArticleBodyRequest]) blogging_eventconnect.BloggingEventServiceClient
 		args                       args
-		expectedReq                *grpc.UpdateArticleBodyRequest
+		expectedReq                *connect.Request[grpc.UpdateArticleBodyRequest]
 		want                       want
 	}
 	errTestUpdateArticleBody := errors.New("test error")
@@ -42,17 +44,17 @@ func TestUpdateArticleBody_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path": {
-			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *grpc.UpdateArticleBodyRequest) grpc.BloggingEventServiceClient {
-				bloggingEventServiceClient := mgrpc.NewMockBloggingEventServiceClient(ctrl)
+			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *connect.Request[grpc.UpdateArticleBodyRequest]) blogging_eventconnect.BloggingEventServiceClient {
+				bloggingEventServiceClient := mbloggingeventconnect.NewMockBloggingEventServiceClient(ctrl)
 				bloggingEventServiceClient.EXPECT().
 					UpdateArticleBody(gomock.Any(), NewUpdateArticleBodyRequestMatcher(t, req)).
-					Return(&grpc.BloggingEventResponse{EventId: "Event1", ArticleId: "Article1"}, nil).Times(1)
+					Return(connect.NewResponse(&grpc.BloggingEventResponse{EventId: "Event1", ArticleId: "Article1"}), nil).Times(1)
 				return bloggingEventServiceClient
 			},
-			expectedReq: &grpc.UpdateArticleBodyRequest{
+			expectedReq: connect.NewRequest(&grpc.UpdateArticleBodyRequest{
 				Id:   "Article1",
 				Body: "happy_path",
-			},
+			}),
 			args: args{
 				ctx: mockBlogAPIContext(),
 				in:  dto.NewUpdateArticleBodyInDTO("Article1", "happy_path", "Mutation1"),
@@ -62,17 +64,17 @@ func TestUpdateArticleBody_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path:grpc-return-error": {
-			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *grpc.UpdateArticleBodyRequest) grpc.BloggingEventServiceClient {
-				bloggingEventServiceClient := mgrpc.NewMockBloggingEventServiceClient(ctrl)
+			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *connect.Request[grpc.UpdateArticleBodyRequest]) blogging_eventconnect.BloggingEventServiceClient {
+				bloggingEventServiceClient := mbloggingeventconnect.NewMockBloggingEventServiceClient(ctrl)
 				bloggingEventServiceClient.EXPECT().
 					UpdateArticleBody(gomock.Any(), NewUpdateArticleBodyRequestMatcher(t, req)).
 					Return(nil, errTestUpdateArticleBody).Times(1)
 				return bloggingEventServiceClient
 			},
-			expectedReq: &grpc.UpdateArticleBodyRequest{
+			expectedReq: connect.NewRequest(&grpc.UpdateArticleBodyRequest{
 				Id:   "Article1",
 				Body: "happy_path",
-			},
+			}),
 			args: args{
 				ctx: mockBlogAPIContext(),
 				in:  dto.NewUpdateArticleBodyInDTO("Article1", "happy_path", "Mutation1"),
@@ -100,7 +102,7 @@ func TestUpdateArticleBody_Execute(t *testing.T) {
 	}
 }
 
-func NewUpdateArticleBodyRequestMatcher(t *testing.T, expect *grpc.UpdateArticleBodyRequest) gomock.Matcher {
+func NewUpdateArticleBodyRequestMatcher(t *testing.T, expect *connect.Request[grpc.UpdateArticleBodyRequest]) gomock.Matcher {
 	return &UpdateArticleBodyRequestMatcher{
 		expect: expect,
 		t:      t,
@@ -109,17 +111,17 @@ func NewUpdateArticleBodyRequestMatcher(t *testing.T, expect *grpc.UpdateArticle
 
 type UpdateArticleBodyRequestMatcher struct {
 	gomock.Matcher
-	expect *grpc.UpdateArticleBodyRequest
+	expect *connect.Request[grpc.UpdateArticleBodyRequest]
 	t      *testing.T
 }
 
 func (m *UpdateArticleBodyRequestMatcher) Matches(x interface{}) bool {
 	switch x := x.(type) {
-	case *grpc.UpdateArticleBodyRequest:
+	case *connect.Request[grpc.UpdateArticleBodyRequest]:
 		if x == nil {
 			return m.expect == nil
 		}
-		diff := cmp.Diff(x, m.expect, protocmp.Transform())
+		diff := cmp.Diff(x.Msg, m.expect.Msg, protocmp.Transform())
 		if diff != "" {
 			m.t.Errorf("UpdateArticleBodyRequest mismatch (-want +got):\n%s", diff)
 			return false

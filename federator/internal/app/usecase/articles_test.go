@@ -2,7 +2,9 @@ package usecase
 
 import (
 	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/article"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/article/articleconnect"
 	"blogapi.miyamo.today/federator/internal/utils"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -12,7 +14,7 @@ import (
 
 	blogapictx "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	mgrpc "blogapi.miyamo.today/federator/internal/mock/infra/grpc/article"
+	marticleconnect "blogapi.miyamo.today/federator/internal/mock/infra/grpc/article/articleconnect"
 	"github.com/cockroachdb/errors"
 	"go.uber.org/mock/gomock"
 )
@@ -27,7 +29,7 @@ func TestArticles_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -45,11 +47,11 @@ func TestArticles_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetNextArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetNextArticlesResponse{
+					Return(connect.NewResponse(&grpc.GetNextArticlesResponse{
 						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
@@ -67,7 +69,7 @@ func TestArticles_Execute(t *testing.T) {
 							},
 						},
 						StillExists: true,
-					}, nil).
+					}), nil).
 					Times(1)
 				return articleServiceClient
 			},
@@ -97,11 +99,11 @@ func TestArticles_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetNextArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetNextArticlesResponse{}, errTestArticles).
+					Return(connect.NewResponse(&grpc.GetNextArticlesResponse{}), errTestArticles).
 					Times(1)
 				return articleServiceClient
 			},
@@ -119,11 +121,11 @@ func TestArticles_Execute(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/prev_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetPrevArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetPrevArticlesResponse{
+					Return(connect.NewResponse(&grpc.GetPrevArticlesResponse{
 						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
@@ -141,7 +143,7 @@ func TestArticles_Execute(t *testing.T) {
 							},
 						},
 						StillExists: true,
-					}, nil).
+					}), nil).
 					Times(1)
 				return articleServiceClient
 			},
@@ -171,11 +173,11 @@ func TestArticles_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetPrevArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetPrevArticlesResponse{}, errTestArticles).
+					Return(connect.NewResponse(&grpc.GetPrevArticlesResponse{}), errTestArticles).
 					Times(1)
 				return articleServiceClient
 			},
@@ -193,11 +195,11 @@ func TestArticles_Execute(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/execute": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetAllArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetAllArticlesResponse{
+					Return(connect.NewResponse(&grpc.GetAllArticlesResponse{
 						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
@@ -214,7 +216,7 @@ func TestArticles_Execute(t *testing.T) {
 								},
 							},
 						},
-					}, nil).
+					}), nil).
 					Times(1)
 				return articleServiceClient
 			},
@@ -240,11 +242,11 @@ func TestArticles_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/execute_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetAllArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetAllArticlesResponse{}, errTestArticles).
+					Return(connect.NewResponse(&grpc.GetAllArticlesResponse{}), errTestArticles).
 					Times(1)
 				return articleServiceClient
 			},
@@ -296,7 +298,7 @@ func TestArticles_executeNextPaging(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -314,11 +316,11 @@ func TestArticles_executeNextPaging(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetNextArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetNextArticlesResponse{
+					Return(connect.NewResponse(&grpc.GetNextArticlesResponse{
 						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
@@ -336,7 +338,7 @@ func TestArticles_executeNextPaging(t *testing.T) {
 							},
 						},
 						StillExists: true,
-					}, nil).
+					}), nil).
 					Times(1)
 				return articleServiceClient
 			},
@@ -366,11 +368,11 @@ func TestArticles_executeNextPaging(t *testing.T) {
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetNextArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetNextArticlesResponse{}, errTestArticles).
+					Return(connect.NewResponse(&grpc.GetNextArticlesResponse{}), errTestArticles).
 					Times(1)
 				return articleServiceClient
 			},
@@ -425,7 +427,7 @@ func TestArticles_executePrevPaging(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -443,11 +445,11 @@ func TestArticles_executePrevPaging(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/prev_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetPrevArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetPrevArticlesResponse{
+					Return(connect.NewResponse(&grpc.GetPrevArticlesResponse{
 						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
@@ -465,7 +467,7 @@ func TestArticles_executePrevPaging(t *testing.T) {
 							},
 						},
 						StillExists: true,
-					}, nil).
+					}), nil).
 					Times(1)
 				return articleServiceClient
 			},
@@ -495,11 +497,11 @@ func TestArticles_executePrevPaging(t *testing.T) {
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetPrevArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetPrevArticlesResponse{}, errTestArticles).
+					Return(connect.NewResponse(&grpc.GetPrevArticlesResponse{}), errTestArticles).
 					Times(1)
 				return articleServiceClient
 			},
@@ -553,7 +555,7 @@ func TestArticles_execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -571,11 +573,11 @@ func TestArticles_execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/all_articles": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetAllArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetAllArticlesResponse{
+					Return(connect.NewResponse(&grpc.GetAllArticlesResponse{
 						Articles: []*grpc.Article{
 							{
 								Id:           "Article1",
@@ -592,7 +594,7 @@ func TestArticles_execute(t *testing.T) {
 								},
 							},
 						},
-					}, nil).
+					}), nil).
 					Times(1)
 				return articleServiceClient
 			},
@@ -617,11 +619,11 @@ func TestArticles_execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/all_articles_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetAllArticles(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetAllArticlesResponse{}, errTestArticles).
+					Return(connect.NewResponse(&grpc.GetAllArticlesResponse{}), errTestArticles).
 					Times(1)
 				return articleServiceClient
 			},

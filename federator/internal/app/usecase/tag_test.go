@@ -2,8 +2,10 @@ package usecase
 
 import (
 	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/tag"
-	mgrpc "blogapi.miyamo.today/federator/internal/mock/infra/grpc/tag"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/tag/tagconnect"
+	mtagconnect "blogapi.miyamo.today/federator/internal/mock/infra/grpc/tag/tagconnect"
 	"blogapi.miyamo.today/federator/internal/utils"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -27,7 +29,7 @@ func TestTag_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		tagServiceClient func(ctrl *gomock.Controller) grpc.TagServiceClient
+		tagServiceClient func(ctrl *gomock.Controller) tagconnect.TagServiceClient
 		args             args
 		want             want
 		wantErr          bool
@@ -45,11 +47,11 @@ func TestTag_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/single_article": {
-			tagServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				tagServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
 				tagServiceClient.EXPECT().
 					GetTagById(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetTagByIdResponse{
+					Return(connect.NewResponse(&grpc.GetTagByIdResponse{
 						Tag: &grpc.Tag{
 							Id:   "Tag1",
 							Name: "Tag1",
@@ -63,7 +65,7 @@ func TestTag_Execute(t *testing.T) {
 								},
 							},
 						},
-					}, nil).
+					}), nil).
 					Times(1)
 				return tagServiceClient
 			},
@@ -91,11 +93,11 @@ func TestTag_Execute(t *testing.T) {
 			},
 		},
 		"happy_path/multiple_article": {
-			tagServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				tagServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
 				tagServiceClient.EXPECT().
 					GetTagById(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetTagByIdResponse{
+					Return(connect.NewResponse(&grpc.GetTagByIdResponse{
 						Tag: &grpc.Tag{
 							Id:   "Tag1",
 							Name: "Tag1",
@@ -116,7 +118,7 @@ func TestTag_Execute(t *testing.T) {
 								},
 							},
 						},
-					}, nil).
+					}), nil).
 					Times(1)
 				return tagServiceClient
 			},
@@ -152,16 +154,16 @@ func TestTag_Execute(t *testing.T) {
 			},
 		},
 		"happy_path/no_article": {
-			tagServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				tagServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
 				tagServiceClient.EXPECT().
 					GetTagById(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetTagByIdResponse{
+					Return(connect.NewResponse(&grpc.GetTagByIdResponse{
 						Tag: &grpc.Tag{
 							Id:   "Tag1",
 							Name: "Tag1",
 						},
-					}, nil).
+					}), nil).
 					Times(1)
 				return tagServiceClient
 			},
@@ -180,11 +182,11 @@ func TestTag_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/grpc_returns_error": {
-			tagServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				tagServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
 				tagServiceClient.EXPECT().
 					GetTagById(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetTagByIdResponse{}, errTestTag).
+					Return(connect.NewResponse(&grpc.GetTagByIdResponse{}), errTestTag).
 					Times(1)
 				return tagServiceClient
 			},

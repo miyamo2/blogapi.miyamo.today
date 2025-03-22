@@ -10,6 +10,7 @@ import (
 func GetDependencies() *Dependencies {
 	wire.Build(
 		provider.NewRelicSet,
+		provider.HTTPSet,
 		provider.GRPCClientSet,
 		provider.PresenterSet,
 		provider.UsecaseSet,

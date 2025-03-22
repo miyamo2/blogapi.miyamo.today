@@ -1,65 +1,28 @@
 package provider
 
 import (
-	"blogapi.miyamo.today/federator/internal/infra/grpc/article"
-	"blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
-	"blogapi.miyamo.today/federator/internal/infra/grpc/tag"
-	"fmt"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/article/articleconnect"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event/blogging_eventconnect"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/tag/tagconnect"
+	"connectrpc.com/connect"
 	"github.com/google/wire"
-	"github.com/newrelic/go-agent/v3/integrations/nrgrpc"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/balancer/roundrobin"
-	"google.golang.org/grpc/credentials/insecure"
-	"log/slog"
+	"net/http"
 	"os"
 )
 
-func ArticleClient() article.ArticleServiceClient {
+func ArticleClient(httpClient *http.Client) articleconnect.ArticleServiceClient {
 	address := os.Getenv("ARTICLE_SERVICE_ADDRESS")
-	conn, err := grpc.NewClient(
-		address,
-		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(nrgrpc.UnaryClientInterceptor),
-		grpc.WithDefaultCallOptions(grpc.WaitForReady(true)),
-	)
-	if err != nil {
-		slog.Info(err.Error())
-	}
-	slog.Info("grpc connection established")
-	return article.NewArticleServiceClient(conn)
+	return articleconnect.NewArticleServiceClient(httpClient, address, connect.WithGRPC())
 }
 
-func TagClient() tag.TagServiceClient {
+func TagClient(httpClient *http.Client) tagconnect.TagServiceClient {
 	address := os.Getenv("TAG_SERVICE_ADDRESS")
-	conn, err := grpc.NewClient(
-		address,
-		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(nrgrpc.UnaryClientInterceptor),
-		grpc.WithDefaultCallOptions(grpc.WaitForReady(true)),
-	)
-	if err != nil {
-		slog.Info(err.Error())
-	}
-	slog.Info("grpc connection established")
-	return tag.NewTagServiceClient(conn)
+	return tagconnect.NewTagServiceClient(httpClient, address, connect.WithGRPC())
 }
 
-func BloggingEventClient() bloggingevent.BloggingEventServiceClient {
+func BloggingEventClient(httpClient *http.Client) blogging_eventconnect.BloggingEventServiceClient {
 	address := os.Getenv("BLOGGING_EVENT_SERVICE_ADDRESS")
-	conn, err := grpc.NewClient(
-		address,
-		grpc.WithDefaultServiceConfig(fmt.Sprintf(`{"LoadBalancingPolicy": "%s"}`, roundrobin.Name)),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(nrgrpc.UnaryClientInterceptor),
-		grpc.WithDefaultCallOptions(grpc.WaitForReady(true)),
-	)
-	if err != nil {
-		slog.Info(err.Error())
-	}
-	slog.Info("grpc connection established")
-	return bloggingevent.NewBloggingEventServiceClient(conn)
+	return blogging_eventconnect.NewBloggingEventServiceClient(httpClient, address, connect.WithGRPC())
 }
 
 var GRPCClientSet = wire.NewSet(ArticleClient, TagClient, BloggingEventClient)

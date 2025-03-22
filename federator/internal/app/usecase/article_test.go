@@ -2,8 +2,10 @@ package usecase
 
 import (
 	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/article"
-	mgrpc "blogapi.miyamo.today/federator/internal/mock/infra/grpc/article"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/article/articleconnect"
+	marticleconnect "blogapi.miyamo.today/federator/internal/mock/infra/grpc/article/articleconnect"
 	"blogapi.miyamo.today/federator/internal/utils"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -27,7 +29,7 @@ func TestArticle_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) grpc.ArticleServiceClient
+		articleServiceClient func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient
 		args                 args
 		want                 want
 		wantErr              bool
@@ -45,11 +47,11 @@ func TestArticle_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/single_tag": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetArticleByIdResponse{
+					Return(connect.NewResponse(&grpc.GetArticleByIdResponse{
 						Article: &grpc.Article{
 							Id:           "Article1",
 							Title:        "happy_path/single_tag",
@@ -64,7 +66,7 @@ func TestArticle_Execute(t *testing.T) {
 								},
 							},
 						},
-					}, nil).
+					}), nil).
 					Times(1)
 				return articleServiceClient
 			},
@@ -88,11 +90,11 @@ func TestArticle_Execute(t *testing.T) {
 			},
 		},
 		"happy_path/multiple_tags": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetArticleByIdResponse{
+					Return(connect.NewResponse(&grpc.GetArticleByIdResponse{
 						Article: &grpc.Article{
 							Id:           "Article1",
 							Title:        "happy_path/multiple_tags",
@@ -115,7 +117,7 @@ func TestArticle_Execute(t *testing.T) {
 								},
 							},
 						},
-					}, nil).
+					}), nil).
 					Times(1)
 				return articleServiceClient
 			},
@@ -142,11 +144,11 @@ func TestArticle_Execute(t *testing.T) {
 			},
 		},
 		"happy_path/no_tags": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetArticleByIdResponse{
+					Return(connect.NewResponse(&grpc.GetArticleByIdResponse{
 						Article: &grpc.Article{
 							Id:           "Article1",
 							Title:        "happy_path/no_tags",
@@ -155,7 +157,7 @@ func TestArticle_Execute(t *testing.T) {
 							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
 						},
-					}, nil).
+					}), nil).
 					Times(1)
 				return articleServiceClient
 			},
@@ -176,11 +178,11 @@ func TestArticle_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/grpc_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.ArticleServiceClient {
-				articleServiceClient := mgrpc.NewMockArticleServiceClient(ctrl)
+			articleServiceClient: func(ctrl *gomock.Controller) articleconnect.ArticleServiceClient {
+				articleServiceClient := marticleconnect.NewMockArticleServiceClient(ctrl)
 				articleServiceClient.EXPECT().
 					GetArticleById(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetArticleByIdResponse{}, errTestArticle).
+					Return(connect.NewResponse(&grpc.GetArticleByIdResponse{}), errTestArticle).
 					Times(1)
 				return articleServiceClient
 			},

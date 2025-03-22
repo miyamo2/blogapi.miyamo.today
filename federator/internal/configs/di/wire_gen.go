@@ -16,13 +16,14 @@ import (
 // Injectors from wire.go:
 
 func GetDependencies() *Dependencies {
-	articleServiceClient := provider.ArticleClient()
+	client := provider.HTTPClient()
+	articleServiceClient := provider.ArticleClient(client)
 	article := usecase.NewArticle(articleServiceClient)
 	articles := usecase.NewArticles(articleServiceClient)
-	tagServiceClient := provider.TagClient()
+	tagServiceClient := provider.TagClient(client)
 	tag := usecase.NewTag(tagServiceClient)
 	tags := usecase.NewTags(tagServiceClient)
-	bloggingEventServiceClient := provider.BloggingEventClient()
+	bloggingEventServiceClient := provider.BloggingEventClient(client)
 	createArticle := usecase.NewCreateArticle(bloggingEventServiceClient)
 	updateArticleTitle := usecase.NewUpdateArticleTitle(bloggingEventServiceClient)
 	updateArticleBody := usecase.NewUpdateArticleBody(bloggingEventServiceClient)

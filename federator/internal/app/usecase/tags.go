@@ -4,7 +4,9 @@ import (
 	"blogapi.miyamo.today/core/log"
 	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
 	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/tag"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/tag/tagconnect"
 	"blogapi.miyamo.today/federator/internal/utils"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -20,7 +22,7 @@ import (
 // Tags is a use-case of getting tags.
 type Tags struct {
 	// tagServiceClient is a client of article service.
-	tagServiceClient grpc.TagServiceClient
+	tagServiceClient tagconnect.TagServiceClient
 }
 
 // Execute gets a tag by id.
@@ -72,10 +74,11 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDTO) (dto.Tag
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
-	response, err := u.tagServiceClient.GetNextTags(ctx, &grpc.GetNextTagsRequest{
-		First: int32(in.First()),
-		After: utils.PtrFromString(in.After()),
-	})
+	response, err := u.tagServiceClient.GetNextTags(ctx,
+		connect.NewRequest(&grpc.GetNextTagsRequest{
+			First: int32(in.First()),
+			After: utils.PtrFromString(in.After()),
+		}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -84,7 +87,9 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDTO) (dto.Tag
 				slog.Any("error", err)))
 		return dto.TagsOutDTO{}, err
 	}
-	tagPBs := response.Tags
+
+	message := response.Msg
+	tagPBs := message.Tags
 	tagDTOs := make([]dto.TagArticle, 0, len(tagPBs))
 	for _, tag := range tagPBs {
 		articlePBs := tag.GetArticles()
@@ -116,7 +121,7 @@ func (u *Tags) executeNextPaging(ctx context.Context, in dto.TagsInDTO) (dto.Tag
 			tag.Name,
 			articleDTOs))
 	}
-	out := dto.NewTagsOutDTO(tagDTOs, dto.TagsOutDTOWithHasNext(response.StillExists))
+	out := dto.NewTagsOutDTO(tagDTOs, dto.TagsOutDTOWithHasNext(message.StillExists))
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDTO", out),
@@ -138,10 +143,11 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDTO) (dto.Tag
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
-	response, err := u.tagServiceClient.GetPrevTags(ctx, &grpc.GetPrevTagsRequest{
-		Last:   int32(in.Last()),
-		Before: utils.PtrFromString(in.Before()),
-	})
+	response, err := u.tagServiceClient.GetPrevTags(ctx,
+		connect.NewRequest(&grpc.GetPrevTagsRequest{
+			Last:   int32(in.Last()),
+			Before: utils.PtrFromString(in.Before()),
+		}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -150,7 +156,9 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDTO) (dto.Tag
 				slog.Any("error", err)))
 		return dto.TagsOutDTO{}, err
 	}
-	tagPBs := response.Tags
+
+	message := response.Msg
+	tagPBs := message.Tags
 	tagDTO := make([]dto.TagArticle, 0, len(tagPBs))
 	for _, tag := range tagPBs {
 		articlePBs := tag.GetArticles()
@@ -182,7 +190,7 @@ func (u *Tags) executePrevPaging(ctx context.Context, in dto.TagsInDTO) (dto.Tag
 			tag.Name,
 			articleDTOs))
 	}
-	out := dto.NewTagsOutDTO(tagDTO, dto.TagsOutDTOWithHasPrev(response.StillExists))
+	out := dto.NewTagsOutDTO(tagDTO, dto.TagsOutDTOWithHasPrev(message.StillExists))
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.TagsOutDTO", out),
@@ -202,7 +210,7 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDTO, error) {
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN")
-	response, err := u.tagServiceClient.GetAllTags(ctx, &emptypb.Empty{})
+	response, err := u.tagServiceClient.GetAllTags(ctx, connect.NewRequest(&emptypb.Empty{}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -211,7 +219,7 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDTO, error) {
 				slog.Any("error", err)))
 		return dto.TagsOutDTO{}, err
 	}
-	tagPBs := response.Tags
+	tagPBs := response.Msg.Tags
 	tagDTOs := make([]dto.TagArticle, 0, len(tagPBs))
 	for _, tag := range tagPBs {
 		articlePBs := tag.GetArticles()
@@ -252,7 +260,7 @@ func (u *Tags) execute(ctx context.Context) (dto.TagsOutDTO, error) {
 }
 
 // NewTag is a constructor of Tag.
-func NewTags(tagServiceClient grpc.TagServiceClient) *Tags {
+func NewTags(tagServiceClient tagconnect.TagServiceClient) *Tags {
 	return &Tags{
 		tagServiceClient: tagServiceClient,
 	}

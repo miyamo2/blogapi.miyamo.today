@@ -2,7 +2,9 @@ package usecase
 
 import (
 	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/tag"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/tag/tagconnect"
 	"blogapi.miyamo.today/federator/internal/utils"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -12,7 +14,7 @@ import (
 
 	blogapictx "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	mgrpc "blogapi.miyamo.today/federator/internal/mock/infra/grpc/tag"
+	mtagconnect "blogapi.miyamo.today/federator/internal/mock/infra/grpc/tag/tagconnect"
 	"github.com/cockroachdb/errors"
 	"go.uber.org/mock/gomock"
 )
@@ -27,10 +29,10 @@ func TestTags_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) grpc.TagServiceClient
-		args                 args
-		want                 want
-		wantErr              bool
+		tagServiceClient func(ctrl *gomock.Controller) tagconnect.TagServiceClient
+		args             args
+		want             want
+		wantErr          bool
 	}
 	errTestTags := errors.New("test error")
 	mockBlogAPIContext := func() context.Context {
@@ -45,11 +47,11 @@ func TestTags_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetNextTagResponse{
+					Return(connect.NewResponse(&grpc.GetNextTagResponse{
 						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
@@ -66,9 +68,9 @@ func TestTags_Execute(t *testing.T) {
 							},
 						},
 						StillExists: true,
-					}, nil).
+					}), nil).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -98,13 +100,13 @@ func TestTags_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetNextTagResponse{}, errTestTags).
+					Return(connect.NewResponse(&grpc.GetNextTagResponse{}), errTestTags).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -120,11 +122,11 @@ func TestTags_Execute(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/prev_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetPrevTagResponse{
+					Return(connect.NewResponse(&grpc.GetPrevTagResponse{
 						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
@@ -141,9 +143,9 @@ func TestTags_Execute(t *testing.T) {
 							},
 						},
 						StillExists: true,
-					}, nil).
+					}), nil).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -173,13 +175,13 @@ func TestTags_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetPrevTagResponse{}, errTestTags).
+					Return(connect.NewResponse(&grpc.GetPrevTagResponse{}), errTestTags).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -195,11 +197,11 @@ func TestTags_Execute(t *testing.T) {
 			wantErr: true,
 		},
 		"happy_path/execute": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetAllTagsResponse{
+					Return(connect.NewResponse(&grpc.GetAllTagsResponse{
 						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
@@ -215,9 +217,9 @@ func TestTags_Execute(t *testing.T) {
 								},
 							},
 						},
-					}, nil).
+					}), nil).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -243,13 +245,13 @@ func TestTags_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/execute_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetAllTagsResponse{}, errTestTags).
+					Return(connect.NewResponse(&grpc.GetAllTagsResponse{}), errTestTags).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -266,8 +268,8 @@ func TestTags_Execute(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			articleServiceClient := tt.articleServiceClient(ctrl)
-			u := NewTags(articleServiceClient)
+			tagServiceClient := tt.tagServiceClient(ctrl)
+			u := NewTags(tagServiceClient)
 			got, err := u.Execute(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {
@@ -299,10 +301,10 @@ func TestTags_executeNextPaging(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) grpc.TagServiceClient
-		args                 args
-		want                 want
-		wantErr              bool
+		tagServiceClient func(ctrl *gomock.Controller) tagconnect.TagServiceClient
+		args             args
+		want             want
+		wantErr          bool
 	}
 	errTestTags := errors.New("test error")
 	mockBlogAPIContext := func() context.Context {
@@ -317,11 +319,11 @@ func TestTags_executeNextPaging(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/next_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetNextTagResponse{
+					Return(connect.NewResponse(&grpc.GetNextTagResponse{
 						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
@@ -338,9 +340,9 @@ func TestTags_executeNextPaging(t *testing.T) {
 							},
 						},
 						StillExists: true,
-					}, nil).
+					}), nil).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -370,13 +372,13 @@ func TestTags_executeNextPaging(t *testing.T) {
 			},
 		},
 		"unhappy_path/next_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetNextTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetNextTagResponse{}, errTestTags).
+					Return(connect.NewResponse(&grpc.GetNextTagResponse{}), errTestTags).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -396,8 +398,8 @@ func TestTags_executeNextPaging(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			articleServiceClient := tt.articleServiceClient(ctrl)
-			u := NewTags(articleServiceClient)
+			tagServiceClient := tt.tagServiceClient(ctrl)
+			u := NewTags(tagServiceClient)
 			got, err := u.executeNextPaging(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {
@@ -429,10 +431,10 @@ func TestTags_executePrevPaging(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) grpc.TagServiceClient
-		args                 args
-		want                 want
-		wantErr              bool
+		tagServiceClient func(ctrl *gomock.Controller) tagconnect.TagServiceClient
+		args             args
+		want             want
+		wantErr          bool
 	}
 	errTestTags := errors.New("test error")
 	mockBlogAPIContext := func() context.Context {
@@ -447,11 +449,11 @@ func TestTags_executePrevPaging(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/prev_paging": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetPrevTagResponse{
+					Return(connect.NewResponse(&grpc.GetPrevTagResponse{
 						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
@@ -468,9 +470,9 @@ func TestTags_executePrevPaging(t *testing.T) {
 							},
 						},
 						StillExists: true,
-					}, nil).
+					}), nil).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -500,13 +502,13 @@ func TestTags_executePrevPaging(t *testing.T) {
 			},
 		},
 		"unhappy_path/prev_paging_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetPrevTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetPrevTagResponse{}, errTestTags).
+					Return(connect.NewResponse(&grpc.GetPrevTagResponse{}), errTestTags).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -526,8 +528,8 @@ func TestTags_executePrevPaging(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			articleServiceClient := tt.articleServiceClient(ctrl)
-			u := NewTags(articleServiceClient)
+			tagServiceClient := tt.tagServiceClient(ctrl)
+			u := NewTags(tagServiceClient)
 			got, err := u.Execute(tt.args.ctx, tt.args.in)
 			if tt.wantErr {
 				if err == nil {
@@ -558,10 +560,10 @@ func TestTags_execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		articleServiceClient func(ctrl *gomock.Controller) grpc.TagServiceClient
-		args                 args
-		want                 want
-		wantErr              bool
+		tagServiceClient func(ctrl *gomock.Controller) tagconnect.TagServiceClient
+		args             args
+		want             want
+		wantErr          bool
 	}
 	errTestTags := errors.New("test error")
 	mockBlogAPIContext := func() context.Context {
@@ -576,11 +578,11 @@ func TestTags_execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path/all_articles": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetAllTagsResponse{
+					Return(connect.NewResponse(&grpc.GetAllTagsResponse{
 						Tags: []*grpc.Tag{
 							{
 								Id:   "Tag1",
@@ -596,9 +598,9 @@ func TestTags_execute(t *testing.T) {
 								},
 							},
 						},
-					}, nil).
+					}), nil).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -623,13 +625,13 @@ func TestTags_execute(t *testing.T) {
 			},
 		},
 		"unhappy_path/all_articles_returns_error": {
-			articleServiceClient: func(ctrl *gomock.Controller) grpc.TagServiceClient {
-				articleServiceClient := mgrpc.NewMockTagServiceClient(ctrl)
-				articleServiceClient.EXPECT().
+			tagServiceClient: func(ctrl *gomock.Controller) tagconnect.TagServiceClient {
+				tagServiceClient := mtagconnect.NewMockTagServiceClient(ctrl)
+				tagServiceClient.EXPECT().
 					GetAllTags(gomock.Any(), gomock.Any()).
-					Return(&grpc.GetAllTagsResponse{}, errTestTags).
+					Return(connect.NewResponse(&grpc.GetAllTagsResponse{}), errTestTags).
 					Times(1)
-				return articleServiceClient
+				return tagServiceClient
 			},
 			args: args{
 				ctx: mockBlogAPIContext(),
@@ -645,8 +647,8 @@ func TestTags_execute(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			articleServiceClient := tt.articleServiceClient(ctrl)
-			u := NewTags(articleServiceClient)
+			tagServiceClient := tt.tagServiceClient(ctrl)
+			u := NewTags(tagServiceClient)
 			got, err := u.execute(tt.args.ctx)
 			if tt.wantErr {
 				if err == nil {

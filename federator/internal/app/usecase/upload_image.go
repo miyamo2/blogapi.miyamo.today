@@ -2,7 +2,8 @@ package usecase
 
 import (
 	"blogapi.miyamo.today/core/log"
-	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event/blogging_eventconnect"
 	"context"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
@@ -18,7 +19,7 @@ import (
 // UploadImage is a use-case of uploading image.
 type UploadImage struct {
 	// bloggingEventServiceClient is a client of article service.
-	bloggingEventServiceClient grpc.BloggingEventServiceClient
+	bloggingEventServiceClient blogging_eventconnect.BloggingEventServiceClient
 }
 
 // Execute uploads image
@@ -35,15 +36,7 @@ func (u *UploadImage) Execute(ctx context.Context, in dto.UploadImageInDTO) (dto
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("parameters", slog.Any("in", in)))
 
-	stream, err := u.bloggingEventServiceClient.UploadImage(ctx)
-	if err != nil {
-		err = errors.WithStack(err)
-		logger.WarnContext(ctx, "END",
-			slog.Group("return",
-				slog.Any("*dto.UploadImageOutDTO", nil),
-				slog.Any("error", err)))
-		return dto.UploadImageOutDTO{}, err
-	}
+	stream := u.bloggingEventServiceClient.UploadImage(ctx)
 	stream.Send(&grpc.UploadImageRequest{
 		Value: &grpc.UploadImageRequest_Meta{
 			Meta: &grpc.Meta{
@@ -81,17 +74,19 @@ func (u *UploadImage) Execute(ctx context.Context, in dto.UploadImageInDTO) (dto
 		read += chunkSize
 	}
 
-	response, err := stream.CloseAndRecv()
+	response, err := stream.CloseAndReceive()
 	if err != nil {
 		return dto.UploadImageOutDTO{}, err
 	}
-	if !response.Success {
+
+	message := response.Msg
+	if !message.Success {
 		return dto.UploadImageOutDTO{}, errors.WithStack(errors.New("failed to upload image"))
 	}
-	if response.Url == nil {
+	if message.Url == nil {
 		return dto.UploadImageOutDTO{}, errors.WithStack(errors.New("failed to upload image"))
 	}
-	uri, err := url.Parse(*response.Url)
+	uri, err := url.Parse(*message.Url)
 	if err != nil {
 		return dto.UploadImageOutDTO{}, errors.WithStack(err)
 	}
@@ -105,7 +100,7 @@ func (u *UploadImage) Execute(ctx context.Context, in dto.UploadImageInDTO) (dto
 }
 
 // NewUploadImage is a constructor of UploadImage.
-func NewUploadImage(bloggingEventServiceClient grpc.BloggingEventServiceClient) *UploadImage {
+func NewUploadImage(bloggingEventServiceClient blogging_eventconnect.BloggingEventServiceClient) *UploadImage {
 	return &UploadImage{
 		bloggingEventServiceClient: bloggingEventServiceClient,
 	}

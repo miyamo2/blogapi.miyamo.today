@@ -3,6 +3,8 @@ package usecase
 import (
 	"blogapi.miyamo.today/core/log"
 	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/tag"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/tag/tagconnect"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -19,7 +21,7 @@ import (
 // Tag is a use-case of getting a tag by id.
 type Tag struct {
 	// tagServiceClient is a client of article service.
-	tagServiceClient grpc.TagServiceClient
+	tagServiceClient tagconnect.TagServiceClient
 }
 
 // Execute gets a tag by id.
@@ -37,9 +39,9 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDTO) (dto.TagOutDTO, erro
 		slog.Group("parameters", slog.Any("in", in)))
 	response, err := u.tagServiceClient.GetTagById(
 		newrelic.NewContext(ctx, nrtx),
-		&grpc.GetTagByIdRequest{
+		connect.NewRequest(&grpc.GetTagByIdRequest{
 			Id: in.ID(),
-		})
+		}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -48,7 +50,7 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDTO) (dto.TagOutDTO, erro
 				slog.Any("error", err)))
 		return dto.TagOutDTO{}, err
 	}
-	tagPB := response.Tag
+	tagPB := response.Msg.Tag
 	articlePBs := tagPB.Articles
 	articleDTOs := make([]dto.Article, 0, len(articlePBs))
 	for _, article := range articlePBs {
@@ -87,7 +89,7 @@ func (u *Tag) Execute(ctx context.Context, in dto.TagInDTO) (dto.TagOutDTO, erro
 }
 
 // NewTag is a constructor of Tag.
-func NewTag(tagServiceClient grpc.TagServiceClient) *Tag {
+func NewTag(tagServiceClient tagconnect.TagServiceClient) *Tag {
 	return &Tag{
 		tagServiceClient: tagServiceClient,
 	}

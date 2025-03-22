@@ -3,9 +3,11 @@ package usecase
 import (
 	blogapictx "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/federator/internal/app/usecase/dto"
-	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
-	mgrpc "blogapi.miyamo.today/federator/internal/mock/infra/grpc/bloggingevent"
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event/blogging_eventconnect"
+	mbloggingeventconnect "blogapi.miyamo.today/federator/internal/mock/infra/grpc/blogging_event/blogging_eventconnect"
 	"blogapi.miyamo.today/federator/internal/utils"
+	"connectrpc.com/connect"
 	"context"
 	"fmt"
 	"github.com/cockroachdb/errors"
@@ -25,9 +27,9 @@ func TestUpdateArticleThumbnail_Execute(t *testing.T) {
 		err error
 	}
 	type testCase struct {
-		bloggingEventServiceClient func(t *testing.T, ctrl *gomock.Controller, req *grpc.UpdateArticleThumbnailRequest) grpc.BloggingEventServiceClient
+		bloggingEventServiceClient func(t *testing.T, ctrl *gomock.Controller, req *connect.Request[grpc.UpdateArticleThumbnailRequest]) blogging_eventconnect.BloggingEventServiceClient
 		args                       args
-		expectedReq                *grpc.UpdateArticleThumbnailRequest
+		expectedReq                *connect.Request[grpc.UpdateArticleThumbnailRequest]
 		want                       want
 	}
 	errTestUpdateArticleThumbnail := errors.New("test error")
@@ -43,17 +45,17 @@ func TestUpdateArticleThumbnail_Execute(t *testing.T) {
 	}
 	tests := map[string]testCase{
 		"happy_path": {
-			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *grpc.UpdateArticleThumbnailRequest) grpc.BloggingEventServiceClient {
-				bloggingEventServiceClient := mgrpc.NewMockBloggingEventServiceClient(ctrl)
+			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *connect.Request[grpc.UpdateArticleThumbnailRequest]) blogging_eventconnect.BloggingEventServiceClient {
+				bloggingEventServiceClient := mbloggingeventconnect.NewMockBloggingEventServiceClient(ctrl)
 				bloggingEventServiceClient.EXPECT().
 					UpdateArticleThumbnail(gomock.Any(), NewUpdateArticleThumbnailRequestMatcher(t, req)).
-					Return(&grpc.BloggingEventResponse{EventId: "Event1", ArticleId: "Article1"}, nil).Times(1)
+					Return(connect.NewResponse(&grpc.BloggingEventResponse{EventId: "Event1", ArticleId: "Article1"}), nil).Times(1)
 				return bloggingEventServiceClient
 			},
-			expectedReq: &grpc.UpdateArticleThumbnailRequest{
+			expectedReq: connect.NewRequest(&grpc.UpdateArticleThumbnailRequest{
 				Id:           "Article1",
 				ThumbnailUrl: "https://example.com/example.png",
-			},
+			}),
 			args: args{
 				ctx: mockBlogAPIContext(),
 				in:  dto.NewUpdateArticleThumbnailInDTO("Article1", utils.MustURLParse("https://example.com/example.png"), "Mutation1"),
@@ -63,17 +65,17 @@ func TestUpdateArticleThumbnail_Execute(t *testing.T) {
 			},
 		},
 		"unhappy_path:grpc-return-error": {
-			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *grpc.UpdateArticleThumbnailRequest) grpc.BloggingEventServiceClient {
-				bloggingEventServiceClient := mgrpc.NewMockBloggingEventServiceClient(ctrl)
+			bloggingEventServiceClient: func(t *testing.T, ctrl *gomock.Controller, req *connect.Request[grpc.UpdateArticleThumbnailRequest]) blogging_eventconnect.BloggingEventServiceClient {
+				bloggingEventServiceClient := mbloggingeventconnect.NewMockBloggingEventServiceClient(ctrl)
 				bloggingEventServiceClient.EXPECT().
 					UpdateArticleThumbnail(gomock.Any(), NewUpdateArticleThumbnailRequestMatcher(t, req)).
 					Return(nil, errTestUpdateArticleThumbnail).Times(1)
 				return bloggingEventServiceClient
 			},
-			expectedReq: &grpc.UpdateArticleThumbnailRequest{
+			expectedReq: connect.NewRequest(&grpc.UpdateArticleThumbnailRequest{
 				Id:           "Article1",
 				ThumbnailUrl: "https://example.com/example.png",
-			},
+			}),
 			args: args{
 				ctx: mockBlogAPIContext(),
 				in:  dto.NewUpdateArticleThumbnailInDTO("Article1", utils.MustURLParse("https://example.com/example.png"), "Mutation1"),
@@ -101,7 +103,7 @@ func TestUpdateArticleThumbnail_Execute(t *testing.T) {
 	}
 }
 
-func NewUpdateArticleThumbnailRequestMatcher(t *testing.T, expect *grpc.UpdateArticleThumbnailRequest) gomock.Matcher {
+func NewUpdateArticleThumbnailRequestMatcher(t *testing.T, expect *connect.Request[grpc.UpdateArticleThumbnailRequest]) gomock.Matcher {
 	return &UpdateArticleThumbnailRequestMatcher{
 		expect: expect,
 		t:      t,
@@ -110,17 +112,17 @@ func NewUpdateArticleThumbnailRequestMatcher(t *testing.T, expect *grpc.UpdateAr
 
 type UpdateArticleThumbnailRequestMatcher struct {
 	gomock.Matcher
-	expect *grpc.UpdateArticleThumbnailRequest
+	expect *connect.Request[grpc.UpdateArticleThumbnailRequest]
 	t      *testing.T
 }
 
 func (m *UpdateArticleThumbnailRequestMatcher) Matches(x interface{}) bool {
 	switch x := x.(type) {
-	case *grpc.UpdateArticleThumbnailRequest:
+	case *connect.Request[grpc.UpdateArticleThumbnailRequest]:
 		if x == nil {
 			return m.expect == nil
 		}
-		diff := cmp.Diff(x, m.expect, protocmp.Transform())
+		diff := cmp.Diff(x.Msg, m.expect.Msg, protocmp.Transform())
 		if diff != "" {
 			m.t.Errorf("UpdateArticleThumbnailRequest mismatch (-want +got):\n%s", diff)
 			return false

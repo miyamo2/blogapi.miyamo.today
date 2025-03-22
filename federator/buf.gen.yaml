@@ -1,0 +1,13 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: blogapi.miyamo.today/federator/internal/infra/grpc
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: ../../
+  - remote: buf.build/connectrpc/go
+    out: ../../
+inputs:
+  - directory: .proto

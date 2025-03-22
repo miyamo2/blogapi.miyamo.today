@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"blogapi.miyamo.today/core/log"
-	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/bloggingevent"
+	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/blogging_event/blogging_eventconnect"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
@@ -16,7 +18,7 @@ import (
 // CreateArticle is a use-case of create an article by id.
 type CreateArticle struct {
 	// bloggingEventServiceClient is a client of article service.
-	bloggingEventServiceClient grpc.BloggingEventServiceClient
+	bloggingEventServiceClient blogging_eventconnect.BloggingEventServiceClient
 }
 
 // Execute gets an article by id.
@@ -36,12 +38,12 @@ func (u *CreateArticle) Execute(ctx context.Context, in dto.CreateArticleInDTO) 
 	thumbnail := in.ThumbnailURL()
 	response, err := u.bloggingEventServiceClient.CreateArticle(
 		newrelic.NewContext(ctx, nrtx),
-		&grpc.CreateArticleRequest{
+		connect.NewRequest(&grpc.CreateArticleRequest{
 			Title:        in.Title(),
 			Body:         in.Body(),
 			ThumbnailUrl: thumbnail.String(),
 			TagNames:     in.TagNames(),
-		})
+		}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -51,7 +53,8 @@ func (u *CreateArticle) Execute(ctx context.Context, in dto.CreateArticleInDTO) 
 		return dto.CreateArticleOutDTO{}, err
 	}
 
-	out := dto.NewCreateArticleOutDTO(response.EventId, response.ArticleId, in.ClientMutationID())
+	message := response.Msg
+	out := dto.NewCreateArticleOutDTO(message.EventId, message.ArticleId, in.ClientMutationID())
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.CreateArticleOutDTO", out),
@@ -60,7 +63,7 @@ func (u *CreateArticle) Execute(ctx context.Context, in dto.CreateArticleInDTO) 
 }
 
 // NewCreateArticle is a constructor of CreateArticle.
-func NewCreateArticle(bloggingEventServiceClient grpc.BloggingEventServiceClient) *CreateArticle {
+func NewCreateArticle(bloggingEventServiceClient blogging_eventconnect.BloggingEventServiceClient) *CreateArticle {
 	return &CreateArticle{
 		bloggingEventServiceClient: bloggingEventServiceClient,
 	}

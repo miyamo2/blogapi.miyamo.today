@@ -3,7 +3,9 @@ package usecase
 import (
 	"blogapi.miyamo.today/core/log"
 	grpc "blogapi.miyamo.today/federator/internal/infra/grpc/article"
+	"blogapi.miyamo.today/federator/internal/infra/grpc/article/articleconnect"
 	"blogapi.miyamo.today/federator/internal/utils"
+	"connectrpc.com/connect"
 	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -21,7 +23,7 @@ import (
 // Articles is a use-case of getting an articles.
 type Articles struct {
 	// articleServiceClient is a client of article service.
-	articleServiceClient grpc.ArticleServiceClient
+	articleServiceClient articleconnect.ArticleServiceClient
 }
 
 // Execute gets an article by id.
@@ -72,10 +74,12 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDTO) 
 	}
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("articlerameters", slog.Any("in", in)))
-	response, err := u.articleServiceClient.GetNextArticles(ctx, &grpc.GetNextArticlesRequest{
-		First: int32(in.First()),
-		After: utils.PtrFromString(in.After()),
-	})
+
+	response, err := u.articleServiceClient.GetNextArticles(ctx,
+		connect.NewRequest(&grpc.GetNextArticlesRequest{
+			First: int32(in.First()),
+			After: utils.PtrFromString(in.After()),
+		}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -84,7 +88,9 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDTO) 
 				slog.Any("error", err)))
 		return dto.ArticlesOutDTO{}, err
 	}
-	articlePBs := response.Articles
+
+	message := response.Msg
+	articlePBs := message.Articles
 	articleDTOs := make([]dto.ArticleTag, 0, len(articlePBs))
 	for _, article := range articlePBs {
 		tagPBs := article.GetTags()
@@ -116,7 +122,7 @@ func (u *Articles) executeNextPaging(ctx context.Context, in dto.ArticlesInDTO) 
 			updatedAt,
 			tagDTOs))
 	}
-	out := dto.NewArticlesOutDTO(articleDTOs, dto.ArticlesOutDTOWithHasNext(response.StillExists))
+	out := dto.NewArticlesOutDTO(articleDTOs, dto.ArticlesOutDTOWithHasNext(message.StillExists))
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.ArticleOutDTO", out),
@@ -138,10 +144,11 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDTO) 
 	logger.InfoContext(ctx, "BEGIN",
 		slog.Group("articlerameters", slog.Any("in", in)))
 
-	response, err := u.articleServiceClient.GetPrevArticles(ctx, &grpc.GetPrevArticlesRequest{
-		Last:   int32(in.Last()),
-		Before: utils.PtrFromString(in.Before()),
-	})
+	response, err := u.articleServiceClient.GetPrevArticles(ctx,
+		connect.NewRequest(&grpc.GetPrevArticlesRequest{
+			Last:   int32(in.Last()),
+			Before: utils.PtrFromString(in.Before()),
+		}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -150,7 +157,9 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDTO) 
 				slog.Any("error", err)))
 		return dto.ArticlesOutDTO{}, err
 	}
-	articlePBs := response.Articles
+
+	message := response.Msg
+	articlePBs := message.Articles
 	articleDTOs := make([]dto.ArticleTag, 0, len(articlePBs))
 	for _, article := range articlePBs {
 		createdAt := synchro.In[tz.UTC](article.CreatedAt.AsTime())
@@ -199,7 +208,7 @@ func (u *Articles) executePrevPaging(ctx context.Context, in dto.ArticlesInDTO) 
 			updatedAt,
 			tagDTOs))
 	}
-	out := dto.NewArticlesOutDTO(articleDTOs, dto.ArticlesOutDTOWithHasPrev(response.StillExists))
+	out := dto.NewArticlesOutDTO(articleDTOs, dto.ArticlesOutDTOWithHasPrev(message.StillExists))
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
 			slog.Any("*dto.ArticleOutDTO", out),
@@ -219,7 +228,7 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDTO, error) {
 		logger = log.DefaultLogger()
 	}
 	logger.InfoContext(ctx, "BEGIN")
-	response, err := u.articleServiceClient.GetAllArticles(ctx, &emptypb.Empty{})
+	response, err := u.articleServiceClient.GetAllArticles(ctx, connect.NewRequest(&emptypb.Empty{}))
 	if err != nil {
 		err = errors.WithStack(err)
 		logger.WarnContext(ctx, "END",
@@ -228,7 +237,9 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDTO, error) {
 				slog.Any("error", err)))
 		return dto.ArticlesOutDTO{}, err
 	}
-	articlePBs := response.Articles
+
+	message := response.Msg
+	articlePBs := message.Articles
 	articleDTOs := make([]dto.ArticleTag, 0, len(articlePBs))
 
 	for _, article := range articlePBs {
@@ -270,7 +281,7 @@ func (u *Articles) execute(ctx context.Context) (dto.ArticlesOutDTO, error) {
 }
 
 // NewArticles is a constructor of Articles.
-func NewArticles(articleServiceClient grpc.ArticleServiceClient) *Articles {
+func NewArticles(articleServiceClient articleconnect.ArticleServiceClient) *Articles {
 	return &Articles{
 		articleServiceClient: articleServiceClient,
 	}
