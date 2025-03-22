@@ -30,24 +30,17 @@ runs:
         go mod tidy
         go build -v ./...
 
-    - name: Setup reviewdog
-      uses: reviewdog/action-setup@e04ffabe3898a0af8d0fb1af00c188831c4b5893 # v1.3.2
-      with:
-        reviewdog_version: latest
-
     - name: Setup staticcheck
       working-directory: ${{ inputs.target }}
       shell: bash
       run: |
         go install honnef.co/go/tools/cmd/staticcheck@latest
 
-    - name: staticcheck with reviewdog
-      env:
-        REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
+    - name: staticcheck
       working-directory: ${{ inputs.target }}
       shell: bash
       run: |
-        staticcheck ./... | reviewdog -f=staticcheck -reporter=github-pr-check -level warning
+        staticcheck ./...
 
     - name: Go Test
       working-directory: ${{ inputs.target }}
