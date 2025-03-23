@@ -25,7 +25,7 @@ jobs:
         with:
           target: blogging-event-service
           app_id: ${{ secrets.GH_APP_ID }}
-          app_private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           gcp_project: ${{ secrets.GCP_PROJECT_ID }}
           gcp_credentials: ${{ secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS }}
           gcp_region: ${{ secrets.GCP_REGION }}
