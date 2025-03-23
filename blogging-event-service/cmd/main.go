@@ -39,7 +39,7 @@ func main() {
 
 	errChan := make(chan error, 1)
 	go func() {
-		slog.Info("start graphql server.", slog.String("port", port))
+		slog.Info("start gRPC server.", slog.String("port", port))
 		if err := e.StartH2CServer(fmt.Sprintf(":%s", port), &http2.Server{}); err != nil {
 			errChan <- err
 			return
@@ -54,7 +54,7 @@ func main() {
 			slog.Error(err.Error())
 		}
 	case <-quit:
-		slog.Info("stopping graphql server...")
+		slog.Info("stopping gRPC server...")
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		e.Shutdown(ctx)
