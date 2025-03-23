@@ -3,15 +3,12 @@ ARG GO_VERSION=1.24.0
 
 FROM golang:${GO_VERSION}-alpine3.20 as build
 
-ARG GITHUB_TOKEN
-
 WORKDIR /go/src/github.com/miyamo2/blogapi.miyamo.today/federator
 
 RUN apk update \
     && apk add --no-cache git
 
 COPY . .
-RUN export GOPRIVATE=github.com/miyamo2
 RUN go mod download
 
 RUN go build -ldflags="-s -w" -trimpath -o ./bin/federator ./cmd/main.go
