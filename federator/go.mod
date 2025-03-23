@@ -16,8 +16,8 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/newrelic/go-agent/v3 v3.35.1
-	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.2
+	github.com/newrelic/go-agent/v3 v3.36.0
+	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.3
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	github.com/vektah/gqlparser/v2 v2.5.23
 	go.uber.org/mock v0.5.0
