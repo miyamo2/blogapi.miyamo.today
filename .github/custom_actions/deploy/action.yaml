@@ -76,6 +76,6 @@ runs:
         event-type: ${{ inputs.target }}
         client-payload: |-
           {
-            "target": "${{ inputs.target }}"
+            "target": "${{ inputs.target }}",
             "tag": "${{ inputs.commit_sha }}"
           }
