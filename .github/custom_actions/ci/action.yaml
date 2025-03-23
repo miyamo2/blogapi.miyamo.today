@@ -3,9 +3,6 @@ inputs:
   target:
     description: "target to test"
     required: true
-  github_token:
-    description: "SSIA"
-    required: true
   codecov_token:
     description: "SSIA"
   github_workspace:

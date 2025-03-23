@@ -1,0 +1,80 @@
+name: "Deploy"
+inputs:
+  target:
+    description: "target to deploy"
+    required: true
+  gcp_credentials:
+    description: "SSIA"
+    required: true
+  gc_project:
+    description: "SSIA"
+    required: true
+  gcp_region:
+    description: "SSIA"
+    required: true
+  app_id:
+    description: "SSIA"
+    required: true
+  app_private_key:
+    description: "SSIA"
+    required: true
+  commit_sha:
+    description: "SSIA"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+    - id: auth
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ inputs.gcp_credentials }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Get Registry Host
+      id: get-registry-host
+      shell: bash
+      run: |
+        echo "::set-output name=host::${{ inputs.gcp_region }}-docker.pkg.dev"
+
+    - name: Configure docker for artifact registry
+      env:
+        HOST: ${{ steps.get-registry-host.outputs.host }}
+      shell: bash
+      run: |
+        gcloud auth configure-docker ${{ env.HOST }}
+
+    - name: Build & Push Docker Image
+      working-directory: ${{ inputs.target }}
+      env:
+        ENV_NAME: prod
+        REGISTRY: ${{ format('{0}/{1}', steps.get-registry-host.outputs.host, inputs.gcp_project) }}
+        REPOSITORY: ${{ inputs.target }}
+        TAG: ${{ inputs.commit_sha }}
+      shell: bash
+      run: |
+        docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} -f ./.build/package/Dockerfile .
+        docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} 
+
+    - name: Generate a token
+      id: generate-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.app_id }}
+        private-key: ${{ inputs.app_private_key }}
+
+    - name: Dispatch manifest update
+      uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
+      with:
+        token: ${{ steps.generate-token.outputs.token }}
+        repository: miyamo2/manifest.miyamo.today
+        event-type: ${{ inputs.target }}
+        client-payload: |-
+          {
+            "target": "${{ inputs.target }}"
+            "tag": "${{ inputs.commit_sha }}"
+          }

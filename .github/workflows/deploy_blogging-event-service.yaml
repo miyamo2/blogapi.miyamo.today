@@ -21,41 +21,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Set up aws cli
-        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
+      - uses: .github/custom_actions/deploy/
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-1
-          mask-aws-account-id: true
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # v2.0.1
-
-      - name: Get ECR Repository Name
-        id: ecr-repo
-        env:
-          ENV_NAME: prod
-          REPO: ${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}
-        run: |
-          REPO_NAME=$(aws ssm get-parameters --names /miyamo-today/cicd/${{ env.ENV_NAME }}/ecr/blogging-event-service/name --output text --query Parameters[0].Value) 
-          echo "repository=$REPO_NAME" >> $GITHUB_OUTPUT
-
-      - name: Build & Push Docker Image
-        env:
-          ENV_NAME: prod
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ steps.ecr-repo.outputs.repository }}
-          TAG: ${{ github.sha }}
-        run: |
-          docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} -f ./.build/package/Dockerfile .
-          docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }}
-          aws ssm put-parameter --name /miyamo-today/cicd/${{ env.ENV_NAME }}/ecr/blogging-event-service/tag --value ${{ env.TAG }} --type String --overwrite --region ap-northeast-1
-
-      - name: Dispatch infra-miyamo-today
-        uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
-        with:
-          token: ${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }}
-          repository: ${{ github.repository_owner }}/infra.miyamo.today
-          event-type: update_miyamo-today-api-blogging-event_ecr
+          target: blogging-event-service
+          app_id: ${{ secrets.GH_APP_ID }}
+          app_private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          gcp_project_id: ${{ secrets.GCP_PROJECT_ID }}
+          gcp_credentials: ${{ secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS }}
+          gcp_region: ${{ secrets.GCP_REGION }}
+          commit_sha: ${{ github.sha }}

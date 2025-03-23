@@ -30,5 +30,4 @@ jobs:
         with:
           target: core/graphql
           github_workspace: ${{ github.workspace }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
 

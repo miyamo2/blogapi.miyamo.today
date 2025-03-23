@@ -31,5 +31,4 @@ jobs:
         with:
           target: tag-service
           github_workspace: ${{ github.workspace }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
