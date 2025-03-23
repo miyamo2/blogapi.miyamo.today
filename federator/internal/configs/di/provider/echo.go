@@ -1,9 +1,9 @@
 package provider
 
 import (
-	"errors"
 	"fmt"
 	"github.com/google/wire"
+	"github.com/miyamo2/altnrslog"
 	"log/slog"
 	"net/http"
 
@@ -29,17 +29,14 @@ func Echo(srv *handler.Server, nr *newrelic.Application) *echo.Echo {
 		req := c.Request()
 		ctx := req.Context()
 		nrtx := newrelic.FromContext(ctx)
-		var he *echo.HTTPError
-		if errors.As(err, &he) {
-			code := he.Code
-			switch code {
-			case http.StatusNotFound:
-				nrtx.NoticeError(nrpkgerrors.Wrap(err))
-				slog.ErrorContext(c.Request().Context(),
-					fmt.Sprintf("request: %v %v", req.Method, req.URL),
-					slog.String("error", err.Error()))
-			}
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger, err := altnrslog.FromContext(ctx)
+		if err != nil {
+			logger = slog.Default()
 		}
+		logger.ErrorContext(ctx,
+			fmt.Sprintf("request: %v %v", req.Method, req.URL),
+			slog.String("error", err.Error()))
 		e.DefaultHTTPErrorHandler(err, c)
 	}
 	e.JSONSerializer = &s11n.JSONSerializer[*json.Encoder, *json.Decoder]{

@@ -4,11 +4,10 @@ import (
 	blogapictx "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/core/echo/middlewares"
 	"connectrpc.com/grpcreflect"
-	"errors"
 	"fmt"
 	"github.com/google/wire"
+	"github.com/miyamo2/altnrslog"
 	"log/slog"
-	"net/http"
 
 	"blogapi.miyamo.today/article-service/internal/infra/grpc/grpcconnect"
 	"blogapi.miyamo.today/core/echo/s11n"
@@ -33,7 +32,7 @@ func Echo(service grpcconnect.ArticleServiceHandler, nr *newrelic.Application) *
 		middlewares.SetBlogAPIContextToContext(blogapictx.RequestTypeGRPC),
 		middlewares.SetLoggerToContext(nr))
 
-	gRPCReflector := grpcreflect.NewStaticReflector(grpcconnect.ArticleServiceName)
+	gRPCReflector := grpcreflect.NewStaticReflector(grpcconnect.TagServiceName)
 
 	reflectV1Path, reflectV1Handler := grpcreflect.NewHandlerV1(gRPCReflector)
 	e.POST(fmt.Sprintf("%s*", reflectV1Path), echo.WrapHandler(reflectV1Handler))
@@ -41,24 +40,21 @@ func Echo(service grpcconnect.ArticleServiceHandler, nr *newrelic.Application) *
 	reflectV1AlphaPath, reflectV1AlphaHandler := grpcreflect.NewHandlerV1Alpha(gRPCReflector)
 	e.POST(fmt.Sprintf("%s*", reflectV1AlphaPath), echo.WrapHandler(reflectV1AlphaHandler))
 
-	healthPath, healthHandler := grpchealth.NewHandler(grpchealth.NewStaticChecker(grpcconnect.ArticleServiceName))
+	healthPath, healthHandler := grpchealth.NewHandler(grpchealth.NewStaticChecker(grpcconnect.TagServiceName))
 	e.POST(fmt.Sprintf("%s*", healthPath), echo.WrapHandler(healthHandler))
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		req := c.Request()
 		ctx := req.Context()
 		nrtx := newrelic.FromContext(ctx)
-		var he *echo.HTTPError
-		if errors.As(err, &he) {
-			code := he.Code
-			switch code {
-			case http.StatusNotFound:
-				nrtx.NoticeError(nrpkgerrors.Wrap(err))
-				slog.ErrorContext(c.Request().Context(),
-					fmt.Sprintf("request: %v %v", req.Method, req.URL),
-					slog.String("error", err.Error()))
-			}
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
+		logger, err := altnrslog.FromContext(ctx)
+		if err != nil {
+			logger = slog.Default()
 		}
+		logger.ErrorContext(ctx,
+			fmt.Sprintf("request: %v %v", req.Method, req.URL),
+			slog.String("error", err.Error()))
 		e.DefaultHTTPErrorHandler(err, c)
 	}
 
