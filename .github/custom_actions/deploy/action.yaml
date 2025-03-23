@@ -39,7 +39,7 @@ runs:
       id: get-registry-host
       shell: bash
       run: |
-        echo "::set-output name=host::${{ inputs.gcp_region }}-docker.pkg.dev"
+        echo "host=${{ inputs.gcp_region }}-docker.pkg.dev" >> $GITHUB_OUTPUT
 
     - name: Configure docker for artifact registry
       env:
@@ -54,11 +54,12 @@ runs:
         ENV_NAME: prod
         REGISTRY: ${{ format('{0}/{1}', steps.get-registry-host.outputs.host, inputs.gcp_project) }}
         REPOSITORY: ${{ inputs.target }}
+        IMAGE_NAME: ${{ inputs.target }}
         TAG: ${{ inputs.commit_sha }}
       shell: bash
       run: |
-        docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} -f ./.build/package/Dockerfile .
-        docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}:${{ env.TAG }} 
+        docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }} -f ./.build/package/Dockerfile .
+        docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }} 
 
     - name: Generate a token
       id: generate-token
