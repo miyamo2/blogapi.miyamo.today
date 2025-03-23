@@ -32,7 +32,7 @@ func Echo(service grpcconnect.ArticleServiceHandler, nr *newrelic.Application) *
 		middlewares.SetBlogAPIContextToContext(blogapictx.RequestTypeGRPC),
 		middlewares.SetLoggerToContext(nr))
 
-	gRPCReflector := grpcreflect.NewStaticReflector(grpcconnect.TagServiceName)
+	gRPCReflector := grpcreflect.NewStaticReflector(grpcconnect.ArticleServiceName)
 
 	reflectV1Path, reflectV1Handler := grpcreflect.NewHandlerV1(gRPCReflector)
 	e.POST(fmt.Sprintf("%s*", reflectV1Path), echo.WrapHandler(reflectV1Handler))
@@ -40,7 +40,7 @@ func Echo(service grpcconnect.ArticleServiceHandler, nr *newrelic.Application) *
 	reflectV1AlphaPath, reflectV1AlphaHandler := grpcreflect.NewHandlerV1Alpha(gRPCReflector)
 	e.POST(fmt.Sprintf("%s*", reflectV1AlphaPath), echo.WrapHandler(reflectV1AlphaHandler))
 
-	healthPath, healthHandler := grpchealth.NewHandler(grpchealth.NewStaticChecker(grpcconnect.TagServiceName))
+	healthPath, healthHandler := grpchealth.NewHandler(grpchealth.NewStaticChecker(grpcconnect.ArticleServiceName))
 	e.POST(fmt.Sprintf("%s*", healthPath), echo.WrapHandler(healthHandler))
 
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
