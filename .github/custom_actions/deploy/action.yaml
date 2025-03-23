@@ -21,6 +21,9 @@ inputs:
   commit_sha:
     description: "SSIA"
     required: true
+  owner:
+    description: "SSIA"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -67,6 +70,7 @@ runs:
       with:
         app-id: ${{ inputs.app_id }}
         private-key: ${{ inputs.app_private_key }}
+        owner: miyamo2
 
     - name: Dispatch manifest update
       uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0

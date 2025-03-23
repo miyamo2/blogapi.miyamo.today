@@ -30,3 +30,4 @@ jobs:
           gcp_credentials: ${{ secrets.GCP_SERVICE_ACCOUNT_CREDENTIALS }}
           gcp_region: ${{ secrets.GCP_REGION }}
           commit_sha: ${{ github.sha }}
+          owner: ${{ github.repository_owner }}
