@@ -6,7 +6,7 @@ inputs:
   gcp_credentials:
     description: "SSIA"
     required: true
-  gc_project:
+  gcp_project:
     description: "SSIA"
     required: true
   gcp_region:
