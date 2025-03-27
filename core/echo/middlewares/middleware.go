@@ -3,11 +3,15 @@ package middlewares
 import (
 	blogapicontext "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/core/log"
+	"context"
 	"github.com/labstack/echo/v4"
+	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
+	"net/http"
 	"net/url"
+	"strings"
 )
 
 func SetBlogAPIContextToContext(requestType blogapicontext.RequestType) echo.MiddlewareFunc {
@@ -73,3 +77,35 @@ func NRConnect(app *newrelic.Application) echo.MiddlewareFunc {
 		}
 	}
 }
+
+// Verifier is an interface for verifying JWT tokens.
+type Verifier interface {
+	// Verify verifies the token and returns the claims.
+	Verify(token string) (jwt.Token, error)
+}
+
+func Auth(verifier Verifier) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			ctx := c.Request().Context()
+			defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: Auth").End()
+			authHeader := c.Request().Header.Get("Authorization")
+			if authHeader == "" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "no authorization header provided"})
+			}
+			token := strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer"))
+			if token == "" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid token"})
+			}
+			jwtToken, err := verifier.Verify(token)
+			if err != nil {
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "failed to verify token"})
+			}
+			ctx = context.WithValue(ctx, JWTContextKey{}, jwtToken)
+			c.SetRequest(c.Request().WithContext(ctx))
+			return next(c)
+		}
+	}
+}
+
+type JWTContextKey struct{}

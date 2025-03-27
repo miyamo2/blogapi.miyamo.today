@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0 - 2025-03-28
+
+### ✨ New Features
+
+- Added Auth Middleware
+
 ## 0.4.0 - 2024-12-29
 
 ### 💥 Breaking Changes
