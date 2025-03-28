@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	blogapi.miyamo.today/core v0.24.0
-	blogapi.miyamo.today/core/echo v0.4.0
+	blogapi.miyamo.today/core/echo v0.5.1
 	blogapi.miyamo.today/core/graphql v0.4.0
 	connectrpc.com/connect v1.18.1
 	github.com/99designs/gqlgen v0.17.68
