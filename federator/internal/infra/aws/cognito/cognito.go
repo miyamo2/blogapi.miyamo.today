@@ -13,6 +13,8 @@ import (
 
 var (
 	ErrTokenUseUnmatched = errors.New("token_use unmatched")
+	ErrFailedToFetchJWK  = errors.New("failed to fetch jwk")
+	ErrFailedToParseJWT  = errors.New("failed to parse token")
 )
 
 // Verifier implements Verifier with cognito
@@ -27,7 +29,7 @@ func (v *Verifier) Verify(ctx context.Context, tokenStr string) (jwt.Token, erro
 	// OPTIMIZE: enable cache
 	keySet, err := jwk.Fetch(ctx, v.jwksURL)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to fetch jwk")
+		return nil, errors.Join(err, ErrFailedToFetchJWK)
 	}
 	token, err := jwt.Parse(
 		[]byte(tokenStr),
@@ -38,6 +40,9 @@ func (v *Verifier) Verify(ctx context.Context, tokenStr string) (jwt.Token, erro
 		withTokenUse(),
 		jwt.WithClock(&clock{}),
 	)
+	if err != nil {
+		return nil, errors.Join(err, ErrFailedToParseJWT)
+	}
 	return token, nil
 }
 
