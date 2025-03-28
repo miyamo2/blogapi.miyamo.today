@@ -15,6 +15,7 @@ func GetDependencies() *Dependencies {
 		provider.PresenterSet,
 		provider.UsecaseSet,
 		provider.GqlgenSet,
+		provider.VeryfierSet,
 		provider.EchoSet,
 		wire.NewSet(NewDependencies),
 	)

@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"blogapi.miyamo.today/core/echo/middlewares"
 	"fmt"
 	"github.com/google/wire"
 	"github.com/miyamo2/altnrslog"
@@ -17,11 +18,13 @@ import (
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
 
-func Echo(srv *handler.Server, nr *newrelic.Application) *echo.Echo {
+func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Verifier) *echo.Echo {
 	slog.Info("creating echo server")
 	e := echo.New()
-	e.Add(http.MethodPost, "/query", echo.WrapHandler(srv), nrecho.Middleware(nr))
-	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL playground", "/query")))
+
+	authMiddleware := middlewares.Auth(verifier)
+	e.Add(http.MethodPost, "/query", echo.WrapHandler(srv), nrecho.Middleware(nr), authMiddleware)
+	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL playground", "/query")), authMiddleware)
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(200, "ok")
 	})

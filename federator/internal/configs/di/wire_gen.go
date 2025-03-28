@@ -39,7 +39,8 @@ func GetDependencies() *Dependencies {
 	executableSchema := provider.GqlgenExecutableSchema(config)
 	application := provider.NewRelic()
 	server := provider.GqlgenServer(executableSchema, application)
-	echo := provider.Echo(server, application)
+	verifier := provider.Verifier()
+	echo := provider.Echo(server, application, verifier)
 	dependencies := NewDependencies(echo)
 	return dependencies
 }
