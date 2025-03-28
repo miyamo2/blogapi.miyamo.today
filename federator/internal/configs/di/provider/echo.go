@@ -33,8 +33,8 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 		ctx := req.Context()
 		nrtx := newrelic.FromContext(ctx)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger, err := altnrslog.FromContext(ctx)
-		if err != nil {
+		logger, _ := altnrslog.FromContext(ctx)
+		if logger == nil {
 			logger = slog.Default()
 		}
 		logger.ErrorContext(ctx,
