@@ -1,7 +1,7 @@
 blogapi.miyamo.today/core v0.24.0 h1:BJ2RUREukwazU3qqX5eYftvvWdG0tBNgIvTxvS8df/Y=
 blogapi.miyamo.today/core v0.24.0/go.mod h1:WheqmYNRtvXgIHvJ2A3kSGgOXJKIDHFS4qOE8N7E0Bo=
-blogapi.miyamo.today/core/echo v0.6.0 h1:YitmiD7npDf2zGqhtARq7HgpZMC3fpSq6mI1d0d6TeY=
-blogapi.miyamo.today/core/echo v0.6.0/go.mod h1:6QZOq/rhXJNOmeruT/ayIEo3ieM9aPXnbrMFR7ZBpHw=
+blogapi.miyamo.today/core/echo v0.6.1 h1:f0qxyranKoFPg6/h4OofrsfDP90KOgQ05vDehC0GJZ8=
+blogapi.miyamo.today/core/echo v0.6.1/go.mod h1:6QZOq/rhXJNOmeruT/ayIEo3ieM9aPXnbrMFR7ZBpHw=
 blogapi.miyamo.today/core/graphql v0.4.0 h1:SJ2ihULzgBEIIRNO1NAI5ChsVaLLqCE89at1N2Zk7XM=
 blogapi.miyamo.today/core/graphql v0.4.0/go.mod h1:tbUMR7IFK/9C+dokQjsqTDxqdsiWswv5RgWfCKZVkxE=
 connectrpc.com/connect v1.18.1 h1:PAg7CjSAGvscaf6YZKUefjoih5Z/qYkyaTrBW8xvYPw=
