@@ -32,7 +32,7 @@ func (v *Verifier) Verify(ctx context.Context, tokenStr string) (jwt.Token, erro
 	// OPTIMIZE: enable cache
 	keySet, err := jwk.Fetch(ctx, v.jwksURL)
 	if err != nil {
-		return nil, errors.Join(err, ErrFailedToFetchJWK)
+		return nil, errors.WithStack(errors.Join(err, ErrFailedToFetchJWK))
 	}
 	token, err := jwt.Parse(
 		[]byte(tokenStr),
@@ -44,7 +44,7 @@ func (v *Verifier) Verify(ctx context.Context, tokenStr string) (jwt.Token, erro
 		jwt.WithClock(&clock{}),
 	)
 	if err != nil {
-		return nil, errors.Join(err, ErrFailedToParseJWT)
+		return nil, errors.WithStack(errors.Join(err, ErrFailedToParseJWT))
 	}
 	return token, nil
 }
@@ -71,7 +71,7 @@ func validateTokenUse(_ context.Context, t jwt.Token) error {
 		return err
 	}
 	if !allowedTokenUse[tokenUse] {
-		return errors.WithDetail(ErrTokenUseUnmatched, fmt.Sprintf("token_use: %s", tokenUse))
+		return errors.WithStack(errors.WithDetail(ErrTokenUseUnmatched, fmt.Sprintf("token_use: %s", tokenUse)))
 	}
 	return nil
 }
@@ -92,18 +92,18 @@ func withAudience(audience string) jwt.ValidateOption {
 			var clientID string
 			err := t.Get("client_id", &clientID)
 			if err != nil {
-				return ErrClientIDNotProvided
+				return errors.WithStack(ErrClientIDNotProvided)
 			}
 			if clientID != audience {
-				return ErrorAudienceUnmatched
+				return errors.WithStack(ErrorAudienceUnmatched)
 			}
 		}
 		aud, ok := t.Audience()
 		if !ok {
-			return ErrAudienceNotProvided
+			return errors.WithStack(ErrAudienceNotProvided)
 		}
 		if aud[0] != audience {
-			return ErrorAudienceUnmatched
+			return errors.WithStack(ErrorAudienceUnmatched)
 		}
 		return nil
 	}))
