@@ -8,6 +8,7 @@ import (
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -60,12 +61,17 @@ func (s *ArticleCommandService) ExecuteArticleCommand(ctx context.Context, in mo
 		tx = tx.WithContext(ctx)
 		now := synchro.Now[tz.UTC]()
 
+		id, err := ulid.Parse(in.ID())
+		if err != nil {
+			return err
+		}
+
 		a := &article{
 			ID:        in.ID(),
 			Title:     in.Title(),
 			Body:      in.Body(),
 			Thumbnail: in.Thumbnail(),
-			CreatedAt: now,
+			CreatedAt: synchro.UnixMilli[tz.UTC](int64(id.Time())),
 			UpdatedAt: now,
 		}
 
