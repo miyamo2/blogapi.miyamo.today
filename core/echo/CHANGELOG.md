@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1 - 2025-03-28
+
+### Fix
+
+- Fixed Auth Middleware to receive context
+
 ## 0.5.0 - 2025-03-28
 
 ### ✨ New Features

@@ -81,7 +81,7 @@ func NRConnect(app *newrelic.Application) echo.MiddlewareFunc {
 // Verifier is an interface for verifying JWT tokens.
 type Verifier interface {
 	// Verify verifies the token and returns the claims.
-	Verify(token string) (jwt.Token, error)
+	Verify(ctx context.Context, token string) (jwt.Token, error)
 }
 
 func Auth(verifier Verifier) echo.MiddlewareFunc {
@@ -97,7 +97,7 @@ func Auth(verifier Verifier) echo.MiddlewareFunc {
 			if token == "" {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "invalid token"})
 			}
-			jwtToken, err := verifier.Verify(token)
+			jwtToken, err := verifier.Verify(ctx, token)
 			if err != nil {
 				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "failed to verify token"})
 			}
