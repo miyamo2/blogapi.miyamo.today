@@ -5,7 +5,7 @@ import (
 	"blogapi.miyamo.today/core/log"
 	"context"
 	"github.com/labstack/echo/v4"
-	"github.com/lestrrat-go/jwx/jwt"
+	"github.com/lestrrat-go/jwx/v3/jwt"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"

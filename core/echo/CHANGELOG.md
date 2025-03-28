@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 - 2025-03-28
+
+### Dependency
+
+- `github.com/lestrrat-go/jwx` to `v3`
+
 ## 0.5.1 - 2025-03-28
 
 ### Fix
