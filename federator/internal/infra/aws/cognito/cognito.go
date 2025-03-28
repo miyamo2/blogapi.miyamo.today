@@ -12,9 +12,12 @@ import (
 )
 
 var (
-	ErrTokenUseUnmatched = errors.New("token_use unmatched")
-	ErrFailedToFetchJWK  = errors.New("failed to fetch jwk")
-	ErrFailedToParseJWT  = errors.New("failed to parse token")
+	ErrTokenUseUnmatched   = errors.New("token_use unmatched")
+	ErrFailedToFetchJWK    = errors.New("failed to fetch jwk")
+	ErrFailedToParseJWT    = errors.New("failed to parse token")
+	ErrAudienceNotProvided = errors.New("audience not provided")
+	ErrClientIDNotProvided = errors.New("client_id not provided")
+	ErrorAudienceUnmatched = errors.New("audience unmatched")
 )
 
 // Verifier implements Verifier with cognito
@@ -35,7 +38,7 @@ func (v *Verifier) Verify(ctx context.Context, tokenStr string) (jwt.Token, erro
 		[]byte(tokenStr),
 		jwt.WithKeySet(keySet),
 		jwt.WithValidate(true),
-		jwt.WithAudience(v.clientID),
+		withAudience(v.clientID),
 		jwt.WithIssuer(v.issuer),
 		withTokenUse(),
 		jwt.WithClock(&clock{}),
@@ -76,6 +79,34 @@ func validateTokenUse(_ context.Context, t jwt.Token) error {
 // withTokenUse enables token_use validation
 func withTokenUse() jwt.ValidateOption {
 	return jwt.WithValidator(jwt.ValidatorFunc(validateTokenUse))
+}
+
+// withAudience enables audience validation
+func withAudience(audience string) jwt.ValidateOption {
+	return jwt.WithValidator(jwt.ValidatorFunc(func(ctx context.Context, t jwt.Token) error {
+		var tokenUse string
+		if err := t.Get("token_use", &tokenUse); err != nil {
+			return err
+		}
+		if tokenUse == "access" {
+			var clientID string
+			err := t.Get("client_id", &clientID)
+			if err != nil {
+				return ErrClientIDNotProvided
+			}
+			if clientID != audience {
+				return ErrorAudienceUnmatched
+			}
+		}
+		aud, ok := t.Audience()
+		if !ok {
+			return ErrAudienceNotProvided
+		}
+		if aud[0] != audience {
+			return ErrorAudienceUnmatched
+		}
+		return nil
+	}))
 }
 
 // clock implements jwt.Clock
