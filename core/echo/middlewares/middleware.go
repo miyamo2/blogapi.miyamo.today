@@ -99,7 +99,7 @@ func Auth(verifier Verifier) echo.MiddlewareFunc {
 			}
 			jwtToken, err := verifier.Verify(ctx, token)
 			if err != nil {
-				return c.JSON(http.StatusUnauthorized, map[string]string{"error": "failed to verify token"})
+				return c.JSON(http.StatusUnauthorized, map[string]string{"error": err.Error()})
 			}
 			ctx = context.WithValue(ctx, JWTContextKey{}, jwtToken)
 			c.SetRequest(c.Request().WithContext(ctx))
