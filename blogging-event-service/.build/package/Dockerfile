@@ -14,14 +14,10 @@ RUN go mod download
 
 RUN go build -ldflags="-s -w" -trimpath -o ./bin/blogging-event-service ./cmd/main.go
 
-RUN wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
-    chmod +x /bin/grpc_health_probe
-
 FROM alpine:3.21
 
 WORKDIR /app
 
 COPY --from=build /go/src/github.com/miyamo2/blogapi.miyamo.today/blogging-event-service/bin/blogging-event-service /app/blogging-event-service
-COPY --from=build /bin/grpc_health_probe /bin/grpc_health_probe
 
 CMD ["/app/blogging-event-service"]
