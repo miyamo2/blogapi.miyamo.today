@@ -15,7 +15,7 @@ require (
 	github.com/google/wire v0.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.3
-	github.com/lestrrat-go/jwx/v3 v3.0.0-beta1
+	github.com/lestrrat-go/jwx/v3 v3.0.0
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/newrelic/go-agent/v3 v3.38.0
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.3
