@@ -2,11 +2,9 @@ package provider
 
 import (
 	"blogapi.miyamo.today/core/echo/middlewares"
-	"blogapi.miyamo.today/core/echo/s11n"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/goccy/go-json"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	"github.com/miyamo2/altnrslog"
@@ -39,10 +37,6 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 			fmt.Sprintf("request: %v %v", req.Method, req.URL),
 			slog.String("error", err.Error()))
 		e.DefaultHTTPErrorHandler(err, c)
-	}
-	e.JSONSerializer = &s11n.JSONSerializer[*json.Encoder, *json.Decoder]{
-		Encoder: json.NewEncoder,
-		Decoder: json.NewDecoder,
 	}
 	slog.Info("echo server created")
 	return e
