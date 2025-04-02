@@ -97,6 +97,7 @@ func withAudience(audience string) jwt.ValidateOption {
 			if clientID != audience {
 				return errors.WithStack(ErrorAudienceUnmatched)
 			}
+			return nil
 		}
 		aud, ok := t.Audience()
 		if !ok {
