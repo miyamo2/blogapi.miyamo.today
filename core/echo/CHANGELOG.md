@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0 - 2025-04-02
+
+### ✨ New Features
+
+- Added `RequestLog` middleware
+
 ## 0.6.1 - 2025-03-28
 
 ### Fix

@@ -3,12 +3,15 @@ package middlewares
 import (
 	blogapicontext "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/core/log"
+	"bytes"
 	"context"
 	"github.com/labstack/echo/v4"
 	"github.com/lestrrat-go/jwx/v3/jwt"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
+	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -109,3 +112,34 @@ func Auth(verifier Verifier) echo.MiddlewareFunc {
 }
 
 type JWTContextKey struct{}
+
+func RequestLog() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			ctx := c.Request().Context()
+			defer newrelic.FromContext(ctx).StartSegment("BlogAPICore: RequestLog").End()
+			logger, _ := altnrslog.FromContext(ctx)
+			if logger == nil {
+				logger = slog.Default()
+			}
+			requestBuf := bytes.Buffer{}
+			requestTr := io.TeeReader(c.Request().Body, &requestBuf)
+			c.Request().Body = io.NopCloser(&requestBuf)
+			b, err := io.ReadAll(requestTr)
+			if err != nil {
+				return err
+			}
+			logger.InfoContext(ctx, "request",
+				slog.String("method", c.Request().Method),
+				slog.String("path", c.Request().URL.Path),
+				slog.String("query", c.Request().URL.RawQuery),
+				slog.String("body", string(b)),
+				slog.String("remote_addr", c.RealIP()))
+			err = next(c)
+			if err != nil {
+				logger.ErrorContext(ctx, "failed to handle request", slog.String("error", err.Error()))
+			}
+			return err
+		}
+	}
+}
