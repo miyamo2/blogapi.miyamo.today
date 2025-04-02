@@ -109,7 +109,6 @@ func GqlgenServer(schema *graphql.ExecutableSchema, nr *newrelic.Application) *h
 	srv.AroundOperations(middleware.StartNewRelicTransaction(nr))
 	srv.AroundOperations(middleware.SetBlogAPIContextToContext)
 	srv.AroundRootFields(middleware.StartNewRelicSegment)
-	srv.AroundOperations(middleware.SetLoggerToContext(nr))
 	return srv
 }
 
