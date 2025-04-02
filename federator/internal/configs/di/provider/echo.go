@@ -2,20 +2,18 @@ package provider
 
 import (
 	"blogapi.miyamo.today/core/echo/middlewares"
-	"fmt"
-	"github.com/google/wire"
-	"github.com/miyamo2/altnrslog"
-	"log/slog"
-	"net/http"
-
 	"blogapi.miyamo.today/core/echo/s11n"
+	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/goccy/go-json"
+	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
+	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/integrations/nrecho-v4"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"log/slog"
 )
 
 func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Verifier) *echo.Echo {
@@ -23,7 +21,7 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 	e := echo.New()
 
 	authMiddleware := middlewares.Auth(verifier)
-	e.Add(http.MethodPost, "/query", echo.WrapHandler(srv), nrecho.Middleware(nr), authMiddleware)
+	e.POST("/query", echo.WrapHandler(srv), nrecho.Middleware(nr), middlewares.RequestLog(), authMiddleware)
 	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL playground", "/query")), authMiddleware)
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(200, "ok")

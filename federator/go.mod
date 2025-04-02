@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	blogapi.miyamo.today/core v0.24.0
-	blogapi.miyamo.today/core/echo v0.6.1
+	blogapi.miyamo.today/core/echo v0.7.0
 	blogapi.miyamo.today/core/graphql v0.4.0
 	connectrpc.com/connect v1.18.1
 	github.com/99designs/gqlgen v0.17.70
@@ -60,5 +60,5 @@ require (
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.23.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
-	google.golang.org/grpc v1.71.0 // indirect
+	google.golang.org/grpc v1.71.1 // indirect
 )
