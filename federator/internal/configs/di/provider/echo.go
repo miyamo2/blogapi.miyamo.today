@@ -21,7 +21,7 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 	e := echo.New()
 
 	authMiddleware := middlewares.Auth(verifier)
-	e.POST("/query", echo.WrapHandler(srv), nrecho.Middleware(nr), middlewares.SetLoggerToContext(nr), middlewares.RequestLog(), authMiddleware)
+	e.POST("/query", echo.WrapHandler(srv), middlewares.RequestLog(), authMiddleware, middlewares.SetLoggerToContext(nr), nrecho.Middleware(nr))
 	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL playground", "/query")), authMiddleware)
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(200, "ok")
