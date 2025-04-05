@@ -243,7 +243,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id") AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
+					`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id") AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id" ORDER BY "a"."id"`))
 				mq.ExpectQuery().
 					WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -311,7 +311,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id" ORDER BY "a"."id" DESC`))
 				mq.ExpectQuery().WithArgs(2).WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -369,7 +369,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND "id" < $2 ORDER BY "id" DESC LIMIT $3) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND "id" < $2 ORDER BY "id" DESC LIMIT $3) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id" ORDER BY "a"."id" DESC`))
 				mq.ExpectQuery().
 					WithArgs("1", "1", 2).
 					WillReturnRows(rows)
@@ -429,7 +429,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" DESC) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" DESC) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id" ORDER BY "a"."id" DESC`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -487,7 +487,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" DESC LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id" ORDER BY "a"."id" DESC`))
 				mq.ExpectQuery().WithArgs(2).WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -545,7 +545,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id" ORDER BY "a"."id"`))
 				mq.ExpectQuery().WithArgs(2).WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -603,7 +603,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND "id" > $2 ORDER BY "id" LIMIT $3) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" WHERE EXISTS(SELECT id FROM "articles" WHERE "id" = $1) AND "id" > $2 ORDER BY "id" LIMIT $3) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id" ORDER BY "a"."id"`))
 				mq.ExpectQuery().
 					WithArgs("1", "1", 2).
 					WillReturnRows(rows)
@@ -663,7 +663,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id") AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id") AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id" ORDER BY "a"."id"`))
 				mq.ExpectQuery().WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,
@@ -721,7 +721,7 @@ func TestArticleService_GetAll(t *testing.T) {
 						entity.Tags([]entity.Tag{{ID: "tag1", Name: "test"}}))
 				mq := mock.ExpectPrepare(
 					regexp.QuoteMeta(
-						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id"`))
+						`SELECT "a".*, COALESCE(jsonb_agg(json_build_object('id', t.id, 'name', t.name)) FILTER (WHERE t.id IS NOT NULL), '[]'::json) AS "tags" FROM (SELECT * FROM "articles" ORDER BY "id" LIMIT $1) AS "a" LEFT OUTER JOIN "tags" AS "t" ON "a"."id" = "t"."article_id" GROUP BY "a"."id" ORDER BY "a"."id"`))
 				mq.ExpectQuery().WithArgs(2).WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
 					Conn: sqlDB,

@@ -260,7 +260,7 @@ func TestTagService_GetAll(t *testing.T) {
 							},
 						}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id") AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id"`))
+					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id") AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id" ORDER BY "t"."id"`))
 				mq.ExpectQuery().
 					WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -346,7 +346,7 @@ func TestTagService_GetAll(t *testing.T) {
 							},
 						}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" DESC LIMIT $1) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id"`))
+					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" DESC LIMIT $1) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id" ORDER BY "t"."id" DESC`))
 				mq.ExpectQuery().
 					WithArgs(2).
 					WillReturnRows(rows)
@@ -425,7 +425,7 @@ func TestTagService_GetAll(t *testing.T) {
 							UpdatedAt: synchro.New[tz.UTC](2021, 1, 1, 0, 0, 0, 0),
 						}}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" WHERE EXISTS(SELECT id FROM "tags" WHERE "id" = $1) AND "id" < $2 ORDER BY "id" DESC LIMIT $3) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id"`))
+					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" WHERE EXISTS(SELECT id FROM "tags" WHERE "id" = $1) AND "id" < $2 ORDER BY "id" DESC LIMIT $3) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id" ORDER BY "t"."id" DESC`))
 				mq.ExpectQuery().
 					WithArgs(cursor, cursor, 2).
 					WillReturnRows(rows)
@@ -511,7 +511,7 @@ func TestTagService_GetAll(t *testing.T) {
 							},
 						}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" DESC) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id"`))
+					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" DESC) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id" ORDER BY "t"."id" DESC`))
 				mq.ExpectQuery().
 					WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -596,7 +596,7 @@ func TestTagService_GetAll(t *testing.T) {
 							},
 						}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" DESC LIMIT $1) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id"`))
+					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" DESC LIMIT $1) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id" ORDER BY "t"."id" DESC`))
 				mq.ExpectQuery().
 					WithArgs(2).
 					WillReturnRows(rows)
@@ -683,7 +683,7 @@ func TestTagService_GetAll(t *testing.T) {
 							},
 						}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" LIMIT $1) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id"`))
+					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" LIMIT $1) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id" ORDER BY "t"."id"`))
 				mq.ExpectQuery().
 					WithArgs(2).
 					WillReturnRows(rows)
@@ -769,7 +769,7 @@ func TestTagService_GetAll(t *testing.T) {
 							},
 						}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" WHERE EXISTS(SELECT id FROM "tags" WHERE "id" = $1) AND "id" > $2 ORDER BY "id" LIMIT $3) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id"`))
+					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" WHERE EXISTS(SELECT id FROM "tags" WHERE "id" = $1) AND "id" > $2 ORDER BY "id" LIMIT $3) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id" ORDER BY "t"."id"`))
 				mq.ExpectQuery().
 					WithArgs(cursor, cursor, 2).
 					WillReturnRows(rows)
@@ -855,7 +855,7 @@ func TestTagService_GetAll(t *testing.T) {
 							},
 						}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id") AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id"`))
+					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id") AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id" ORDER BY "t"."id"`))
 				mq.ExpectQuery().
 					WillReturnRows(rows)
 				dialector := postgres.New(postgres.Config{
@@ -940,7 +940,7 @@ func TestTagService_GetAll(t *testing.T) {
 							},
 						}))
 				mq := mock.ExpectPrepare(regexp.QuoteMeta(
-					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" LIMIT $1) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id"`))
+					`SELECT "t".*,  COALESCE(jsonb_agg(json_build_object('id', a.id, 'title', a.title, 'thumbnail', a.thumbnail, 'created_at', a.created_at, 'updated_at', a.updated_at)) FILTER (WHERE a.id IS NOT NULL), '[]'::json) AS "articles" FROM (SELECT * FROM "tags" ORDER BY "id" LIMIT $1) AS "t" LEFT OUTER JOIN "articles" AS "a" ON "t"."id" = "a"."tag_id" GROUP BY "t"."id" ORDER BY "t"."id"`))
 				mq.ExpectQuery().
 					WithArgs(2).
 					WillReturnRows(rows)

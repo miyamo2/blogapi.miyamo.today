@@ -172,21 +172,9 @@ func buildQuery(pagination db.Pagination, tx *gorm.DB, q *gorm.DB) {
 	}
 
 	cursor := pagination.Cursor()
-	if pagination.IsNextPaging() {
-		tagQuery.Order(`"id"`)
-		if cursor == "" {
-			return
-		}
-		tagQuery.
-			Where(
-				`EXISTS(?)`,
-				tx.Select(`id`).Table("tags").Where(`"id" = ?`, cursor),
-			).
-			Where(`"id" > ?`, cursor)
-		return
-	}
 	if pagination.IsPreviousPaging() {
 		tagQuery.Order(`"id" DESC`)
+		q.Order(`"t"."id" DESC`)
 		if cursor == "" {
 			return
 		}
@@ -199,6 +187,19 @@ func buildQuery(pagination db.Pagination, tx *gorm.DB, q *gorm.DB) {
 		return
 	}
 	tagQuery.Order(`"id"`)
+	q.Order(`"t"."id"`)
+	if pagination.IsNextPaging() {
+		if cursor == "" {
+			return
+		}
+		tagQuery.
+			Where(
+				`EXISTS(?)`,
+				tx.Select(`id`).Table("tags").Where(`"id" = ?`, cursor),
+			).
+			Where(`"id" > ?`, cursor)
+		return
+	}
 }
 
 func NewTagService() *TagService {

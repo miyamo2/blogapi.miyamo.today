@@ -144,6 +144,7 @@ func (a *ArticleService) GetAll(ctx context.Context, out *db.MultipleStatementRe
 							Where(`"id" > ?`, cursor)
 					}
 					articleQuery.Order(`"id"`)
+					q.Order(`"a"."id"`)
 					return
 				}
 				if prevPaging {
@@ -156,9 +157,11 @@ func (a *ArticleService) GetAll(ctx context.Context, out *db.MultipleStatementRe
 							Where(`"id" < ?`, cursor)
 					}
 					articleQuery.Order(`"id" DESC`)
+					q.Order(`"a"."id" DESC`)
 					return
 				}
 				articleQuery.Order(`"id"`)
+				q.Order(`"a"."id"`)
 			}()
 			q.Table(`(?) AS "a"`, articleQuery)
 			gwrapper.TraceableScan(nrtx, q, &rows)
