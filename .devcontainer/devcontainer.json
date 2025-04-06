@@ -1,0 +1,38 @@
+{
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/rapidsai/devcontainers/features/gcc:25": {},
+    "ghcr.io/marcozac/devcontainer-features/buf:1": {
+      "version": "v1.51.0"
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {}
+  },
+  "remoteUser": "root",
+  "containerUser": "root",
+  "workspaceFolder": "/root/go/src/blogapi.miyamo.today",
+  "mounts": [
+    {
+      "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.ssh/allowed_signers",
+      "target": "/root/.ssh/allowed_signers",
+      "type": "bind"
+    },
+    {
+      "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.ssh/signing-key",
+      "target": "/root/.ssh/signing-key",
+      "type": "bind"
+    },
+    {
+      "source": "${localEnv:HOME}${localEnv:USERPROFILE}/.ssh/signing-key.pub",
+      "target": "/root/.ssh/signing-key.pub",
+      "type": "bind"
+    }
+  ],
+  "postStartCommand": "/bin/bash git config --global --add safe.directory ${containerWorkspaceFolder}",
+  "runArgs": [
+    "--platform=linux/amd64",
+  ]
+}
