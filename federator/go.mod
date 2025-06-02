@@ -7,7 +7,7 @@ require (
 	blogapi.miyamo.today/core/echo v0.7.0
 	blogapi.miyamo.today/core/graphql v0.4.0
 	connectrpc.com/connect v1.18.1
-	github.com/99designs/gqlgen v0.17.70
+	github.com/99designs/gqlgen v0.17.74
 	github.com/Code-Hex/synchro v0.5.3
 	github.com/cockroachdb/errors v1.11.3
 	github.com/goccy/go-json v0.10.5
@@ -20,7 +20,7 @@ require (
 	github.com/newrelic/go-agent/v3 v3.38.0
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.3
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
-	github.com/vektah/gqlparser/v2 v2.5.23
+	github.com/vektah/gqlparser/v2 v2.5.27
 	go.uber.org/mock v0.5.0
 	google.golang.org/protobuf v1.36.6
 )
@@ -55,10 +55,10 @@ require (
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250324211829-b45e905df463 // indirect
 	google.golang.org/grpc v1.71.1 // indirect
 )
