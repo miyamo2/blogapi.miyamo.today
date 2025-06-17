@@ -25,7 +25,7 @@ require (
 	github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2 v1.2.3
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.3
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
-	github.com/oklog/ulid/v2 v2.1.0
+	github.com/oklog/ulid/v2 v2.1.1
 	go.uber.org/mock v0.5.0
 	golang.org/x/net v0.40.0
 	google.golang.org/protobuf v1.36.6

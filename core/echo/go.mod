@@ -8,7 +8,7 @@ require (
 	github.com/lestrrat-go/jwx/v3 v3.0.0
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/newrelic/go-agent/v3 v3.38.0
-	github.com/oklog/ulid/v2 v2.1.0
+	github.com/oklog/ulid/v2 v2.1.1
 )
 
 require (
