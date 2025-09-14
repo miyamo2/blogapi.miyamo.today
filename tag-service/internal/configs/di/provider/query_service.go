@@ -1,15 +1,28 @@
 package provider
 
 import (
+	"context"
+	"time"
+
 	"blogapi.miyamo.today/tag-service/internal/app/usecase/query"
-	impl "blogapi.miyamo.today/tag-service/internal/infra/rdb/query"
+	"blogapi.miyamo.today/tag-service/internal/infra/rdb"
 	"github.com/google/wire"
 )
 
 // compatibility check
-var _ query.TagService = (*impl.TagService)(nil)
+var _ query.Queries = (*rdb.Queries)(nil)
+
+func QueryService(tx rdb.DBTX) *rdb.Queries {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	q, err := rdb.Prepare(ctx, tx)
+	if err != nil {
+		panic(err)
+	}
+	return q
+}
 
 var QueryServiceSet = wire.NewSet(
-	impl.NewTagService,
-	wire.Bind(new(query.TagService), new(*impl.TagService)),
+	QueryService,
+	wire.Bind(new(query.Queries), new(*rdb.Queries)),
 )

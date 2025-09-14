@@ -7,25 +7,27 @@
 package di
 
 import (
+	"blogapi.miyamo.today/tag-service/internal/app/usecase"
 	"blogapi.miyamo.today/tag-service/internal/configs/di/provider"
-	pb2 "blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb"
-	"blogapi.miyamo.today/tag-service/internal/if-adapter/presenter/pb"
-	"blogapi.miyamo.today/tag-service/internal/infra/rdb/query"
+	"blogapi.miyamo.today/tag-service/internal/if-adapter/presenter/pb/convert"
+	"github.com/labstack/echo/v4"
 )
 
 // Injectors from wire.go:
 
-func GetDependencies() *Dependencies {
+func GetEchoApp() *echo.Echo {
+	db := provider.SQLDB()
+	queries := provider.QueryService(db)
+	getById := usecase.NewGetById(queries)
+	getByIdTag := convert.NewGetByIdTag()
+	listAll := usecase.NewListAll(queries)
+	getAllTags := convert.NewGetAllTags()
+	listAfter := usecase.NewListAfter(queries)
+	getNextTags := convert.NewGetNextTags()
+	listBefore := usecase.NewListBefore(queries)
+	getPrevTags := convert.NewGetPrevTags()
+	tagServiceServer := provider.TagServiceServer(getById, getByIdTag, listAll, getAllTags, listAfter, getNextTags, listBefore, getPrevTags)
 	application := provider.NewRelic()
-	tagService := query.NewTagService()
-	getById := provider.GetByIdUsecase(tagService)
-	converter := pb.NewConverter()
-	getAll := provider.GetAllUsecase(tagService)
-	getNext := provider.GetNextUsecase(tagService)
-	getPrev := provider.GetPrevUsecase(tagService)
-	tagServiceServer := pb2.NewTagServiceServer(getById, converter, getAll, converter, getNext, converter, getPrev, converter)
-	echo := provider.Echo(tagServiceServer, application)
-	dialector := provider.GormDialector()
-	dependencies := NewDependencies(application, echo, dialector)
-	return dependencies
+	echoEcho := Echo(tagServiceServer, application)
+	return echoEcho
 }

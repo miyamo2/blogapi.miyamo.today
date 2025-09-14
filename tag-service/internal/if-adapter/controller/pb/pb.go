@@ -1,36 +1,35 @@
 package pb
 
 import (
+	"context"
+
+	"blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/presenter/convert"
 	"blogapi.miyamo.today/tag-service/internal/infra/grpc"
 	"blogapi.miyamo.today/tag-service/internal/infra/grpc/grpcconnect"
 	"connectrpc.com/connect"
-	"context"
-	"fmt"
-	"log/slog"
-
-	"github.com/miyamo2/altnrslog"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
-	"blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/presenter"
 	"blogapi.miyamo.today/tag-service/internal/if-adapter/controller/pb/usecase"
 	"github.com/cockroachdb/errors"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 )
 
-// TagServiceServer is implementation of grpcconnect.TagServiceServer
+// compatibility check
+var _ grpcconnect.TagServiceHandler = (*TagServiceServer)(nil)
+
+// TagServiceServer implements grpcconnect.TagServiceServer
 type TagServiceServer struct {
-	grpcconnect.UnimplementedTagServiceHandler
-	getByIdUsecase usecase.GetById
-	getByIdConv    presenter.ToGetByIdConverter
-	getAllUsecase  usecase.GetAll
-	getAllConv     presenter.ToGetAllConverter
-	getNextUsecase usecase.GetNext
-	getNextConv    presenter.ToGetNextConverter
-	getPrevUsecase usecase.GetPrev
-	getPrevConv    presenter.ToGetPrevConverter
+	getByIdUsecase    usecase.GetById
+	getByIdConverter  convert.ToGetById
+	listAllUsecase    usecase.ListAll
+	getAllConverter   convert.ToGetAll
+	listAfterUsecase  usecase.ListAfter
+	getNextConverter  convert.ToGetNext
+	listBeforeUsecase usecase.ListBefore
+	getPrevConverter  convert.ToGetPrev
 }
 
 var (
@@ -40,167 +39,147 @@ var (
 	ErrConversionToGetPrevTagsFailed = errors.New("conversion to get_prev_tags_response failed")
 )
 
-// GetTagById is implementation of grpcconnect.TagServiceServer#GetTagById
-func (s *TagServiceServer) GetTagById(ctx context.Context, in *connect.Request[grpc.GetTagByIdRequest]) (*connect.Response[grpc.GetTagByIdResponse], error) {
+// GetTagById implements grpcconnect.TagServiceServer#GetTagById
+func (s *TagServiceServer) GetTagById(
+	ctx context.Context, in *connect.Request[grpc.GetTagByIdRequest],
+) (*connect.Response[grpc.GetTagByIdResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetTagById").End()
-	logger, err := altnrslog.FromContext(ctx)
+
+	o, err := s.getByIdUsecase.Execute(ctx, dto.NewGetByIdInput(in.Msg.GetId()))
 	if err != nil {
 		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger = slog.Default()
-	}
-	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters",
-			slog.Any("in", in)))
-	oDto, err := s.getByIdUsecase.Execute(ctx, dto.NewGetByIdInDto(in.Msg.GetId()))
-	if err != nil {
-		err = errors.WithStack(err)
-		logger.InfoContext(ctx, "END",
-			slog.Group("return",
-				slog.Any("*grpcconnect.GetTagByIdResponse", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	res, ok := s.getByIdConv.ToGetByIdTagResponse(ctx, oDto)
+	res, ok := s.getByIdConverter.ToResponse(ctx, o)
 	if !ok {
 		err = ErrConversionToGetTagByIdFailed
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	logger.InfoContext(ctx, "END",
-		slog.Group("return",
-			// slog.Any("*grpcconnect.GetTagByIdResponse", res),
-			slog.Any("error", nil)))
+
 	return res, nil
 }
 
-// GetAllTags is implementation of grpcconnect.TagServiceServer#GetTagById
-func (s *TagServiceServer) GetAllTags(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[grpc.GetAllTagsResponse], error) {
+// GetAllTags implements grpcconnect.TagServiceServer#GetTagById
+func (s *TagServiceServer) GetAllTags(
+	ctx context.Context, _ *connect.Request[emptypb.Empty],
+) (*connect.Response[grpc.GetAllTagsResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAllTags").End()
-	logger, err := altnrslog.FromContext(ctx)
+
+	o, err := s.listAllUsecase.Execute(ctx)
 	if err != nil {
 		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger = slog.Default()
-	}
-	logger.InfoContext(ctx, "BEGIN")
-	oDto, err := s.getAllUsecase.Execute(ctx)
-	if err != nil {
-		err = errors.WithStack(err)
-		logger.InfoContext(ctx, "END",
-			slog.Group("return",
-				slog.Any("*grpcconnect.GetAllTagsResponse", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	res, ok := s.getAllConv.ToGetAllTagsResponse(ctx, oDto)
+	res, ok := s.getAllConverter.ToResponse(ctx, o)
 	if !ok {
 		err = ErrConversionToGetAllTagsFailed
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	logger.InfoContext(ctx, "END",
-		slog.Group("return",
-			// slog.Any("*grpcconnect.GetAllTagsResponse", res),
-			slog.Any("error", nil)))
 	return res, nil
 }
 
-// GetNextTags is implementation of grpcconnect.TagServiceServer#GetNextTags
-func (s *TagServiceServer) GetNextTags(ctx context.Context, in *connect.Request[grpc.GetNextTagsRequest]) (*connect.Response[grpc.GetNextTagResponse], error) {
+// GetNextTags implements grpcconnect.TagServiceServer#GetNextTags
+func (s *TagServiceServer) GetNextTags(
+	ctx context.Context, in *connect.Request[grpc.GetNextTagsRequest],
+) (*connect.Response[grpc.GetNextTagResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetTagById").End()
-	logger, err := altnrslog.FromContext(ctx)
+
+	o, err := s.listAfterUsecase.Execute(
+		ctx,
+		dto.NewListAfterInput(
+			int(in.Msg.GetFirst()),
+			dto.ListAfterInputWithCursor(in.Msg.After),
+		),
+	)
 	if err != nil {
 		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger = slog.Default()
-	}
-	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters",
-			slog.Any("in", in)))
-	oDto, err := s.getNextUsecase.Execute(ctx, dto.NewGetNextInDto(int(in.Msg.GetFirst()), in.Msg.After))
-	if err != nil {
-		err = errors.WithStack(err)
-		logger.InfoContext(ctx, "END",
-			slog.Group("return",
-				slog.Any("*grpcconnect.GetNextTagResponse", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	res, ok := s.getNextConv.ToGetNextTagsResponse(ctx, oDto)
+	res, ok := s.getNextConverter.ToResponse(ctx, o)
 	if !ok {
 		err = ErrConversionToGetNextTagsFailed
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	logger.InfoContext(ctx, "END",
-		slog.Group("return",
-			// slog.Any("*grpcconnect.GetNextTagResponse", res),
-			slog.Any("error", nil)))
 	return res, nil
 }
 
-// GetPrevTags is implementation of grpcconnect.TagServiceServer#GetPrevTags
-func (s *TagServiceServer) GetPrevTags(ctx context.Context, in *connect.Request[grpc.GetPrevTagsRequest]) (*connect.Response[grpc.GetPrevTagResponse], error) {
+// GetPrevTags implements grpcconnect.TagServiceServer#GetPrevTags
+func (s *TagServiceServer) GetPrevTags(
+	ctx context.Context, in *connect.Request[grpc.GetPrevTagsRequest],
+) (*connect.Response[grpc.GetPrevTagResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetPrevTags").End()
-	logger, err := altnrslog.FromContext(ctx)
+
+	o, err := s.listBeforeUsecase.Execute(
+		ctx,
+		dto.NewListBeforeInput(
+			int(in.Msg.GetLast()),
+			dto.ListBeforeInputWithCursor(in.Msg.Before),
+		),
+	)
 	if err != nil {
 		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger = slog.Default()
-	}
-	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters",
-			slog.Any("in", in)))
-	oDto, err := s.getPrevUsecase.Execute(ctx, dto.NewGetPrevInDto(int(in.Msg.GetLast()), in.Msg.Before))
-	if err != nil {
-		err = errors.WithStack(err)
-		logger.InfoContext(ctx, "END",
-			slog.Group("return",
-				slog.Any("*grpcconnect.GetPrevTagResponse", nil),
-				slog.String("error", fmt.Sprintf("%+v", err))))
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	res, ok := s.getPrevConv.ToGetPrevTagsResponse(ctx, oDto)
+	res, ok := s.getPrevConverter.ToResponse(ctx, o)
 	if !ok {
 		err = ErrConversionToGetPrevTagsFailed
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
-	logger.InfoContext(ctx, "END",
-		slog.Group("return",
-			// slog.Any("*grpcconnect.GetPrevTagResponse", res),
-			slog.Any("error", nil)))
 	return res, nil
 }
 
-// NewTagServiceServer is constructor of TagServiceServer
-func NewTagServiceServer(
-	getByIdUsecase usecase.GetById,
-	getByIdConv presenter.ToGetByIdConverter,
-	getAllUsecase usecase.GetAll,
-	getAllConv presenter.ToGetAllConverter,
-	getNextUsecase usecase.GetNext,
-	getNextConv presenter.ToGetNextConverter,
-	getPrevUsecase usecase.GetPrev,
-	getPrevConv presenter.ToGetPrevConverter,
-) *TagServiceServer {
-	return &TagServiceServer{
-		getByIdUsecase: getByIdUsecase,
-		getByIdConv:    getByIdConv,
-		getAllUsecase:  getAllUsecase,
-		getAllConv:     getAllConv,
-		getNextUsecase: getNextUsecase,
-		getNextConv:    getNextConv,
-		getPrevUsecase: getPrevUsecase,
-		getPrevConv:    getPrevConv,
+// NewTagServiceServerOption sets options for NewTagServiceServer
+type NewTagServiceServerOption func(*TagServiceServer)
+
+// WithGetById sets GetById usecase and converter
+func WithGetById(u usecase.GetById, conv convert.ToGetById) NewTagServiceServerOption {
+	return func(s *TagServiceServer) {
+		s.getByIdUsecase = u
+		s.getByIdConverter = conv
 	}
+}
+
+// WithListAll sets ListAll usecase and converter
+func WithListAll(u usecase.ListAll, conv convert.ToGetAll) NewTagServiceServerOption {
+	return func(s *TagServiceServer) {
+		s.listAllUsecase = u
+		s.getAllConverter = conv
+	}
+}
+
+// WithListAfter sets ListAfter usecase and converter
+func WithListAfter(u usecase.ListAfter, conv convert.ToGetNext) NewTagServiceServerOption {
+	return func(s *TagServiceServer) {
+		s.listAfterUsecase = u
+		s.getNextConverter = conv
+	}
+}
+
+// WithListBefore sets ListBefore usecase and converter
+func WithListBefore(u usecase.ListBefore, conv convert.ToGetPrev) NewTagServiceServerOption {
+	return func(s *TagServiceServer) {
+		s.listBeforeUsecase = u
+		s.getPrevConverter = conv
+	}
+}
+
+// NewTagServiceServer constructs TagServiceServer
+func NewTagServiceServer(options ...NewTagServiceServerOption) *TagServiceServer {
+	v := &TagServiceServer{}
+	for _, opt := range options {
+		opt(v)
+	}
+	return v
 }

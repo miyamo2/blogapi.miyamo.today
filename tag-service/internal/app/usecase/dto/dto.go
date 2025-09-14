@@ -5,20 +5,17 @@ import (
 	"github.com/Code-Hex/synchro/tz"
 )
 
-// GetByIdInDto is an Input DTO for GetById use-case
-type GetByIdInDto struct {
+// GetByIdInput is an Input DTO for GetById use-case
+type GetByIdInput struct {
 	id string
 }
 
-// IsInDto is a marker method for InDTO.
-func (i GetByIdInDto) IsInDto() {}
-
 // Id returns the ID of the article to be got
-func (i GetByIdInDto) Id() string { return i.id }
+func (i GetByIdInput) Id() string { return i.id }
 
-// NewGetByIdInDto is constructor of GetByIdInDta.
-func NewGetByIdInDto(id string) GetByIdInDto {
-	return GetByIdInDto{id: id}
+// NewGetByIdInput constructs GetByIdInputDta.
+func NewGetByIdInput(id string) GetByIdInput {
+	return GetByIdInput{id: id}
 }
 
 // Tag is a DTO for tag
@@ -33,17 +30,14 @@ func (t Tag) Articles() []Article {
 	return t.articles
 }
 
-// IsOutDto is a marker method for OutDTO.
-func (t Tag) IsOutDto() {}
-
 // Id returns the id of the tag
 func (t Tag) Id() string { return t.id }
 
 // Name returns the name of the tag
 func (t Tag) Name() string { return t.name }
 
-// NewTag is constructor of Tag
-func NewTag(id string, name string, articles []Article) Tag {
+// NewTag constructs Tag
+func NewTag(id string, name string, articles ...Article) Tag {
 	return Tag{id: id, name: name, articles: articles}
 }
 
@@ -55,9 +49,6 @@ type Article struct {
 	createdAt    synchro.Time[tz.UTC]
 	updatedAt    synchro.Time[tz.UTC]
 }
-
-// IsOutDto is a marker method for OutDTO.
-func (a Article) IsOutDto() {}
 
 // Id returns the id of the article
 func (a Article) Id() string { return a.id }
@@ -74,7 +65,7 @@ func (a Article) CreatedAt() synchro.Time[tz.UTC] { return a.createdAt }
 // UpdatedAt returns the date the article was last updated.
 func (a Article) UpdatedAt() synchro.Time[tz.UTC] { return a.updatedAt }
 
-// NewArticle is constructor of Article
+// NewArticle constructs Article
 func NewArticle(
 	id string,
 	title string,
@@ -91,141 +82,128 @@ func NewArticle(
 	}
 }
 
-// GetByIdOutDto is an Output DTO for GetById use-case.
-type GetByIdOutDto struct {
-	Tag
-}
+// GetByIdOutput is an Output DTO for GetById use-case.
+type GetByIdOutput = Tag
 
-// NewGetByIdOutDto is constructor of GetByIdOutDto
-func NewGetByIdOutDto(id string, name string, articles []Article) GetByIdOutDto {
-	return GetByIdOutDto{
-		Tag{
-			id:       id,
-			name:     name,
-			articles: articles,
-		},
-	}
-}
-
-// GetAllOutDto is an Output DTO for GetAll use-case.
-type GetAllOutDto struct {
+// ListAllOutput is an Output DTO for ListAll use-case.
+type ListAllOutput struct {
 	tags []Tag
 }
 
-// NewGetAllOutDto is constructor of GetAllOutDto
-func NewGetAllOutDto() GetAllOutDto {
-	return GetAllOutDto{
-		make([]Tag, 0),
+// NewListAllOutput constructs ListAllOutput
+func NewListAllOutput(tags ...Tag) ListAllOutput {
+	return ListAllOutput{
+		tags: tags,
 	}
 }
 
-// WithTagDto returns a new GetAllOutDto with the given tag.
-func (g GetAllOutDto) WithTagDto(tag Tag) GetAllOutDto {
-	return GetAllOutDto{
-		append(g.tags, tag),
-	}
-}
-
-// Tags returns the tags of the GetAllOutDto
-func (g GetAllOutDto) Tags() []Tag {
+// Tags returns the tags of the ListAllOutput
+func (g ListAllOutput) Tags() []Tag {
 	return g.tags
 }
 
-// IsOutDto is a marker method for OutDTO.
-func (g GetAllOutDto) IsOutDto() {}
-
-// GetNextInDto is an Input DTO for GetNext use-case.
-type GetNextInDto struct {
+// ListAfterInput is an Input DTO for ListAfter use-case.
+type ListAfterInput struct {
 	first  int
 	cursor *string
 }
 
-// IsInDto is a marker method for InDTO.
-func (i GetNextInDto) IsInDto() {}
-
 // First returns the number of tags to get
-func (i GetNextInDto) First() int { return i.first }
+func (i ListAfterInput) First() int { return i.first }
 
 // Cursor returns the cursor that indicates the position to get tags from here.
-func (i GetNextInDto) Cursor() *string { return i.cursor }
+func (i ListAfterInput) Cursor() *string { return i.cursor }
 
-// NewGetNextInDto is constructor of GetNextInDto.
-func NewGetNextInDto(first int, cursor *string) GetNextInDto {
-	return GetNextInDto{first: first, cursor: cursor}
+// NewListAfterInputOption is an option for NewListAfterInput
+type NewListAfterInputOption func(*ListAfterInput)
+
+// ListAfterInputWithCursor sets the cursor option for NewListAfterInput
+func ListAfterInputWithCursor[T string | *string](cursor T) NewListAfterInputOption {
+	return func(i *ListAfterInput) {
+		switch v := any(cursor).(type) {
+		case string:
+			i.cursor = &v
+		case *string:
+			i.cursor = v
+		}
+	}
 }
 
-// GetNextOutDto is an Output DTO for GetNext use-case.
-type GetNextOutDto struct {
+// NewListAfterInput constructs ListAfterInput.
+func NewListAfterInput(first int, options ...NewListAfterInputOption) ListAfterInput {
+	input := ListAfterInput{first: first}
+	for _, opt := range options {
+		opt(&input)
+	}
+	return input
+}
+
+// ListAfterOutput is an Output DTO for ListAfter use-case.
+type ListAfterOutput struct {
 	tags    []Tag
 	hasNext bool
 }
 
-// NewGetNextOutDto is constructor of GetNextOutDto.
-func NewGetNextOutDto(hasNext bool) GetNextOutDto {
-	return GetNextOutDto{tags: make([]Tag, 0), hasNext: hasNext}
+// NewListAfterOutput constructs ListAfterOutput.
+func NewListAfterOutput(hasNext bool, tags ...Tag) ListAfterOutput {
+	return ListAfterOutput{tags: tags, hasNext: hasNext}
 }
-
-// WithTagDto returns a new GetNextOutDto with the given tag.
-func (o GetNextOutDto) WithTagDto(tag Tag) GetNextOutDto {
-	return GetNextOutDto{
-		append(o.tags, tag),
-		o.hasNext,
-	}
-}
-
-// IsOutDto is a marker method for OutDTO.
-func (o GetNextOutDto) IsOutDto() {}
 
 // Tags returns the tags.
-func (o GetNextOutDto) Tags() []Tag { return o.tags }
+func (o ListAfterOutput) Tags() []Tag { return o.tags }
 
 // HasNext returns whether there is still next items.
-func (o GetNextOutDto) HasNext() bool { return o.hasNext }
+func (o ListAfterOutput) HasNext() bool { return o.hasNext }
 
-// GetPrevInDto is an Input DTO for GetPrev use-case.
-type GetPrevInDto struct {
+// ListBeforeInput is an Input DTO for ListBefore use-case.
+type ListBeforeInput struct {
 	last   int
 	cursor *string
 }
 
-// IsInDto is a marker method for InDTO.
-func (i GetPrevInDto) IsInDto() {}
-
 // Last returns the number of tags to get
-func (i GetPrevInDto) Last() int { return i.last }
+func (i ListBeforeInput) Last() int { return i.last }
 
 // Cursor returns the cursor that indicates the position to get tags from here.
-func (i GetPrevInDto) Cursor() *string { return i.cursor }
+func (i ListBeforeInput) Cursor() *string { return i.cursor }
 
-// NewGetPrevInDto is constructor of GetPrevInDto.
-func NewGetPrevInDto(last int, cursor *string) GetPrevInDto {
-	return GetPrevInDto{last: last, cursor: cursor}
+// NewListBeforeInputOption is an option for NewListBeforeInput
+type NewListBeforeInputOption func(*ListBeforeInput)
+
+// ListBeforeInputWithCursor sets the cursor option for NewListBeforeInput
+func ListBeforeInputWithCursor[T string | *string](cursor T) NewListBeforeInputOption {
+	return func(i *ListBeforeInput) {
+		switch v := any(cursor).(type) {
+		case string:
+			i.cursor = &v
+		case *string:
+			i.cursor = v
+		}
+	}
 }
 
-// GetPrevOutDto is an Output DTO for GetPrev use-case.
-type GetPrevOutDto struct {
+// NewListBeforeInput constructs ListBeforeInput.
+func NewListBeforeInput(last int, options ...NewListBeforeInputOption) ListBeforeInput {
+	input := ListBeforeInput{last: last}
+	for _, opt := range options {
+		opt(&input)
+	}
+	return input
+}
+
+// ListBeforeOutput is an Output DTO for ListBefore use-case.
+type ListBeforeOutput struct {
 	tags        []Tag
 	hasPrevious bool
 }
 
-// NewGetPrevOutDto is constructor of GetPrevOutDto.
-func NewGetPrevOutDto(hasPrevious bool) GetPrevOutDto {
-	return GetPrevOutDto{tags: make([]Tag, 0), hasPrevious: hasPrevious}
+// NewListBeforeOutput constructs ListBeforeOutput.
+func NewListBeforeOutput(hasPrevious bool, tags ...Tag) ListBeforeOutput {
+	return ListBeforeOutput{tags: tags, hasPrevious: hasPrevious}
 }
-
-// WithTagDto returns a new GetPrevOutDto with the given tag.
-func (o GetPrevOutDto) WithTagDto(tag Tag) GetPrevOutDto {
-	return GetPrevOutDto{
-		append(o.tags, tag),
-		o.hasPrevious,
-	}
-}
-
-// IsOutDto is a marker method for OutDTO.
-func (o GetPrevOutDto) IsOutDto() {}
 
 // Tags returns the tags.
-func (o GetPrevOutDto) Tags() []Tag { return o.tags }
+func (o ListBeforeOutput) Tags() []Tag { return o.tags }
 
 // HasPrevious returns whether there is still previous items.
-func (o GetPrevOutDto) HasPrevious() bool { return o.hasPrevious }
+func (o ListBeforeOutput) HasPrevious() bool { return o.hasPrevious }
