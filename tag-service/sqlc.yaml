@@ -1,0 +1,25 @@
+version: "2"
+servers: []
+sql:
+    - engine: "postgresql"
+      queries: "internal/infra/rdb/query.sql"
+      schema: "internal/infra/rdb/schema.sql"
+      gen:
+          go:
+              package: "sqlc"
+              out: "internal/infra/rdb/sqlc"
+              emit_prepared_queries: true
+              emit_db_tags: true
+              omit_unused_structs: true
+              overrides:
+                - db_type: "pg_catalog.timestamptz"
+                  go_type:
+                      import: "blogapi.miyamo.today/tag-service/internal/infra/rdb/types"
+                      type: UTCTime
+                - db_type: "pg_catalog.json"
+                  go_type:
+                      import: "blogapi.miyamo.today/tag-service/internal/infra/rdb/types"
+                      type: Articles
+                - column: "articles.thumbnail"
+                  go_type:
+                      type: string

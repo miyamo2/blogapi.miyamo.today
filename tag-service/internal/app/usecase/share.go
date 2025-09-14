@@ -1,26 +1,51 @@
 package usecase
 
 import (
+	"iter"
+	"slices"
+
 	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
-	"blogapi.miyamo.today/tag-service/internal/infra/rdb/query/model"
+	"blogapi.miyamo.today/tag-service/internal/infra/rdb/types"
 )
 
-// tagDtoFromQueryModel converts query.Tag to dto.Tag
-func tagDtoFromQueryModel(tag model.Tag) dto.Tag {
-	return dto.NewTag(
-		tag.ID(),
-		tag.Name(),
-		func() []dto.Article {
-			articles := make([]dto.Article, 0, len(tag.Articles()))
-			for _, article := range tag.Articles() {
-				articles = append(articles, dto.NewArticle(
-					article.ID(),
-					article.Title(),
-					article.Thumbnail(),
-					article.CreatedAt(),
-					article.UpdatedAt(),
-				))
+// articleDtoFromQueryModel converts query.Article to dto.Article
+func articleDtoFromQueryModel(articles types.Articles) []dto.Article {
+	return slices.Collect(
+		func(yield func(dto.Article) bool) {
+			for _, v := range articles {
+				if !yield(
+					dto.NewArticle(
+						v.ID,
+						v.Title,
+						v.Thumbnail,
+						v.CreatedAt,
+						v.UpdatedAt,
+					),
+				) {
+					return
+				}
 			}
-			return articles
-		}())
+		},
+	)
+}
+
+func getPage[T any](rows []T, size, number int) iter.Seq[T] {
+	i := 1
+	for page := range slices.Chunk(rows, size) {
+		if i > number {
+			break
+		}
+		if i < number {
+			i++
+			continue
+		}
+		return func(yield func(T) bool) {
+			for _, v := range page {
+				if !yield(v) {
+					return
+				}
+			}
+		}
+	}
+	return func(_ func(T) bool) {}
 }
