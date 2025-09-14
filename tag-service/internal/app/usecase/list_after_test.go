@@ -6,7 +6,7 @@ import (
 
 	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"blogapi.miyamo.today/tag-service/internal/app/usecase/query"
-	"blogapi.miyamo.today/tag-service/internal/infra/rdb"
+	"blogapi.miyamo.today/tag-service/internal/infra/rdb/sqlc"
 	"blogapi.miyamo.today/tag-service/internal/infra/rdb/types"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -29,7 +29,7 @@ func (s *ListAfterTestSuite) TestListAfter_Execute() {
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.ListAfterWithLimit(AnyContext(), Exact(int32(2)))).
 				ThenReturn(
-					[]rdb.ListAfterWithLimitRow{
+					[]sqlc.ListAfterWithLimitRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -113,7 +113,7 @@ func (s *ListAfterTestSuite) TestListAfter_Execute() {
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.ListAfterWithLimit(AnyContext(), Exact(int32(2)))).
 				ThenReturn(
-					[]rdb.ListAfterWithLimitRow{
+					[]sqlc.ListAfterWithLimitRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -175,7 +175,7 @@ func (s *ListAfterTestSuite) TestListAfter_Execute() {
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.ListAfterWithLimit(AnyContext(), Exact(int32(3)))).
 				ThenReturn(
-					[]rdb.ListAfterWithLimitRow{
+					[]sqlc.ListAfterWithLimitRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -299,7 +299,7 @@ func (s *ListAfterTestSuite) TestListAfter_Execute() {
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.ListAfterWithLimit(AnyContext(), Exact(int32(3)))).
 				ThenReturn(
-					[]rdb.ListAfterWithLimitRow{
+					[]sqlc.ListAfterWithLimitRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -418,11 +418,11 @@ func (s *ListAfterTestSuite) TestListAfter_Execute() {
 			WhenDouble(
 				queries.ListAfterWithLimitAndCursor(
 					AnyContext(),
-					Equal(rdb.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 2}),
+					Equal(sqlc.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 2}),
 				),
 			).
 				ThenReturn(
-					[]rdb.ListAfterWithLimitAndCursorRow{
+					[]sqlc.ListAfterWithLimitAndCursorRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -507,11 +507,11 @@ func (s *ListAfterTestSuite) TestListAfter_Execute() {
 			WhenDouble(
 				queries.ListAfterWithLimitAndCursor(
 					AnyContext(),
-					Equal(rdb.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 2}),
+					Equal(sqlc.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 2}),
 				),
 			).
 				ThenReturn(
-					[]rdb.ListAfterWithLimitAndCursorRow{
+					[]sqlc.ListAfterWithLimitAndCursorRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -574,11 +574,11 @@ func (s *ListAfterTestSuite) TestListAfter_Execute() {
 			WhenDouble(
 				queries.ListAfterWithLimitAndCursor(
 					AnyContext(),
-					Equal(rdb.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 3}),
+					Equal(sqlc.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 3}),
 				),
 			).
 				ThenReturn(
-					[]rdb.ListAfterWithLimitAndCursorRow{
+					[]sqlc.ListAfterWithLimitAndCursorRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -703,11 +703,11 @@ func (s *ListAfterTestSuite) TestListAfter_Execute() {
 			WhenDouble(
 				queries.ListAfterWithLimitAndCursor(
 					AnyContext(),
-					Equal(rdb.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 3}),
+					Equal(sqlc.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 3}),
 				),
 			).
 				ThenReturn(
-					[]rdb.ListAfterWithLimitAndCursorRow{
+					[]sqlc.ListAfterWithLimitAndCursorRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -810,7 +810,7 @@ func (s *ListAfterTestSuite) TestListAfter_Execute() {
 			WhenDouble(
 				queries.ListAfterWithLimitAndCursor(
 					AnyContext(),
-					Equal(rdb.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 2}),
+					Equal(sqlc.ListAfterWithLimitAndCursorParams{ID: "0", Limit: 2}),
 				),
 			).
 				ThenReturn(nil, sql.ErrConnDone)

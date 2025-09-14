@@ -43,7 +43,7 @@ runs:
       working-directory: ${{ inputs.target }}
       shell: bash
       run: |
-        TARGET=$(go list ./... | grep -v "mock" | grep -v "infra/fw/gqlgen" | grep -v "configs" | grep -v "infra/grpc" | grep -v "infra/rdb")
+        TARGET=$(go list ./... | grep -v "mock" | grep -v "infra/fw/gqlgen" | grep -v "configs" | grep -v "infra/grpc" | grep -v "infra/rdb/sqlc")
         go test $TARGET -v -coverprofile=coverage.out
         exit ${PIPESTATUS[0]}
 

@@ -6,7 +6,7 @@ import (
 
 	"blogapi.miyamo.today/tag-service/internal/app/usecase/dto"
 	"blogapi.miyamo.today/tag-service/internal/app/usecase/query"
-	"blogapi.miyamo.today/tag-service/internal/infra/rdb"
+	"blogapi.miyamo.today/tag-service/internal/infra/rdb/sqlc"
 	"blogapi.miyamo.today/tag-service/internal/infra/rdb/types"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -29,7 +29,7 @@ func (s *ListAllTestSuite) TestListAll_Execute() {
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.ListAfter(AnyContext())).
 				ThenReturn(
-					[]rdb.ListAfterRow{
+					[]sqlc.ListAfterRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -89,7 +89,7 @@ func (s *ListAllTestSuite) TestListAll_Execute() {
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.ListAfter(AnyContext())).
 				ThenReturn(
-					[]rdb.ListAfterRow{
+					[]sqlc.ListAfterRow{
 						{
 							ID:        "1",
 							Name:      "tag1",
@@ -119,7 +119,7 @@ func (s *ListAllTestSuite) TestListAll_Execute() {
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.ListAfter(AnyContext())).
 				ThenReturn(
-					[]rdb.ListAfterRow{
+					[]sqlc.ListAfterRow{
 						{
 							ID:        "1",
 							Name:      "tag1",

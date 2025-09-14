@@ -5,17 +5,17 @@ import (
 	"time"
 
 	"blogapi.miyamo.today/tag-service/internal/app/usecase/query"
-	"blogapi.miyamo.today/tag-service/internal/infra/rdb"
+	"blogapi.miyamo.today/tag-service/internal/infra/rdb/sqlc"
 	"github.com/google/wire"
 )
 
 // compatibility check
-var _ query.Queries = (*rdb.Queries)(nil)
+var _ query.Queries = (*sqlc.Queries)(nil)
 
-func QueryService(tx rdb.DBTX) *rdb.Queries {
+func QueryService(tx sqlc.DBTX) *sqlc.Queries {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	q, err := rdb.Prepare(ctx, tx)
+	q, err := sqlc.Prepare(ctx, tx)
 	if err != nil {
 		panic(err)
 	}
@@ -24,5 +24,5 @@ func QueryService(tx rdb.DBTX) *rdb.Queries {
 
 var QueryServiceSet = wire.NewSet(
 	QueryService,
-	wire.Bind(new(query.Queries), new(*rdb.Queries)),
+	wire.Bind(new(query.Queries), new(*sqlc.Queries)),
 )

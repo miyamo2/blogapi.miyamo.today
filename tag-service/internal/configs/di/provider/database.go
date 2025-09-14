@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	"blogapi.miyamo.today/tag-service/internal/infra/rdb"
+	"blogapi.miyamo.today/tag-service/internal/infra/rdb/sqlc"
 	"github.com/google/wire"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
 )
@@ -19,5 +19,5 @@ func SQLDB() *sql.DB {
 
 var SQLDBSet = wire.NewSet(
 	SQLDB,
-	wire.Bind(new(rdb.DBTX), new(*sql.DB)),
+	wire.Bind(new(sqlc.DBTX), new(*sql.DB)),
 )

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"testing"
 
-	"blogapi.miyamo.today/tag-service/internal/infra/rdb"
+	"blogapi.miyamo.today/tag-service/internal/infra/rdb/sqlc"
 	"blogapi.miyamo.today/tag-service/internal/infra/rdb/types"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
@@ -30,7 +30,7 @@ func (s *GetByIdTestSuite) TestGetById_Execute() {
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.GetByID(AnyContext(), Exact("1"))).
 				ThenReturn(
-					rdb.GetByIDRow{
+					sqlc.GetByIDRow{
 						ID:        "1",
 						Name:      "tag1",
 						CreatedAt: synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
@@ -88,7 +88,7 @@ func (s *GetByIdTestSuite) TestGetById_Execute() {
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.GetByID(AnyContext(), Exact("1"))).
 				ThenReturn(
-					rdb.GetByIDRow{
+					sqlc.GetByIDRow{
 						ID:        "1",
 						Name:      "tag1",
 						CreatedAt: synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
@@ -113,7 +113,7 @@ func (s *GetByIdTestSuite) TestGetById_Execute() {
 			ctrl := NewMockController(s.T())
 			queries := Mock[query.Queries](ctrl)
 			WhenDouble(queries.GetByID(AnyContext(), Exact("1"))).
-				ThenReturn(rdb.GetByIDRow{}, sql.ErrNoRows)
+				ThenReturn(sqlc.GetByIDRow{}, sql.ErrNoRows)
 
 			u := NewGetById(queries)
 			out, err := u.Execute(s.T().Context(), dto.NewGetByIdInput("1"))
