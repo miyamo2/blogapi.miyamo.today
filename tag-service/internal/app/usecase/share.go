@@ -47,7 +47,5 @@ func getPage[T any](rows []T, size, number int) iter.Seq[T] {
 			}
 		}
 	}
-	return func(_ func(T) bool) {
-		return
-	}
+	return func(_ func(T) bool) {}
 }
