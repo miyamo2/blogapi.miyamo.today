@@ -12,23 +12,20 @@ import (
 )
 
 const getByID = `-- name: GetByID :one
-SELECT 
-    a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
-    CAST(
-        COALESCE(
-            jsonb_agg(
-                json_build_object('id', t.id, 'name', t.name)
-            ) FILTER (WHERE t.id IS NOT NULL), '[]'::json
-        ) AS json
-    ) AS "tags" 
-FROM 
-    (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" WHERE "articles"."id" = $1) AS "a" 
-LEFT OUTER JOIN 
-    "tags" AS "t"  
-ON 
-    "a"."id" = "t"."article_id" 
-GROUP BY 
-    "a"."id"
+SELECT a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
+       CAST(
+               COALESCE(
+                       jsonb_agg(
+                               json_build_object('id', t.id, 'name', t.name)
+                       ) FILTER(WHERE t.id IS NOT NULL), '[]' ::json
+               ) AS json
+       ) AS "tags"
+FROM (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" WHERE "articles"."id" = $1) AS "a"
+         LEFT OUTER JOIN
+     "tags" AS "t"
+     ON
+         "a"."id" = "t"."article_id"
+GROUP BY "a"."id"
 `
 
 type GetByIDRow struct {
@@ -57,25 +54,21 @@ func (q *Queries) GetByID(ctx context.Context, id string) (GetByIDRow, error) {
 }
 
 const listAfter = `-- name: ListAfter :many
-SELECT
-    a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
-    CAST(
-        COALESCE(
-            jsonb_agg(
-                json_build_object('id', t.id, 'name', t.name)
-            ) FILTER (WHERE t.id IS NOT NULL), '[]'::json
-        ) AS json
-    ) AS "tags" 
-FROM
-    (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" ORDER BY "articles"."id") AS "a" 
-LEFT OUTER JOIN
-    "tags" AS "t" 
-ON
-    "t"."id" = "a"."tag_id"
-GROUP BY 
-    "a"."id"
-ORDER BY
-    "a"."id"
+SELECT a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
+       CAST(
+               COALESCE(
+                       jsonb_agg(
+                               json_build_object('id', t.id, 'name', t.name)
+                       ) FILTER(WHERE t.id IS NOT NULL), '[]' ::json
+               ) AS json
+       ) AS "tags"
+FROM (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" ORDER BY "articles"."id") AS "a"
+         LEFT OUTER JOIN
+     "tags" AS "t"
+     ON
+         "a"."id" = "t"."article_id"
+GROUP BY "a"."id"
+ORDER BY "a"."id"
 `
 
 type ListAfterRow struct {
@@ -120,25 +113,21 @@ func (q *Queries) ListAfter(ctx context.Context) ([]ListAfterRow, error) {
 }
 
 const listAfterWithLimit = `-- name: ListAfterWithLimit :many
-SELECT
-    a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
-    CAST(
-        COALESCE(
-            jsonb_agg(
-                json_build_object('id', t.id, 'name', t.name)
-            ) FILTER (WHERE t.id IS NOT NULL), '[]'::json
-        ) AS json
-    ) AS "tags" 
-FROM
-    (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" ORDER BY "articles"."id" LIMIT $1) AS "a" 
-LEFT OUTER JOIN
-    "tags" AS "t"
-ON
-    "t"."id" = "a"."tag_id"
-GROUP BY 
-    "a"."id"
-ORDER BY
-    "a"."id"
+SELECT a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
+       CAST(
+               COALESCE(
+                       jsonb_agg(
+                               json_build_object('id', t.id, 'name', t.name)
+                       ) FILTER(WHERE t.id IS NOT NULL), '[]' ::json
+               ) AS json
+       ) AS "tags"
+FROM (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" ORDER BY "articles"."id" LIMIT $1) AS "a"
+         LEFT OUTER JOIN
+     "tags" AS "t"
+     ON
+         "a"."id" = "t"."article_id"
+GROUP BY "a"."id"
+ORDER BY "a"."id"
 `
 
 type ListAfterWithLimitRow struct {
@@ -183,39 +172,27 @@ func (q *Queries) ListAfterWithLimit(ctx context.Context, limit int32) ([]ListAf
 }
 
 const listAfterWithLimitAndCursor = `-- name: ListAfterWithLimitAndCursor :many
-SELECT
-    a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
-    CAST(
-        COALESCE(
-            jsonb_agg(
-                json_build_object('id', t.id, 'name', t.name)
-            ) FILTER (WHERE t.id IS NOT NULL), '[]'::json
-        ) AS json
-    ) AS "tags" 
-FROM
-    (
-        SELECT
-            id, title, body, thumbnail, created_at, updated_at
-        FROM
-            "articles"
-        WHERE
-            EXISTS(
-                SELECT id FROM "articles" WHERE "articles"."id" = $1
-            )
-        AND
-            "articles"."id" > $1
-        ORDER BY
-            "articles"."id"
-        LIMIT $2
-    ) AS "a" 
-LEFT OUTER JOIN
-    "tags" AS "t" 
-ON
-    "t"."id" = "a"."tag_id"
-GROUP BY 
-    "a"."id"
-ORDER BY
-    "a"."id"
+SELECT a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
+       CAST(
+               COALESCE(
+                       jsonb_agg(
+                               json_build_object('id', t.id, 'name', t.name)
+                       ) FILTER(WHERE t.id IS NOT NULL), '[]' ::json
+               ) AS json
+       ) AS "tags"
+FROM (SELECT id, title, body, thumbnail, created_at, updated_at
+      FROM "articles"
+      WHERE EXISTS(SELECT id
+                   FROM "articles"
+                   WHERE "articles"."id" = $1)
+        AND "articles"."id" > $1
+      ORDER BY "articles"."id" LIMIT $2) AS "a"
+         LEFT OUTER JOIN
+     "tags" AS "t"
+     ON
+         "a"."id" = "t"."article_id"
+GROUP BY "a"."id"
+ORDER BY "a"."id"
 `
 
 type ListAfterWithLimitAndCursorParams struct {
@@ -265,25 +242,21 @@ func (q *Queries) ListAfterWithLimitAndCursor(ctx context.Context, arg ListAfter
 }
 
 const listBefore = `-- name: ListBefore :many
-SELECT
-    a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
-    CAST(
-        COALESCE(
-            jsonb_agg(
-                json_build_object('id', t.id, 'name', t.name)
-            ) FILTER (WHERE t.id IS NOT NULL), '[]'::json
-        ) AS json
-    ) AS "tags" 
-FROM
-    (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" ORDER BY "articles"."id" DESC) AS "a"
-LEFT OUTER JOIN
-    "tags" AS "t" 
-ON
-    "t"."id" = "a"."tag_id"
-GROUP BY 
-    "a"."id"
-ORDER BY
-    "a"."id" DESC
+SELECT a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
+       CAST(
+               COALESCE(
+                       jsonb_agg(
+                               json_build_object('id', t.id, 'name', t.name)
+                       ) FILTER(WHERE t.id IS NOT NULL), '[]' ::json
+               ) AS json
+       ) AS "tags"
+FROM (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" ORDER BY "articles"."id" DESC) AS "a"
+         LEFT OUTER JOIN
+     "tags" AS "t"
+     ON
+         "a"."id" = "t"."article_id"
+GROUP BY "a"."id"
+ORDER BY "a"."id" DESC
 `
 
 type ListBeforeRow struct {
@@ -328,25 +301,21 @@ func (q *Queries) ListBefore(ctx context.Context) ([]ListBeforeRow, error) {
 }
 
 const listBeforeWithLimit = `-- name: ListBeforeWithLimit :many
-SELECT
-    a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
-    CAST(
-        COALESCE(
-            jsonb_agg(
-                json_build_object('id', t.id, 'name', t.name)
-            ) FILTER (WHERE t.id IS NOT NULL), '[]'::json
-        ) AS json
-    ) AS "tags" 
-FROM
-    (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" ORDER BY "articles"."id" DESC LIMIT $1) AS "a"
-LEFT OUTER JOIN
-    "tags" AS "t" 
-ON
-    "t"."id" = "a"."tag_id"
-GROUP BY 
-    "a"."id"
-ORDER BY
-    "a"."id" DESC
+SELECT a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
+       CAST(
+               COALESCE(
+                       jsonb_agg(
+                               json_build_object('id', t.id, 'name', t.name)
+                       ) FILTER(WHERE t.id IS NOT NULL), '[]' ::json
+               ) AS json
+       ) AS "tags"
+FROM (SELECT id, title, body, thumbnail, created_at, updated_at FROM "articles" ORDER BY "articles"."id" DESC LIMIT $1) AS "a"
+         LEFT OUTER JOIN
+     "tags" AS "t"
+     ON
+         "a"."id" = "t"."article_id"
+GROUP BY "a"."id"
+ORDER BY "a"."id" DESC
 `
 
 type ListBeforeWithLimitRow struct {
@@ -391,39 +360,27 @@ func (q *Queries) ListBeforeWithLimit(ctx context.Context, limit int32) ([]ListB
 }
 
 const listBeforeWithLimitAndCursor = `-- name: ListBeforeWithLimitAndCursor :many
-SELECT
-    a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
-    CAST(
-        COALESCE(
-            jsonb_agg(
-                json_build_object('id', t.id, 'name', t.name)
-            ) FILTER (WHERE t.id IS NOT NULL), '[]'::json
-        ) AS json
-    ) AS "tags" 
-FROM
-    (
-        SELECT
-            id, title, body, thumbnail, created_at, updated_at
-        FROM
-            "articles"
-        WHERE
-            EXISTS(
-                SELECT id FROM "articles" WHERE "articles"."id" = $1
-            )
-        AND
-            "articles"."id" < $1
-        ORDER BY
-            "articles"."id" DESC
-        LIMIT $2
-    ) AS "a" 
-LEFT OUTER JOIN
-    "tags" AS "t" 
-ON
-    "t"."id" = "a"."tag_id"
-GROUP BY 
-    "a"."id"
-ORDER BY
-    "a"."id" DESC
+SELECT a.id, a.title, a.body, a.thumbnail, a.created_at, a.updated_at,
+       CAST(
+               COALESCE(
+                       jsonb_agg(
+                               json_build_object('id', t.id, 'name', t.name)
+                       ) FILTER(WHERE t.id IS NOT NULL), '[]' ::json
+               ) AS json
+       ) AS "tags"
+FROM (SELECT id, title, body, thumbnail, created_at, updated_at
+      FROM "articles"
+      WHERE EXISTS(SELECT id
+                   FROM "articles"
+                   WHERE "articles"."id" = $1)
+        AND "articles"."id" < $1
+      ORDER BY "articles"."id" DESC LIMIT $2) AS "a"
+         LEFT OUTER JOIN
+     "tags" AS "t"
+     ON
+         "a"."id" = "t"."article_id"
+GROUP BY "a"."id"
+ORDER BY "a"."id" DESC
 `
 
 type ListBeforeWithLimitAndCursorParams struct {
