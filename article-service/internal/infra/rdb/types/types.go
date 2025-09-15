@@ -26,5 +26,8 @@ func (t *Tags) Scan(src interface{}) error {
 	if !ok {
 		return fmt.Errorf("unexpected type: %T", src)
 	}
+	if len(data) == 0 {
+		return nil
+	}
 	return json.Unmarshal(data, t)
 }
