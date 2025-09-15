@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"github.com/goccy/go-json"
@@ -24,6 +25,9 @@ func (a *Articles) Scan(src any) error {
 	data, ok := src.([]byte)
 	if !ok {
 		return fmt.Errorf("unexpected type: %T", src)
+	}
+	if len(data) == 0 {
+		return nil
 	}
 	return json.Unmarshal(data, a)
 }
