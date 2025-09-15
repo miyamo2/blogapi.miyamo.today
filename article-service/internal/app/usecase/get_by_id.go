@@ -23,7 +23,7 @@ func (u *GetByID) Execute(ctx context.Context, in dto.GetByIDInput) (*dto.GetByI
 	row, err := u.queries.GetByID(ctx, in.ID())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.Wrap(err, "article not found")
+			return nil, errors.WithMessage(err, "article not found")
 		}
 		return nil, errors.WithStack(err)
 	}
