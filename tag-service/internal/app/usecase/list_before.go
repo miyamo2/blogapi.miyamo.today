@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"blogapi.miyamo.today/tag-service/internal/app/usecase/query"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -19,37 +18,24 @@ func (u *ListBefore) Execute(ctx context.Context, in dto.ListBeforeInput) (*dto.
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
+	last := min(max(in.Last(), 1), 100) // TODO: config
+
 	var (
-		tags        = make([]dto.Tag, 0, in.Last())
+		tags        = make([]dto.Tag, 0, last)
 		hasPrevious bool
 	)
 
 	switch {
-	case in.Cursor() != nil && in.Last() != 0:
+	case in.Cursor() != nil:
 		rows, err := u.queries.ListBeforeWithLimitAndCursor(
 			ctx,
-			query.NewListBeforeWithLimitAndCursorParams(int32(in.Last()+1), *in.Cursor()),
+			query.NewListBeforeWithLimitAndCursorParams(int32(last+1), *in.Cursor()),
 		)
 		if err != nil {
 			return nil, err
 		}
-		hasPrevious = len(rows) > in.Last()
-		for row := range getPage(rows, in.Last(), 1) {
-			tags = append(
-				tags, dto.NewTag(
-					row.ID,
-					row.Name,
-					articleDtoFromQueryModel(row.Articles)...,
-				),
-			)
-		}
-	case in.Last() != 0:
-		rows, err := u.queries.ListBeforeWithLimit(ctx, int32(in.Last()+1))
-		if err != nil {
-			return nil, err
-		}
-		hasPrevious = len(rows) > in.Last()
-		for row := range getPage(rows, in.Last(), 1) {
+		hasPrevious = len(rows) > last
+		for row := range getPage(rows, last, 1) {
 			tags = append(
 				tags, dto.NewTag(
 					row.ID,
@@ -59,7 +45,20 @@ func (u *ListBefore) Execute(ctx context.Context, in dto.ListBeforeInput) (*dto.
 			)
 		}
 	default:
-		return nil, fmt.Errorf("invalid arguments")
+		rows, err := u.queries.ListBeforeWithLimit(ctx, int32(last+1))
+		if err != nil {
+			return nil, err
+		}
+		hasPrevious = len(rows) > last
+		for row := range getPage(rows, last, 1) {
+			tags = append(
+				tags, dto.NewTag(
+					row.ID,
+					row.Name,
+					articleDtoFromQueryModel(row.Articles)...,
+				),
+			)
+		}
 	}
 
 	result := dto.NewListBeforeOutput(hasPrevious, tags...)

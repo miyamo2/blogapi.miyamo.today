@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
 
@@ -19,41 +18,24 @@ func (u *ListAfter) Execute(ctx context.Context, in dto.ListAfterInput) (*dto.Li
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 
+	first := min(max(in.First(), 1), 100) // TODO: config
+
 	var (
-		articles = make([]dto.Article, 0, in.First())
+		articles = make([]dto.Article, 0, first)
 		hasNext  bool
 	)
 
 	switch {
-	case in.Cursor() != nil && in.First() != 0:
+	case in.Cursor() != nil:
 		rows, err := u.queries.ListAfterWithLimitAndCursor(
 			ctx,
-			query.NewListAfterWithLimitAndCursorParams(int32(in.First()+1), *in.Cursor()),
+			query.NewListAfterWithLimitAndCursorParams(int32(first+1), *in.Cursor()),
 		)
 		if err != nil {
 			return nil, err
 		}
-		hasNext = len(rows) > in.First()
-		for row := range getPage(rows, in.First(), 1) {
-			articles = append(
-				articles, dto.NewArticle(
-					row.ID,
-					row.Title,
-					row.Body,
-					row.Thumbnail,
-					row.CreatedAt,
-					row.UpdatedAt,
-					tagDtoFromQueryModel(row.Tags)...,
-				),
-			)
-		}
-	case in.First() != 0:
-		rows, err := u.queries.ListAfterWithLimit(ctx, int32(in.First()+1))
-		if err != nil {
-			return nil, err
-		}
-		hasNext = len(rows) > in.First()
-		for row := range getPage(rows, in.First(), 1) {
+		hasNext = len(rows) > first
+		for row := range getPage(rows, first, 1) {
 			articles = append(
 				articles, dto.NewArticle(
 					row.ID,
@@ -67,7 +49,24 @@ func (u *ListAfter) Execute(ctx context.Context, in dto.ListAfterInput) (*dto.Li
 			)
 		}
 	default:
-		return nil, fmt.Errorf("invalid arguments")
+		rows, err := u.queries.ListAfterWithLimit(ctx, int32(first+1))
+		if err != nil {
+			return nil, err
+		}
+		hasNext = len(rows) > first
+		for row := range getPage(rows, first, 1) {
+			articles = append(
+				articles, dto.NewArticle(
+					row.ID,
+					row.Title,
+					row.Body,
+					row.Thumbnail,
+					row.CreatedAt,
+					row.UpdatedAt,
+					tagDtoFromQueryModel(row.Tags)...,
+				),
+			)
+		}
 	}
 	result := dto.NewListAfterOutput(hasNext, articles...)
 	return &result, nil
