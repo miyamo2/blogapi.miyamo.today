@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 
 	"blogapi.miyamo.today/core/log"
@@ -17,13 +16,13 @@ import (
 	"github.com/cockroachdb/errors"
 )
 
-// GetById is an implementation of blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetById
-type GetById struct {
+// GetPrev is an implementation of blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase.GetPrev
+type GetPrev struct {
 	transactionManager db.TransactionManager
 	queryService       iquery.ArticleService
 }
 
-func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByIdOutDto, error) {
+func (u *GetPrev) Execute(ctx context.Context, in dto.GetPrevInDto) (*dto.GetPrevOutDto, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Execute").End()
 	logger, err := altnrslog.FromContext(ctx)
@@ -32,48 +31,62 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger = log.DefaultLogger()
 	}
-	logger.InfoContext(ctx, "BEGIN",
-		slog.Group("parameters",
-			slog.String("in", fmt.Sprintf("%v", in))))
+	logger.InfoContext(ctx, "BEGIN")
 	tx, err := u.transactionManager.GetAndStart(ctx)
 	if err != nil {
 		err := errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("dto.GetByIdOutDto", nil),
+				slog.Any("dto.GetPrevOutDto", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
 	errCh := tx.SubscribeError()
 
-	out := db.NewSingleStatementResult[query.Article]()
-	stmt := u.queryService.GetById(ctx, in.Id(), out)
+	out := db.NewMultipleStatementResult[query.Article]()
+	limit := in.Last()
+	stmt := u.queryService.GetAll(ctx, out, db.WithPreviousPaging(limit, in.Cursor()))
 	err = tx.ExecuteStatement(ctx, stmt)
 	if err != nil {
 		err := errors.WithStack(err)
 		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		logger.WarnContext(ctx, "END",
 			slog.Group("return",
-				slog.Any("dto.GetByIdOutDto", nil),
+				slog.Any("dto.GetPrevOutDto", nil),
 				slog.Any("error", err)))
 		return nil, err
 	}
 	queryResult := out.StrictGet()
-	result := dto.NewGetByIdOutDto(
-		queryResult.ID(),
-		queryResult.Title(),
-		queryResult.Body(),
-		queryResult.Thumbnail(),
-		queryResult.CreatedAt(),
-		queryResult.UpdatedAt(),
-		func() []dto.Tag {
-			tagDto := make([]dto.Tag, 0, len(queryResult.Tags()))
-			for _, tag := range queryResult.Tags() {
-				tagDto = append(tagDto, dto.NewTag(tag.ID(), tag.Name()))
-			}
-			return tagDto
-		}())
+	// convert model.Tag to dto.Tag
+	convTagModels := func(tms []query.Tag) []dto.Tag {
+		t := make([]dto.Tag, 0, len(tms))
+		for _, tm := range tms {
+			t = append(t, dto.NewTag(tm.ID(), tm.Name()))
+		}
+		return t
+	}
+	// convert model.Article to dto.Article
+	convArticleModels := func() ([]dto.Article, bool) {
+		a := make([]dto.Article, 0, len(queryResult))
+		for _, am := range queryResult {
+			// This would be a dead code.
+			// if am == nil ...
+			a = append(a, dto.NewArticle(
+				am.ID(),
+				am.Title(),
+				am.Body(),
+				am.Thumbnail(),
+				am.CreatedAt(),
+				am.UpdatedAt(),
+				convTagModels(am.Tags())))
+		}
+		if len(a) > limit {
+			return a[:limit], true
+		}
+		return a, false
+	}
+	result := dto.NewGetPrevOutDto(convArticleModels())
 
 	// Never return an error
 	_ = tx.Commit(ctx)
@@ -89,12 +102,12 @@ func (u *GetById) Execute(ctx context.Context, in dto.GetByIdInDto) (*dto.GetByI
 	}
 	logger.InfoContext(ctx, "END",
 		slog.Group("return",
-			slog.Any("dto.GetByIdOutDto", result),
+			slog.Any("dto.GetPrevOutDto", result),
 			slog.Any("error", nil)))
 	return &result, nil
 }
 
-// NewGetById is constructor of GetById
-func NewGetById(transactionManager db.TransactionManager, queryService iquery.ArticleService) *GetById {
-	return &GetById{transactionManager: transactionManager, queryService: queryService}
+// NewGetPrev is constructor of GetPrevPage.
+func NewGetPrev(transactionManager db.TransactionManager, queryService iquery.ArticleService) *GetPrev {
+	return &GetPrev{transactionManager: transactionManager, queryService: queryService}
 }

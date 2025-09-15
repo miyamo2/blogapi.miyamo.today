@@ -5,17 +5,20 @@ import (
 	"github.com/Code-Hex/synchro/tz"
 )
 
-// GetByIDInput is an Input DTO for GetById use-case
-type GetByIDInput struct {
+// GetByIdInDto is an Input DTO for GetById use-case
+type GetByIdInDto struct {
 	id string
 }
 
-// ID returns the ID of the article to be got
-func (i GetByIDInput) ID() string { return i.id }
+// IsInDto is a marker method for InDTO.
+func (i GetByIdInDto) IsInDto() {}
 
-// NewGetByIDInput constructs GetByIdInDta.
-func NewGetByIDInput(id string) GetByIDInput {
-	return GetByIDInput{id: id}
+// Id returns the ID of the article to be got
+func (i GetByIdInDto) Id() string { return i.id }
+
+// NewGetByIdInDto is constructor of GetByIdInDta.
+func NewGetByIdInDto(id string) GetByIdInDto {
+	return GetByIdInDto{id: id}
 }
 
 // Article is an Output DTO for GetById use-case.
@@ -29,8 +32,11 @@ type Article struct {
 	tags         []Tag
 }
 
-// ID returns the id of the article
-func (a Article) ID() string { return a.id }
+// IsOutDto is a marker method for OutDTO.
+func (a Article) IsOutDto() {}
+
+// Id returns the id of the article
+func (a Article) Id() string { return a.id }
 
 // Title returns the title of the article
 func (a Article) Title() string { return a.title }
@@ -50,7 +56,7 @@ func (a Article) UpdatedAt() synchro.Time[tz.UTC] { return a.updatedAt }
 // Tags return the tags attached to the article
 func (a Article) Tags() []Tag { return a.tags }
 
-// NewArticle constructs Article
+// NewArticle is constructor of Article
 func NewArticle(
 	id string,
 	title string,
@@ -58,7 +64,7 @@ func NewArticle(
 	thumbnailUrl string,
 	createdAt synchro.Time[tz.UTC],
 	updatedAt synchro.Time[tz.UTC],
-	tags ...Tag,
+	tags []Tag,
 ) Article {
 	return Article{
 		id:           id,
@@ -77,148 +83,140 @@ type Tag struct {
 	name string
 }
 
-// ID returns the id of the tag
-func (t Tag) ID() string { return t.id }
+// IsOutDto is a marker method for OutDTO.
+func (t Tag) IsOutDto() {}
+
+// Id returns the id of the tag
+func (t Tag) Id() string { return t.id }
 
 // Name returns the name of the tag
 func (t Tag) Name() string { return t.name }
 
-// NewTag constructs Tag
+// NewTag is constructor of Tag
 func NewTag(id string, name string) Tag {
 	return Tag{id: id, name: name}
 }
 
-// GetByIDOutput is an Output DTO for GetById use-case.
-type GetByIDOutput = Article
+// GetByIdOutDto is an Output DTO for GetById use-case.
+type GetByIdOutDto struct {
+	Article
+}
 
-// NewGetByIDOutput constructs GetByIDOutput
-func NewGetByIDOutput(
+// NewGetByIdOutDto is constructor of GetByIdOutDto
+func NewGetByIdOutDto(
 	id string,
 	title string,
 	body string,
 	thumbnailUrl string,
 	createdAt synchro.Time[tz.UTC],
 	updatedAt synchro.Time[tz.UTC],
-	tags ...Tag,
-) GetByIDOutput {
-	return NewArticle(id, title, body, thumbnailUrl, createdAt, updatedAt, tags...)
+	tags []Tag,
+) GetByIdOutDto {
+	return GetByIdOutDto{
+		Article{
+			id:           id,
+			title:        title,
+			body:         body,
+			thumbnailUrl: thumbnailUrl,
+			createdAt:    createdAt,
+			updatedAt:    updatedAt,
+			tags:         tags,
+		},
+	}
 }
 
-// ListAllOutput is an Output DTO for ListAll use-case.
-type ListAllOutput struct {
+// GetAllOutDto is an Output DTO for GetAll use-case.
+type GetAllOutDto struct {
 	articles []Article
 }
 
-// NewListAllOutput constructs ListAllOutput.
-func NewListAllOutput(articles ...Article) ListAllOutput {
-	return ListAllOutput{articles: articles}
+// NewGetAllOutDto is constructor of GetAllOutDto.
+func NewGetAllOutDto(articles []Article) GetAllOutDto {
+	return GetAllOutDto{articles: articles}
 }
 
-// Articles returns the articles.
-func (o *ListAllOutput) Articles() []Article { return o.articles }
+// IsOutDto is a marker method for OutDTO.
+func (o GetAllOutDto) IsOutDto() {}
 
-// ListAfterInput is an Input DTO for ListAfter use-case.
-type ListAfterInput struct {
+// Articles returns the articles.
+func (o *GetAllOutDto) Articles() []Article { return o.articles }
+
+// GetNextInDto is an Input DTO for GetNext use-case.
+type GetNextInDto struct {
 	first  int
 	cursor *string
 }
 
+// IsInDto is a marker method for InDTO.
+func (i GetNextInDto) IsInDto() {}
+
 // First returns the first.
-func (i ListAfterInput) First() int { return i.first }
+func (i GetNextInDto) First() int { return i.first }
 
 // Cursor returns the cursor.
-func (i ListAfterInput) Cursor() *string { return i.cursor }
+func (i GetNextInDto) Cursor() *string { return i.cursor }
 
-// NewListAfterInputOption is an option for NewListAfterInput
-type NewListAfterInputOption func(*ListAfterInput)
-
-// ListAfterInputWithCursor sets the cursor option for NewListAfterInput
-func ListAfterInputWithCursor[T string | *string](cursor T) NewListAfterInputOption {
-	return func(i *ListAfterInput) {
-		switch v := any(cursor).(type) {
-		case string:
-			i.cursor = &v
-		case *string:
-			i.cursor = v
-		}
-	}
+// NewGetNextInDto is constructor of GetNextInDto.
+func NewGetNextInDto(first int, cursor *string) GetNextInDto {
+	return GetNextInDto{first: first, cursor: cursor}
 }
 
-// NewListAfterInput constructs ListAfterInput.
-func NewListAfterInput(first int, options ...NewListAfterInputOption) ListAfterInput {
-	input := ListAfterInput{first: first}
-	for _, opt := range options {
-		opt(&input)
-	}
-	return input
-}
-
-// ListAfterOutput is an Output DTO for ListAfter use-case.
-type ListAfterOutput struct {
+// GetNextOutDto is an Output DTO for GetNext use-case.
+type GetNextOutDto struct {
 	articles []Article
 	hasNext  bool
 }
 
-// NewListAfterOutput constructs ListAfterOutput.
-func NewListAfterOutput(hasNext bool, articles ...Article) ListAfterOutput {
-	return ListAfterOutput{articles: articles, hasNext: hasNext}
+// NewGetNextOutDto is constructor of GetNextOutDto.
+func NewGetNextOutDto(articles []Article, hasNext bool) GetNextOutDto {
+	return GetNextOutDto{articles: articles, hasNext: hasNext}
 }
 
+// IsOutDto is a marker method for OutDTO.
+func (o GetNextOutDto) IsOutDto() {}
+
 // Articles returns the articles.
-func (o *ListAfterOutput) Articles() []Article { return o.articles }
+func (o *GetNextOutDto) Articles() []Article { return o.articles }
 
 // HasNext returns whether there is still next items.
-func (o *ListAfterOutput) HasNext() bool { return o.hasNext }
+func (o *GetNextOutDto) HasNext() bool { return o.hasNext }
 
-// ListBeforeInput is an Input DTO for ListBefore use-case.
-type ListBeforeInput struct {
+// GetPrevInDto is an Input DTO for GetPrev use-case.
+type GetPrevInDto struct {
 	last   int
 	cursor *string
 }
 
+// IsInDto is a marker method for InDTO.
+func (i GetPrevInDto) IsInDto() {}
+
 // Last returns the last.
-func (i ListBeforeInput) Last() int { return i.last }
+func (i GetPrevInDto) Last() int { return i.last }
 
 // Cursor returns the cursor.
-func (i ListBeforeInput) Cursor() *string { return i.cursor }
+func (i GetPrevInDto) Cursor() *string { return i.cursor }
 
-// ListBeforeOutput is an Output DTO for ListBefore use-case.
-type ListBeforeOutput struct {
+// NewGetPrevInDto is constructor of GetPrevInDto.
+func NewGetPrevInDto(last int, cursor *string) GetPrevInDto {
+	return GetPrevInDto{last: last, cursor: cursor}
+}
+
+// GetPrevOutDto is an Output DTO for GetPrev use-case.
+type GetPrevOutDto struct {
 	articles []Article
 	hasPrev  bool
 }
 
-// NewListBeforeInputOption is an option for NewListBeforeInput
-type NewListBeforeInputOption func(*ListBeforeInput)
-
-// ListBeforeInputWithCursor sets the cursor option for NewListBeforeInput
-func ListBeforeInputWithCursor[T string | *string](cursor T) NewListBeforeInputOption {
-	return func(i *ListBeforeInput) {
-		switch v := any(cursor).(type) {
-		case string:
-			i.cursor = &v
-		case *string:
-			i.cursor = v
-		}
-	}
+// NewGetPrevOutDto is constructor of GetPrevOutDto.
+func NewGetPrevOutDto(articles []Article, hasPrev bool) GetPrevOutDto {
+	return GetPrevOutDto{articles: articles, hasPrev: hasPrev}
 }
 
-// NewListBeforeInput constructs ListBeforeInput.
-func NewListBeforeInput(last int, options ...NewListBeforeInputOption) ListBeforeInput {
-	input := ListBeforeInput{last: last}
-	for _, opt := range options {
-		opt(&input)
-	}
-	return input
-}
+// IsOutDto is a marker method for OutDTO.
+func (o GetPrevOutDto) IsOutDto() {}
 
 // Articles returns the articles.
-func (o *ListBeforeOutput) Articles() []Article { return o.articles }
+func (o *GetPrevOutDto) Articles() []Article { return o.articles }
 
 // HasPrevious returns whether there is still precious items.
-func (o *ListBeforeOutput) HasPrevious() bool { return o.hasPrev }
-
-// NewListBeforeOutput constructs ListBeforeOutput.
-func NewListBeforeOutput(hasPrev bool, articles ...Article) ListBeforeOutput {
-	return ListBeforeOutput{articles: articles, hasPrev: hasPrev}
-}
+func (o *GetPrevOutDto) HasPrevious() bool { return o.hasPrev }

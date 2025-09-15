@@ -1,24 +1,21 @@
 package provider
 
 import (
-	"blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/presenter/convert"
-	impl "blogapi.miyamo.today/article-service/internal/if-adapter/presenter/pb/convert"
+	"blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/presenter"
+	impl "blogapi.miyamo.today/article-service/internal/if-adapter/presenter/pb"
 	"github.com/google/wire"
 )
 
 // compatibility check
-var _ convert.ListAfter = (*impl.ListAfter)(nil)
-var _ convert.ListAll = (*impl.ListAll)(nil)
-var _ convert.GetByID = (*impl.GetByID)(nil)
-var _ convert.ListBefore = (*impl.ListBefore)(nil)
+var _ presenter.ToGetNextConverter = (*impl.Converter)(nil)
+var _ presenter.ToGetAllConverter = (*impl.Converter)(nil)
+var _ presenter.ToGetByIdConverter = (*impl.Converter)(nil)
+var _ presenter.ToGetPrevConverter = (*impl.Converter)(nil)
 
 var PresenterSet = wire.NewSet(
-	impl.NewListAfter,
-	wire.Bind(new(convert.ListAfter), new(*impl.ListAfter)),
-	impl.NewListAll,
-	wire.Bind(new(convert.ListAll), new(*impl.ListAll)),
-	impl.NewGetByID,
-	wire.Bind(new(convert.GetByID), new(*impl.GetByID)),
-	impl.NewListBefore,
-	wire.Bind(new(convert.ListBefore), new(*impl.ListBefore)),
+	impl.NewConverter,
+	wire.Bind(new(presenter.ToGetNextConverter), new(*impl.Converter)),
+	wire.Bind(new(presenter.ToGetAllConverter), new(*impl.Converter)),
+	wire.Bind(new(presenter.ToGetByIdConverter), new(*impl.Converter)),
+	wire.Bind(new(presenter.ToGetPrevConverter), new(*impl.Converter)),
 )
