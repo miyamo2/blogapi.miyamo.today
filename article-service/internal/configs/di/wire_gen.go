@@ -7,25 +7,27 @@
 package di
 
 import (
+	"blogapi.miyamo.today/article-service/internal/app/usecase"
 	"blogapi.miyamo.today/article-service/internal/configs/di/provider"
-	pb2 "blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb"
-	"blogapi.miyamo.today/article-service/internal/if-adapter/presenter/pb"
-	"blogapi.miyamo.today/article-service/internal/infra/rdb/query"
+	"blogapi.miyamo.today/article-service/internal/if-adapter/presenter/pb/convert"
+	"github.com/labstack/echo/v4"
 )
 
 // Injectors from wire.go:
 
-func GetDependencies() *Dependencies {
+func GetEchoApp() *echo.Echo {
+	db := provider.SQLDB()
+	queries := provider.QueryService(db)
+	getByID := usecase.NewGetByID(queries)
+	listAll := usecase.NewListAll(queries)
+	listAfter := usecase.NewListAfter(queries)
+	listBefore := usecase.NewListBefore(queries)
+	convertGetByID := convert.NewGetByID()
+	convertListAll := convert.NewListAll()
+	convertListAfter := convert.NewListAfter()
+	convertListBefore := convert.NewListBefore()
+	articleServiceServer := provider.ArticleServiceServer(getByID, listAll, listAfter, listBefore, convertGetByID, convertListAll, convertListAfter, convertListBefore)
 	application := provider.NewRelic()
-	articleService := query.NewArticleService()
-	getById := provider.GetByIdUsecase(articleService)
-	getAll := provider.GetAllUsecase(articleService)
-	getNext := provider.GetNextUsecase(articleService)
-	getPrev := provider.GetPrevUsecase(articleService)
-	converter := pb.NewConverter()
-	articleServiceServer := pb2.NewArticleServiceServer(getById, getAll, getNext, getPrev, converter, converter, converter, converter)
-	echo := provider.Echo(articleServiceServer, application)
-	dialector := provider.GormDialector()
-	dependencies := NewDependencies(application, echo, dialector)
-	return dependencies
+	echoEcho := Echo(articleServiceServer, application)
+	return echoEcho
 }
