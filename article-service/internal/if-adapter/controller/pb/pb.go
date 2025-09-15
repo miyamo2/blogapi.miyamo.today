@@ -47,15 +47,14 @@ func (s *ArticleServiceServer) GetAllArticles(
 
 	oDto, err := s.listAllUsecase.Execute(ctx)
 	if err != nil {
-		err = nrpkgerrors.Wrap(errors.WithStack(err))
-		nrtx.NoticeError(err)
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
 	res, ok := s.listAllConverter.ToResponse(ctx, oDto)
 	if !ok {
-		err := nrpkgerrors.Wrap(ErrConversionToListAllFailed)
-		nrtx.NoticeError(err)
-		return nil, err
+		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToListAllFailed))
+		return nil, ErrConversionToListAllFailed
 	}
 
 	return connect.NewResponse(res), nil
@@ -75,15 +74,14 @@ func (s *ArticleServiceServer) GetNextArticles(
 		),
 	)
 	if err != nil {
-		err = nrpkgerrors.Wrap(errors.WithStack(err))
-		nrtx.NoticeError(err)
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
 	res, ok := s.listAfterConverter.ToResponse(ctx, oDto)
 	if !ok {
-		err := nrpkgerrors.Wrap(ErrConversionToListNextFailed)
-		nrtx.NoticeError(err)
-		return nil, err
+		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToListNextFailed))
+		return nil, ErrConversionToListNextFailed
 	}
 
 	return connect.NewResponse(res), nil
@@ -98,15 +96,14 @@ func (s *ArticleServiceServer) GetArticleById(
 
 	oDto, err := s.getByIDUsecase.Execute(ctx, dto.NewGetByIDInput(in.Msg.GetId()))
 	if err != nil {
-		err = nrpkgerrors.Wrap(errors.WithStack(err))
-		nrtx.NoticeError(err)
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
 	res, ok := s.getByIDConverter.ToResponse(ctx, oDto)
 	if !ok {
-		err := nrpkgerrors.Wrap(ErrConversionToGetByIDFailed)
-		nrtx.NoticeError(err)
-		return nil, err
+		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetByIDFailed))
+		return nil, ErrConversionToGetByIDFailed
 	}
 	return connect.NewResponse(res), nil
 }
@@ -125,8 +122,8 @@ func (s *ArticleServiceServer) GetPrevArticles(
 		dto.NewListBeforeInput(int(in.Msg.Last), dto.ListBeforeInputWithCursor(in.Msg.Before)),
 	)
 	if err != nil {
-		err = nrpkgerrors.Wrap(errors.WithStack(err))
-		nrtx.NoticeError(err)
+		err = errors.WithStack(err)
+		nrtx.NoticeError(nrpkgerrors.Wrap(err))
 		return nil, err
 	}
 	res, ok := s.listBeforeConverter.ToResponse(ctx, oDto)
