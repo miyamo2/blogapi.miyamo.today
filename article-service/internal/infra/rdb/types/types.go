@@ -1,6 +1,7 @@
 package types
 
 import (
+	"database/sql"
 	"fmt"
 
 	"github.com/Code-Hex/synchro"
@@ -11,17 +12,16 @@ import (
 // UTCTime is a type alias for synchro.Time with UTC timezone.
 type UTCTime = synchro.Time[tz.UTC]
 
-type Article struct {
-	ID        string  `json:"id"`
-	Title     string  `json:"title"`
-	Thumbnail string  `json:"thumbnail"`
-	CreatedAt UTCTime `json:"created_at"`
-	UpdatedAt UTCTime `json:"updated_at"`
+type Tag struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
-type Articles []Article
+var _ sql.Scanner = (*Tags)(nil)
 
-func (a *Articles) Scan(src any) error {
+type Tags []Tag
+
+func (t *Tags) Scan(src interface{}) error {
 	data, ok := src.([]byte)
 	if !ok {
 		return fmt.Errorf("unexpected type: %T", src)
@@ -29,5 +29,5 @@ func (a *Articles) Scan(src any) error {
 	if len(data) == 0 {
 		return nil
 	}
-	return json.Unmarshal(data, a)
+	return json.Unmarshal(data, t)
 }

@@ -2,43 +2,25 @@ package provider
 
 import (
 	impl "blogapi.miyamo.today/article-service/internal/app/usecase"
-	"blogapi.miyamo.today/article-service/internal/app/usecase/query"
 	"blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
-	"blogapi.miyamo.today/core/db/gorm"
 	"github.com/google/wire"
 )
 
 // compatibility check
 var (
-	_ usecase.GetById = (*impl.GetById)(nil)
-	_ usecase.GetAll  = (*impl.GetAll)(nil)
-	_ usecase.GetNext = (*impl.GetNext)(nil)
-	_ usecase.GetPrev = (*impl.GetPrev)(nil)
+	_ usecase.GetByID    = (*impl.GetByID)(nil)
+	_ usecase.ListAll    = (*impl.ListAll)(nil)
+	_ usecase.ListAfter  = (*impl.ListAfter)(nil)
+	_ usecase.ListBefore = (*impl.ListBefore)(nil)
 )
 
-func GetByIdUsecase(queryService query.ArticleService) *impl.GetById {
-	return impl.NewGetById(gorm.Manager(), queryService)
-}
-
-func GetAllUsecase(queryService query.ArticleService) *impl.GetAll {
-	return impl.NewGetAll(gorm.Manager(), queryService)
-}
-
-func GetNextUsecase(queryService query.ArticleService) *impl.GetNext {
-	return impl.NewGetNext(gorm.Manager(), queryService)
-}
-
-func GetPrevUsecase(queryService query.ArticleService) *impl.GetPrev {
-	return impl.NewGetPrev(gorm.Manager(), queryService)
-}
-
 var UsecaseSet = wire.NewSet(
-	GetByIdUsecase,
-	wire.Bind(new(usecase.GetById), new(*impl.GetById)),
-	GetAllUsecase,
-	wire.Bind(new(usecase.GetAll), new(*impl.GetAll)),
-	GetNextUsecase,
-	wire.Bind(new(usecase.GetNext), new(*impl.GetNext)),
-	GetPrevUsecase,
-	wire.Bind(new(usecase.GetPrev), new(*impl.GetPrev)),
+	impl.NewGetByID,
+	wire.Bind(new(usecase.GetByID), new(*impl.GetByID)),
+	impl.NewListAll,
+	wire.Bind(new(usecase.ListAll), new(*impl.ListAll)),
+	impl.NewListAfter,
+	wire.Bind(new(usecase.ListAfter), new(*impl.ListAfter)),
+	impl.NewListBefore,
+	wire.Bind(new(usecase.ListBefore), new(*impl.ListBefore)),
 )
