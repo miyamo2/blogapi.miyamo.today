@@ -16,7 +16,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/newrelic/go-agent/v3 v3.38.0
+	github.com/newrelic/go-agent/v3 v3.40.1
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.3
 	github.com/newrelic/go-agent/v3/integrations/nrpgx v1.0.1
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
