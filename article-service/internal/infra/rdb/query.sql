@@ -27,7 +27,7 @@ FROM (SELECT * FROM "articles" ORDER BY "articles"."id") AS "a"
          LEFT OUTER JOIN
      "tags" AS "t"
      ON
-         "t"."id" = "a"."tag_id"
+         "a"."id" = "t"."article_id"
 GROUP BY "a"."id"
 ORDER BY "a"."id";
 
@@ -44,7 +44,7 @@ FROM (SELECT * FROM "articles" ORDER BY "articles"."id" LIMIT $1) AS "a"
          LEFT OUTER JOIN
      "tags" AS "t"
      ON
-         "t"."id" = "a"."tag_id"
+         "a"."id" = "t"."article_id"
 GROUP BY "a"."id"
 ORDER BY "a"."id";
 
@@ -67,7 +67,7 @@ FROM (SELECT *
          LEFT OUTER JOIN
      "tags" AS "t"
      ON
-         "t"."id" = "a"."tag_id"
+         "a"."id" = "t"."article_id"
 GROUP BY "a"."id"
 ORDER BY "a"."id";
 
@@ -84,7 +84,7 @@ FROM (SELECT * FROM "articles" ORDER BY "articles"."id" DESC) AS "a"
          LEFT OUTER JOIN
      "tags" AS "t"
      ON
-         "t"."id" = "a"."tag_id"
+         "a"."id" = "t"."article_id"
 GROUP BY "a"."id"
 ORDER BY "a"."id" DESC;
 
@@ -101,7 +101,7 @@ FROM (SELECT * FROM "articles" ORDER BY "articles"."id" DESC LIMIT $1) AS "a"
          LEFT OUTER JOIN
      "tags" AS "t"
      ON
-         "t"."id" = "a"."tag_id"
+         "a"."id" = "t"."article_id"
 GROUP BY "a"."id"
 ORDER BY "a"."id" DESC;
 
@@ -124,6 +124,6 @@ FROM (SELECT *
          LEFT OUTER JOIN
      "tags" AS "t"
      ON
-         "t"."id" = "a"."tag_id"
+         "a"."id" = "t"."article_id"
 GROUP BY "a"."id"
 ORDER BY "a"."id" DESC;
