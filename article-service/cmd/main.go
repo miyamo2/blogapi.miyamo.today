@@ -1,16 +1,16 @@
 package main
 
 import (
+	gwrapper "blogapi.miyamo.today/core/db/gorm"
 	"context"
 	"fmt"
+	"github.com/cockroachdb/errors"
+	"golang.org/x/net/http2"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
-
-	"github.com/cockroachdb/errors"
-	"golang.org/x/net/http2"
 
 	"blogapi.miyamo.today/article-service/internal/configs/di"
 	"github.com/joho/godotenv"
@@ -29,7 +29,11 @@ func main() {
 		port = defaultPort
 	}
 
-	e := di.GetEchoApp()
+	dependencies := di.GetDependencies()
+	gormDialector := dependencies.GORMDialector
+	gwrapper.InitializeDialector(gormDialector)
+
+	e := dependencies.Echo
 
 	errChan := make(chan error, 1)
 	go func() {
@@ -51,6 +55,6 @@ func main() {
 		slog.Info("stopping gRPC server...")
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		_ = e.Shutdown(ctx)
+		e.Shutdown(ctx)
 	}
 }

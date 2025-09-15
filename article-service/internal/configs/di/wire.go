@@ -5,18 +5,18 @@ package di
 import (
 	"blogapi.miyamo.today/article-service/internal/configs/di/provider"
 	"github.com/google/wire"
-	"github.com/labstack/echo/v4"
 )
 
-func GetEchoApp() *echo.Echo {
+func GetDependencies() *Dependencies {
 	wire.Build(
 		provider.NewRelicSet,
-		provider.SQLDBSet,
-		provider.QuerySet,
+		provider.GormSet,
+		provider.QueryServiceSet,
 		provider.PresenterSet,
 		provider.UsecaseSet,
 		provider.ArticleServiceSet,
-		EchoSet,
+		provider.EchoSet,
+		wire.NewSet(NewDependencies),
 	)
 	return nil
 }

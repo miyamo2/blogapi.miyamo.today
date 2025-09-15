@@ -1,688 +1,980 @@
 package pb
 
 import (
+	"blogapi.miyamo.today/article-service/internal/infra/grpc"
+	"connectrpc.com/connect"
+	"context"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"testing"
 
 	"blogapi.miyamo.today/article-service/internal/app/usecase/dto"
-	"blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/presenter/convert"
-	"blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
-	"blogapi.miyamo.today/article-service/internal/infra/grpc"
-	"connectrpc.com/connect"
-	"github.com/Code-Hex/synchro"
-	"github.com/Code-Hex/synchro/tz"
+	mpresenter "blogapi.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/presenter"
+	musecase "blogapi.miyamo.today/article-service/internal/mock/if-adapter/controller/pb/usecase"
 	"github.com/cockroachdb/errors"
-	. "github.com/ovechkin-dm/mockio/v2/mock"
-	"github.com/stretchr/testify/suite"
+	"github.com/google/go-cmp/cmp"
+	"go.uber.org/mock/gomock"
+	"google.golang.org/protobuf/testing/protocmp"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type ArticleServiceServerTestSuite struct {
-	suite.Suite
-}
-
-func Test_ArticleServiceServerTestSuite(t *testing.T) {
-	suite.Run(t, new(ArticleServiceServerTestSuite))
-}
-
-func (s *ArticleServiceServerTestSuite) TestArticleServiceServer_GetArticleById() {
-	s.Run(
-		"happy_path", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.GetByID](ctrl)
-
-			getByIdOutput := dto.NewArticle(
+func TestArticleServiceServer_GetArticleById(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		in  *connect.Request[grpc.GetArticleByIdRequest]
+	}
+	type want struct {
+		response *connect.Response[grpc.GetArticleByIdResponse]
+		err      error
+	}
+	type testCase struct {
+		outDto         dto.GetByIdOutDto
+		setupUsecase   func(out dto.GetByIdOutDto, u *musecase.MockGetById)
+		setupConverter func(from dto.GetByIdOutDto, res *grpc.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter)
+		args           args
+		want           want
+	}
+	errGetArticleById := errors.New("error get article by id")
+	tests := map[string]testCase{
+		"happy_path/article_has_tag": {
+			outDto: dto.NewGetByIdOutDto(
 				"1",
 				"happy_path/article_has_tag",
 				"## happy_path/article_has_tag",
 				"1234567890",
 				synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
 				synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-				dto.NewTag("1", "happy_path"),
-			)
+				[]dto.Tag{
+					dto.NewTag("1", "happy_path")}),
+			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
+				conv.EXPECT().
+					ToGetByIdArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetArticleByIdRequest{
+					Id: "1",
+				}),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetArticleByIdResponse{
+					Article: &grpc.Article{
+						Id:           "1",
+						Title:        "happy_path/article_has_tag",
+						Body:         "## happy_path/article_has_tag",
+						ThumbnailUrl: "1234567890",
+						CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+						UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+						Tags: []*grpc.Tag{
+							{
+								Id:   "1",
+								Name: "happy_path",
+							},
+						},
+					},
+				}),
+				err: nil,
+			},
+		},
+		"unhappy_path/usecase_returns_error": {
+			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
+					Return(nil, errGetArticleById).Times(1)
+			},
+			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
+				conv.EXPECT().
+					ToGetByIdArticlesResponse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetArticleByIdRequest{
+					Id: "1",
+				}),
+			},
+			want: want{
+				response: nil,
+				err:      errGetArticleById,
+			},
+		},
+		"unhappy_path/failed_to_convert": {
+			setupUsecase: func(out dto.GetByIdOutDto, u *musecase.MockGetById) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetByIdInDto("1")).
+					Return(&out, nil).Times(1)
+			},
+			setupConverter: func(from dto.GetByIdOutDto, res *grpc.GetArticleByIdResponse, conv *mpresenter.MockToGetByIdConverter) {
+				conv.EXPECT().
+					ToGetByIdArticlesResponse(gomock.Any(), &from).
+					Return(nil, false).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetArticleByIdRequest{
+					Id: "1",
+				}),
+			},
+			want: want{
+				response: nil,
+				err:      ErrConversionToGetArticleByIdFailed,
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			out := tt.outDto
+			u := musecase.NewMockGetById(ctrl)
+			tt.setupUsecase(out, u)
+			response := tt.want.response
+			conv := mpresenter.NewMockToGetByIdConverter(ctrl)
+			var message *grpc.GetArticleByIdResponse
+			if response != nil {
+				message = response.Msg
+			}
+			tt.setupConverter(out, message, conv)
+			s := NewArticleServiceServer(u, nil, nil, nil, conv, nil, nil, nil)
+			got, err := s.GetArticleById(tt.args.ctx, tt.args.in)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetArticleById() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.GetArticleByIdResponse]{})}...); diff != "" {
+				t.Errorf("GetArticleById() got = %v, want %v", got, tt.want.response)
+			}
+		})
+	}
+}
 
-			WhenDouble(uc.Execute(AnyContext(), Equal(dto.NewGetByIDInput("1")))).
-				ThenReturn(&getByIdOutput, nil)
-
-			res := &grpc.GetArticleByIdResponse{
-				Article: &grpc.Article{
-					Id:           "1",
-					Title:        "happy_path/article_has_tag",
-					Body:         "## happy_path/article_has_tag",
-					ThumbnailUrl: "1234567890",
-					CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-					UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-					Tags: []*grpc.Tag{
+func TestArticleServiceServer_GetAllArticles(t *testing.T) {
+	type args struct {
+		ctx context.Context
+	}
+	type want struct {
+		response *connect.Response[grpc.GetAllArticlesResponse]
+		err      error
+	}
+	type testCase struct {
+		outDto         dto.GetAllOutDto
+		setupUsecase   func(out dto.GetAllOutDto, u *musecase.MockGetAll)
+		setupConverter func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter)
+		args           args
+		want           want
+	}
+	errGetAllArticles := errors.New("error get all articles")
+	tests := map[string]testCase{
+		"happy_path/multiple_article": {
+			outDto: dto.NewGetAllOutDto(
+				[]dto.Article{
+					dto.NewArticle(
+						"1",
+						"happy_path/multiple_article1",
+						"## happy_path/multiple_article1",
+						"1234567890",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						[]dto.Tag{
+							dto.NewTag("tag1", "1"),
+							dto.NewTag("tag2", "2"),
+						},
+					),
+					dto.NewArticle(
+						"2",
+						"happy_path/multiple_article2",
+						"## happy_path/multiple_article2",
+						"1234567890",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						[]dto.Tag{
+							dto.NewTag("tag1", "1"),
+							dto.NewTag("tag2", "2"),
+						},
+					),
+				}),
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
+				u.EXPECT().
+					Execute(gomock.Any()).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+				conv.EXPECT().
+					ToGetAllArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{
 						{
-							Id:   "1",
-							Name: "happy_path",
+							Id:           "1",
+							Title:        "happy_path/multiple_article1",
+							Body:         "## happy_path/multiple_article1",
+							ThumbnailUrl: "1234567890",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							Tags: []*grpc.Tag{
+								{
+									Id:   "tag1",
+									Name: "1",
+								},
+								{
+									Id:   "tag2",
+									Name: "2",
+								},
+							},
+						},
+						{
+							Id:           "2",
+							Title:        "happy_path/multiple_article2",
+							Body:         "## happy_path/multiple_article2",
+							ThumbnailUrl: "1234567890",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							Tags: []*grpc.Tag{
+								{
+									Id:   "tag1",
+									Name: "1",
+								},
+								{
+									Id:   "tag2",
+									Name: "2",
+								},
+							},
 						},
 					},
-				},
+				}),
+				err: nil,
+			},
+		},
+		"happy_path/single_article": {
+			outDto: dto.NewGetAllOutDto(
+				[]dto.Article{
+					dto.NewArticle(
+						"1",
+						"happy_path/single_article",
+						"## happy_path/single_article",
+						"1234567890",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						[]dto.Tag{
+							dto.NewTag("tag1", "1"),
+							dto.NewTag("tag2", "2"),
+						},
+					),
+				}),
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
+				u.EXPECT().
+					Execute(gomock.Any()).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+				conv.EXPECT().
+					ToGetAllArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{
+						{
+							Id:           "1",
+							Title:        "happy_path/single_article",
+							Body:         "## happy_path/single_article",
+							ThumbnailUrl: "1234567890",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							Tags: []*grpc.Tag{
+								{
+									Id:   "tag1",
+									Name: "1",
+								},
+								{
+									Id:   "tag2",
+									Name: "2",
+								},
+							},
+						},
+					},
+				}),
+				err: nil,
+			},
+		},
+		"happy_path/zero_article": {
+			outDto: dto.NewGetAllOutDto([]dto.Article{}),
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
+				u.EXPECT().
+					Execute(gomock.Any()).
+					Return(&out, nil).Times(1)
+			},
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+				conv.EXPECT().
+					ToGetAllArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetAllArticlesResponse{
+					Articles: []*grpc.Article{},
+				}),
+				err: nil,
+			},
+		},
+		"unhappy_path/usecase_returns_error": {
+			outDto: dto.GetAllOutDto{},
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
+				u.EXPECT().
+					Execute(gomock.Any()).
+					Return(nil, errGetAllArticles).Times(1)
+			},
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+				conv.EXPECT().
+					ToGetAllArticlesResponse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want: want{
+				response: nil,
+				err:      errGetAllArticles,
+			},
+		},
+		"unhappy_path/failed_to_convert": {
+			outDto: dto.GetAllOutDto{},
+			setupUsecase: func(out dto.GetAllOutDto, u *musecase.MockGetAll) {
+				u.EXPECT().
+					Execute(gomock.Any()).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetAllOutDto, res *grpc.GetAllArticlesResponse, conv *mpresenter.MockToGetAllConverter) {
+				conv.EXPECT().
+					ToGetAllArticlesResponse(gomock.Any(), &from).
+					Return(nil, false).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+			},
+			want: want{
+				response: nil,
+				err:      ErrConversionToGetAllArticlesFailed,
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			out := tt.outDto
+			u := musecase.NewMockGetAll(ctrl)
+			tt.setupUsecase(out, u)
+			response := tt.want.response
+			conv := mpresenter.NewMockToGetAllConverter(ctrl)
+
+			var message *grpc.GetAllArticlesResponse
+			if response != nil {
+				message = response.Msg
 			}
+			tt.setupConverter(out, message, conv)
+			s := NewArticleServiceServer(nil, u, nil, nil, nil, conv, nil, nil)
 
-			conv := Mock[convert.GetByID](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&getByIdOutput))).
-				ThenReturn(res, true)
-
-			sut := NewArticleServiceServer(WithGetByID(uc, conv))
-			got, err := sut.GetArticleById(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetArticleByIdRequest{
-						Id: "1",
-					},
-				),
-			)
-			s.Require().NoError(err)
-			s.Require().NotNil(got)
-			s.Require().Equal(res, got.Msg)
-		},
-	)
-	s.Run(
-		"unhappy_path/usecase_returns_error", func() {
-			errGetArticleById := errors.New("error get article by id")
-
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.GetByID](ctrl)
-
-			WhenDouble(uc.Execute(AnyContext(), Equal(dto.NewGetByIDInput("1")))).
-				ThenReturn(nil, errGetArticleById)
-
-			sut := NewArticleServiceServer(WithGetByID(uc, nil))
-			got, err := sut.GetArticleById(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetArticleByIdRequest{
-						Id: "1",
-					},
-				),
-			)
-			s.Require().Error(err)
-			s.Require().ErrorIs(err, errGetArticleById)
-			s.Require().Nil(got)
-		},
-	)
-	s.Run(
-		"unhappy_path/failed_to_convert", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.GetByID](ctrl)
-
-			getByIdOutput := dto.NewArticle(
-				"1",
-				"happy_path/article_has_tag",
-				"## happy_path/article_has_tag",
-				"1234567890",
-				synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-				synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-				dto.NewTag("1", "happy_path"),
-			)
-
-			WhenDouble(uc.Execute(AnyContext(), Equal(dto.NewGetByIDInput("1")))).
-				ThenReturn(&getByIdOutput, nil)
-
-			conv := Mock[convert.GetByID](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&getByIdOutput))).
-				ThenReturn(nil, false)
-
-			sut := NewArticleServiceServer(WithGetByID(uc, conv))
-			got, err := sut.GetArticleById(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetArticleByIdRequest{
-						Id: "1",
-					},
-				),
-			)
-			s.Require().Error(err)
-			s.Require().ErrorIs(err, ErrConversionToGetByIDFailed)
-			s.Require().Nil(got)
-		},
-	)
+			got, err := s.GetAllArticles(tt.args.ctx, connect.NewRequest(&emptypb.Empty{}))
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetAllArticles() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.GetAllArticlesResponse]{})}...); diff != "" {
+				t.Errorf("GetAllArticles() got = %v, want %v", got, tt.want.response)
+			}
+		})
+	}
 }
 
-func (s *ArticleServiceServerTestSuite) TestArticleServiceServer_GetAllArticles() {
-	s.Run(
-		"happy_path", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListAll](ctrl)
-
-			listAllOutput := dto.NewListAllOutput(
-				dto.NewArticle(
-					"1",
-					"happy_path1",
-					"## happy_path1",
-					"1234567890",
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					dto.NewTag("tag1", "1"),
-					dto.NewTag("tag2", "2"),
-				),
-			)
-			WhenDouble(uc.Execute(AnyContext())).
-				ThenReturn(&listAllOutput, nil)
-
-			res := &grpc.GetAllArticlesResponse{
-				Articles: []*grpc.Article{
-					{
-						Id:           "1",
-						Title:        "happy_path1",
-						Body:         "## happy_path1",
-						ThumbnailUrl: "1234567890",
-						CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						Tags: []*grpc.Tag{
-							{
-								Id:   "tag1",
-								Name: "1",
+func TestArticleServiceServer_GetNextArticles(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		in  *connect.Request[grpc.GetNextArticlesRequest]
+	}
+	type want struct {
+		response *connect.Response[grpc.GetNextArticlesResponse]
+		err      error
+	}
+	type testCase struct {
+		outDto         dto.GetNextOutDto
+		setupUsecase   func(out dto.GetNextOutDto, u *musecase.MockGetNext)
+		setupConverter func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter)
+		args           args
+		want           want
+	}
+	cursor := "0"
+	pCursor := &cursor
+	errGetAllArticles := errors.New("error get all articles")
+	tests := map[string]testCase{
+		"happy_path/multiple_article": {
+			outDto: dto.NewGetNextOutDto(
+				[]dto.Article{
+					dto.NewArticle(
+						"1",
+						"happy_path/multiple_article1",
+						"## happy_path/multiple_article1",
+						"1234567890",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						[]dto.Tag{
+							dto.NewTag("tag1", "1"),
+							dto.NewTag("tag2", "2"),
+						},
+					),
+					dto.NewArticle(
+						"2",
+						"happy_path/multiple_article2",
+						"## happy_path/multiple_article2",
+						"1234567890",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						[]dto.Tag{
+							dto.NewTag("tag1", "1"),
+							dto.NewTag("tag2", "2"),
+						},
+					),
+				}, true),
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetNextInDto(2, pCursor)).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+				conv.EXPECT().
+					ToGetNextArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
+					First: 2,
+					After: &cursor,
+				}),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetNextArticlesResponse{
+					Articles: []*grpc.Article{
+						{
+							Id:           "1",
+							Title:        "happy_path/multiple_article1",
+							Body:         "## happy_path/multiple_article1",
+							ThumbnailUrl: "1234567890",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							Tags: []*grpc.Tag{
+								{
+									Id:   "tag1",
+									Name: "1",
+								},
+								{
+									Id:   "tag2",
+									Name: "2",
+								},
 							},
-							{
-								Id:   "tag2",
-								Name: "2",
+						},
+						{
+							Id:           "2",
+							Title:        "happy_path/multiple_article2",
+							Body:         "## happy_path/multiple_article2",
+							ThumbnailUrl: "1234567890",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							Tags: []*grpc.Tag{
+								{
+									Id:   "tag1",
+									Name: "1",
+								},
+								{
+									Id:   "tag2",
+									Name: "2",
+								},
 							},
 						},
 					},
-				},
+					StillExists: true,
+				}),
+				err: nil,
+			},
+		},
+		"happy_path/single_article": {
+			outDto: dto.NewGetNextOutDto(
+				[]dto.Article{
+					dto.NewArticle(
+						"1",
+						"happy_path/single_article",
+						"## happy_path/single_article",
+						"1234567890",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						[]dto.Tag{
+							dto.NewTag("tag1", "1"),
+							dto.NewTag("tag2", "2"),
+						},
+					),
+				}, true),
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetNextInDto(1, pCursor)).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+				conv.EXPECT().
+					ToGetNextArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
+					First: 1,
+					After: pCursor,
+				}),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetNextArticlesResponse{
+					Articles: []*grpc.Article{
+						{
+							Id:           "1",
+							Title:        "happy_path/single_article",
+							Body:         "## happy_path/single_article",
+							ThumbnailUrl: "1234567890",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							Tags: []*grpc.Tag{
+								{
+									Id:   "tag1",
+									Name: "1",
+								},
+								{
+									Id:   "tag2",
+									Name: "2",
+								},
+							},
+						},
+					},
+					StillExists: true,
+				}),
+				err: nil,
+			},
+		},
+		"happy_path/zero_article": {
+			outDto: dto.NewGetNextOutDto([]dto.Article{}, false),
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetNextInDto(2, pCursor)).
+					Return(&out, nil).Times(1)
+			},
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+				conv.EXPECT().
+					ToGetNextArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
+					First: 2,
+					After: pCursor,
+				}),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetNextArticlesResponse{
+					Articles:    []*grpc.Article{},
+					StillExists: false,
+				}),
+				err: nil,
+			},
+		},
+		"unhappy_path/usecase_returns_error": {
+			outDto: dto.GetNextOutDto{},
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetNextInDto(2, pCursor)).
+					Return(nil, errGetAllArticles).Times(1)
+			},
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+				conv.EXPECT().
+					ToGetNextArticlesResponse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
+					First: 2,
+					After: pCursor,
+				}),
+			},
+			want: want{
+				response: nil,
+				err:      errGetAllArticles,
+			},
+		},
+		"unhappy_path/failed_to_convert": {
+			outDto: dto.GetNextOutDto{},
+			setupUsecase: func(out dto.GetNextOutDto, u *musecase.MockGetNext) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetNextInDto(1, pCursor)).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetNextOutDto, res *grpc.GetNextArticlesResponse, conv *mpresenter.MockToGetNextConverter) {
+				conv.EXPECT().
+					ToGetNextArticlesResponse(gomock.Any(), &from).
+					Return(nil, false).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetNextArticlesRequest{
+					First: 1,
+					After: pCursor,
+				}),
+			},
+			want: want{
+				response: nil,
+				err:      ErrConversionToGetNextArticlesFailed,
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			out := tt.outDto
+			u := musecase.NewMockGetNext(ctrl)
+			tt.setupUsecase(out, u)
+			response := tt.want.response
+			conv := mpresenter.NewMockToGetNextConverter(ctrl)
+
+			var message *grpc.GetNextArticlesResponse
+			if response != nil {
+				message = response.Msg
 			}
+			tt.setupConverter(out, message, conv)
+			s := NewArticleServiceServer(nil, nil, u, nil, nil, nil, conv, nil)
 
-			conv := Mock[convert.ListAll](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&listAllOutput))).
-				ThenReturn(res, true)
-
-			sut := NewArticleServiceServer(WithListAll(uc, conv))
-			got, err := sut.GetAllArticles(
-				s.T().Context(),
-				connect.NewRequest(&emptypb.Empty{}),
-			)
-			s.Require().NoError(err)
-			s.Require().NotNil(got)
-			s.Require().Equal(res, got.Msg)
-		},
-	)
-	s.Run(
-		"unhappy_path/usecase_returns_error", func() {
-			errGetAllArticle := errors.New("error get all Articles")
-
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListAll](ctrl)
-
-			WhenDouble(uc.Execute(AnyContext())).
-				ThenReturn(nil, errGetAllArticle)
-
-			sut := NewArticleServiceServer(WithListAll(uc, nil))
-			got, err := sut.GetAllArticles(
-				s.T().Context(),
-				connect.NewRequest(&emptypb.Empty{}),
-			)
-			s.Require().Error(err)
-			s.Require().Nil(got)
-			s.Require().ErrorIs(err, errGetAllArticle)
-		},
-	)
-	s.Run(
-		"unhappy_path/failed_to_convert", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListAll](ctrl)
-
-			listAllOutput := dto.NewListAllOutput(
-				dto.NewArticle(
-					"1",
-					"happy_path1",
-					"## happy_path1",
-					"1234567890",
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					dto.NewTag("tag1", "1"),
-					dto.NewTag("tag2", "2"),
-				),
-			)
-			WhenDouble(uc.Execute(AnyContext())).
-				ThenReturn(&listAllOutput, nil)
-
-			conv := Mock[convert.ListAll](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&listAllOutput))).
-				ThenReturn(nil, false)
-
-			sut := NewArticleServiceServer(WithListAll(uc, conv))
-			got, err := sut.GetAllArticles(
-				s.T().Context(),
-				connect.NewRequest(&emptypb.Empty{}),
-			)
-			s.Require().Error(err)
-			s.Require().Nil(got)
-			s.Require().ErrorIs(err, ErrConversionToListAllFailed)
-		},
-	)
+			got, err := s.GetNextArticles(tt.args.ctx, tt.args.in)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetNextArticles() error = %v, want %v", err, tt.want.err)
+				return
+			}
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.GetNextArticlesResponse]{})}...); diff != "" {
+				t.Errorf("GetNextArticles() got = %v, want %v", got, tt.want.response)
+			}
+		})
+	}
 }
 
-func (s *ArticleServiceServerTestSuite) TestArticleServiceServer_GetNextArticles() {
-	s.Run(
-		"happy_path/without-cursor", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListAfter](ctrl)
-
-			listAfterOutput := dto.NewListAfterOutput(
-				true,
-				dto.NewArticle(
-					"1",
-					"happy_path1",
-					"## happy_path1",
-					"1234567890",
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					dto.NewTag("tag1", "1"),
-					dto.NewTag("tag2", "2"),
-				),
-			)
-			WhenDouble(
-				uc.Execute(
-					AnyContext(),
-					Equal(dto.NewListAfterInput(1)),
-				),
-			).
-				ThenReturn(&listAfterOutput, nil)
-
-			res := &grpc.GetNextArticlesResponse{
-				StillExists: true,
-				Articles: []*grpc.Article{
-					{
-						Id:           "1",
-						Title:        "happy_path1",
-						Body:         "## happy_path1",
-						ThumbnailUrl: "1234567890",
-						CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						Tags: []*grpc.Tag{
-							{
-								Id:   "tag1",
-								Name: "1",
+func TestArticleServiceServer_GetPrevArticles(t *testing.T) {
+	type args struct {
+		ctx context.Context
+		in  *connect.Request[grpc.GetPrevArticlesRequest]
+	}
+	type want struct {
+		response *connect.Response[grpc.GetPrevArticlesResponse]
+		err      error
+	}
+	type testCase struct {
+		outDto         dto.GetPrevOutDto
+		setupUsecase   func(out dto.GetPrevOutDto, u *musecase.MockGetPrev)
+		setupConverter func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter)
+		args           args
+		want           want
+	}
+	cursor := "0"
+	pCursor := &cursor
+	errGetAllArticles := errors.New("error get all articles")
+	tests := map[string]testCase{
+		"happy_path/multiple_article": {
+			outDto: dto.NewGetPrevOutDto(
+				[]dto.Article{
+					dto.NewArticle(
+						"1",
+						"happy_path/multiple_article1",
+						"## happy_path/multiple_article1",
+						"1234567890",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						[]dto.Tag{
+							dto.NewTag("tag1", "1"),
+							dto.NewTag("tag2", "2"),
+						},
+					),
+					dto.NewArticle(
+						"2",
+						"happy_path/multiple_article2",
+						"## happy_path/multiple_article2",
+						"1234567890",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						[]dto.Tag{
+							dto.NewTag("tag1", "1"),
+							dto.NewTag("tag2", "2"),
+						},
+					),
+				}, true),
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetPrevInDto(2, pCursor)).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+				conv.EXPECT().
+					ToGetPrevArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
+					Last:   2,
+					Before: &cursor,
+				}),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetPrevArticlesResponse{
+					Articles: []*grpc.Article{
+						{
+							Id:           "1",
+							Title:        "happy_path/multiple_article1",
+							Body:         "## happy_path/multiple_article1",
+							ThumbnailUrl: "1234567890",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							Tags: []*grpc.Tag{
+								{
+									Id:   "tag1",
+									Name: "1",
+								},
+								{
+									Id:   "tag2",
+									Name: "2",
+								},
 							},
-							{
-								Id:   "tag2",
-								Name: "2",
+						},
+						{
+							Id:           "2",
+							Title:        "happy_path/multiple_article2",
+							Body:         "## happy_path/multiple_article2",
+							ThumbnailUrl: "1234567890",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							Tags: []*grpc.Tag{
+								{
+									Id:   "tag1",
+									Name: "1",
+								},
+								{
+									Id:   "tag2",
+									Name: "2",
+								},
 							},
 						},
 					},
-				},
-			}
-
-			conv := Mock[convert.ListAfter](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&listAfterOutput))).
-				ThenReturn(res, true)
-
-			sut := NewArticleServiceServer(WithListAfter(uc, conv))
-			got, err := sut.GetNextArticles(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetNextArticlesRequest{
-						First: 1,
-					},
-				),
-			)
-			s.Require().NoError(err)
-			s.Require().NotNil(got)
-			s.Require().Equal(res, got.Msg)
+					StillExists: true,
+				}),
+				err: nil,
+			},
 		},
-	)
-	s.Run(
-		"happy_path/with-cursor", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListAfter](ctrl)
-
-			listAfterOutput := dto.NewListAfterOutput(
-				true,
-				dto.NewArticle(
-					"1",
-					"happy_path1",
-					"## happy_path1",
-					"1234567890",
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					dto.NewTag("tag1", "1"),
-					dto.NewTag("tag2", "2"),
-				),
-			)
-			WhenDouble(
-				uc.Execute(
-					AnyContext(),
-					Equal(dto.NewListAfterInput(1, dto.ListAfterInputWithCursor("0"))),
-				),
-			).
-				ThenReturn(&listAfterOutput, nil)
-
-			res := &grpc.GetNextArticlesResponse{
-				StillExists: true,
-				Articles: []*grpc.Article{
-					{
-						Id:           "1",
-						Title:        "happy_path1",
-						Body:         "## happy_path1",
-						ThumbnailUrl: "1234567890",
-						CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						Tags: []*grpc.Tag{
-							{
-								Id:   "tag1",
-								Name: "1",
-							},
-							{
-								Id:   "tag2",
-								Name: "2",
+		"happy_path/single_article": {
+			outDto: dto.NewGetPrevOutDto(
+				[]dto.Article{
+					dto.NewArticle(
+						"1",
+						"happy_path/single_article",
+						"## happy_path/single_article",
+						"1234567890",
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
+						[]dto.Tag{
+							dto.NewTag("tag1", "1"),
+							dto.NewTag("tag2", "2"),
+						},
+					),
+				}, true),
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetPrevInDto(1, pCursor)).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+				conv.EXPECT().
+					ToGetPrevArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
+					Last:   1,
+					Before: pCursor,
+				}),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetPrevArticlesResponse{
+					Articles: []*grpc.Article{
+						{
+							Id:           "1",
+							Title:        "happy_path/single_article",
+							Body:         "## happy_path/single_article",
+							ThumbnailUrl: "1234567890",
+							CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
+							Tags: []*grpc.Tag{
+								{
+									Id:   "tag1",
+									Name: "1",
+								},
+								{
+									Id:   "tag2",
+									Name: "2",
+								},
 							},
 						},
 					},
-				},
+					StillExists: true,
+				}),
+				err: nil,
+			},
+		},
+		"happy_path/zero_article": {
+			outDto: dto.NewGetPrevOutDto([]dto.Article{}, false),
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetPrevInDto(2, pCursor)).
+					Return(&out, nil).Times(1)
+			},
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+				conv.EXPECT().
+					ToGetPrevArticlesResponse(gomock.Any(), &from).
+					Return(res, true).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
+					Last:   2,
+					Before: pCursor,
+				}),
+			},
+			want: want{
+				response: connect.NewResponse(&grpc.GetPrevArticlesResponse{
+					Articles:    []*grpc.Article{},
+					StillExists: false,
+				}),
+				err: nil,
+			},
+		},
+		"unhappy_path/usecase_returns_error": {
+			outDto: dto.GetPrevOutDto{},
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetPrevInDto(2, pCursor)).
+					Return(nil, errGetAllArticles).Times(1)
+			},
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+				conv.EXPECT().
+					ToGetPrevArticlesResponse(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
+					Last:   2,
+					Before: pCursor,
+				}),
+			},
+			want: want{
+				response: nil,
+				err:      errGetAllArticles,
+			},
+		},
+		"unhappy_path/failed_to_convert": {
+			outDto: dto.GetPrevOutDto{},
+			setupUsecase: func(out dto.GetPrevOutDto, u *musecase.MockGetPrev) {
+				u.EXPECT().
+					Execute(gomock.Any(), dto.NewGetPrevInDto(1, pCursor)).
+					Return(&out, nil).
+					Times(1)
+			},
+			setupConverter: func(from dto.GetPrevOutDto, res *grpc.GetPrevArticlesResponse, conv *mpresenter.MockToGetPrevConverter) {
+				conv.EXPECT().
+					ToGetPrevArticlesResponse(gomock.Any(), &from).
+					Return(nil, false).
+					Times(1)
+			},
+			args: args{
+				ctx: context.Background(),
+				in: connect.NewRequest(&grpc.GetPrevArticlesRequest{
+					Last:   1,
+					Before: pCursor,
+				}),
+			},
+			want: want{
+				response: nil,
+				err:      ErrConversionToGetPrevArticlesFailed,
+			},
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			out := tt.outDto
+			u := musecase.NewMockGetPrev(ctrl)
+			tt.setupUsecase(out, u)
+			response := tt.want.response
+			conv := mpresenter.NewMockToGetPrevConverter(ctrl)
+
+			var message *grpc.GetPrevArticlesResponse
+			if response != nil {
+				message = response.Msg
 			}
+			tt.setupConverter(out, message, conv)
+			s := NewArticleServiceServer(nil, nil, nil, u, nil, nil, nil, conv)
 
-			conv := Mock[convert.ListAfter](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&listAfterOutput))).
-				ThenReturn(res, true)
-
-			sut := NewArticleServiceServer(WithListAfter(uc, conv))
-			got, err := sut.GetNextArticles(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetNextArticlesRequest{
-						First: 1,
-						After: func() *string {
-							v := "0"
-							return &v
-						}(),
-					},
-				),
-			)
-			s.Require().NoError(err)
-			s.Require().NotNil(got)
-			s.Require().Equal(res, got.Msg)
-		},
-	)
-	s.Run(
-		"unhappy_path/usecase_returns_error", func() {
-			errGetNextArticle := errors.New("error get next Articles")
-
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListAfter](ctrl)
-
-			WhenDouble(
-				uc.Execute(
-					AnyContext(),
-					Equal(dto.NewListAfterInput(1)),
-				),
-			).
-				ThenReturn(nil, errGetNextArticle)
-
-			sut := NewArticleServiceServer(WithListAfter(uc, nil))
-			got, err := sut.GetNextArticles(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetNextArticlesRequest{
-						First: 1,
-					},
-				),
-			)
-			s.Require().Error(err)
-			s.Require().Nil(got)
-			s.Require().ErrorIs(err, errGetNextArticle)
-		},
-	)
-	s.Run(
-		"unhappy_path/failed_to_convert", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListAfter](ctrl)
-
-			listAfterOutput := dto.NewListAfterOutput(
-				true,
-				dto.NewArticle(
-					"1",
-					"happy_path1",
-					"## happy_path1",
-					"1234567890",
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					dto.NewTag("tag1", "1"),
-					dto.NewTag("tag2", "2"),
-				),
-			)
-			WhenDouble(
-				uc.Execute(
-					AnyContext(),
-					Equal(dto.NewListAfterInput(1)),
-				),
-			).
-				ThenReturn(&listAfterOutput, nil)
-
-			conv := Mock[convert.ListAfter](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&listAfterOutput))).
-				ThenReturn(nil, false)
-
-			sut := NewArticleServiceServer(WithListAfter(uc, conv))
-			got, err := sut.GetNextArticles(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetNextArticlesRequest{
-						First: 1,
-					},
-				),
-			)
-			s.Require().Error(err)
-			s.Require().Nil(got)
-			s.Require().ErrorIs(err, ErrConversionToListNextFailed)
-		},
-	)
-}
-
-func (s *ArticleServiceServerTestSuite) TestArticleServiceServer_GetPrevArticles() {
-	s.Run(
-		"happy_path/without-cursor", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListBefore](ctrl)
-
-			listBeforeOutput := dto.NewListBeforeOutput(
-				true,
-				dto.NewArticle(
-					"1",
-					"happy_path1",
-					"## happy_path1",
-					"1234567890",
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					dto.NewTag("tag1", "1"),
-					dto.NewTag("tag2", "2"),
-				),
-			)
-			WhenDouble(
-				uc.Execute(
-					AnyContext(),
-					Equal(dto.NewListBeforeInput(1)),
-				),
-			).
-				ThenReturn(&listBeforeOutput, nil)
-
-			res := &grpc.GetPrevArticlesResponse{
-				StillExists: true,
-				Articles: []*grpc.Article{
-					{
-						Id:           "1",
-						Title:        "happy_path1",
-						Body:         "## happy_path1",
-						ThumbnailUrl: "1234567890",
-						CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						Tags: []*grpc.Tag{
-							{
-								Id:   "tag1",
-								Name: "1",
-							},
-							{
-								Id:   "tag2",
-								Name: "2",
-							},
-						},
-					},
-				},
+			got, err := s.GetPrevArticles(tt.args.ctx, tt.args.in)
+			if !errors.Is(err, tt.want.err) {
+				t.Errorf("GetPrevArticles() error = %v, want %v", err, tt.want.err)
+				return
 			}
-
-			conv := Mock[convert.ListBefore](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&listBeforeOutput))).
-				ThenReturn(res, true)
-
-			sut := NewArticleServiceServer(WithListBefore(uc, conv))
-			got, err := sut.GetPrevArticles(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetPrevArticlesRequest{
-						Last: 1,
-					},
-				),
-			)
-			s.Require().NoError(err)
-			s.Require().NotNil(got)
-			s.Require().Equal(res, got.Msg)
-		},
-	)
-	s.Run(
-		"happy_path/with-cursor", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListBefore](ctrl)
-
-			listBeforeOutput := dto.NewListBeforeOutput(
-				true,
-				dto.NewArticle(
-					"1",
-					"happy_path1",
-					"## happy_path1",
-					"1234567890",
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					dto.NewTag("tag1", "1"),
-					dto.NewTag("tag2", "2"),
-				),
-			)
-			WhenDouble(
-				uc.Execute(
-					AnyContext(),
-					Equal(dto.NewListBeforeInput(1, dto.ListBeforeInputWithCursor("2"))),
-				),
-			).
-				ThenReturn(&listBeforeOutput, nil)
-
-			res := &grpc.GetPrevArticlesResponse{
-				StillExists: true,
-				Articles: []*grpc.Article{
-					{
-						Id:           "1",
-						Title:        "happy_path1",
-						Body:         "## happy_path1",
-						ThumbnailUrl: "1234567890",
-						CreatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						UpdatedAt:    timestamppb.New(synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0).StdTime()),
-						Tags: []*grpc.Tag{
-							{
-								Id:   "tag1",
-								Name: "1",
-							},
-							{
-								Id:   "tag2",
-								Name: "2",
-							},
-						},
-					},
-				},
+			if diff := cmp.Diff(got, tt.want.response, []cmp.Option{protocmp.Transform(), cmpopts.IgnoreUnexported(connect.Response[grpc.GetPrevArticlesResponse]{})}...); diff != "" {
+				t.Errorf("GetPrevArticles() got = %v, want %v", got, tt.want.response)
 			}
-
-			conv := Mock[convert.ListBefore](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&listBeforeOutput))).
-				ThenReturn(res, true)
-
-			sut := NewArticleServiceServer(WithListBefore(uc, conv))
-			got, err := sut.GetPrevArticles(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetPrevArticlesRequest{
-						Last: 1,
-						Before: func() *string {
-							v := "2"
-							return &v
-						}(),
-					},
-				),
-			)
-			s.Require().NoError(err)
-			s.Require().NotNil(got)
-			s.Require().Equal(res, got.Msg)
-		},
-	)
-	s.Run(
-		"unhappy_path/usecase_returns_error", func() {
-			errGetPrevArticle := errors.New("error get prev Articles")
-
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListBefore](ctrl)
-
-			WhenDouble(
-				uc.Execute(
-					AnyContext(),
-					Equal(dto.NewListBeforeInput(1)),
-				),
-			).
-				ThenReturn(nil, errGetPrevArticle)
-
-			sut := NewArticleServiceServer(WithListBefore(uc, nil))
-			got, err := sut.GetPrevArticles(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetPrevArticlesRequest{
-						Last: 1,
-					},
-				),
-			)
-			s.Require().Error(err)
-			s.Require().Nil(got)
-			s.Require().ErrorIs(err, errGetPrevArticle)
-		},
-	)
-	s.Run(
-		"unhappy_path/failed_to_convert", func() {
-			ctrl := NewMockController(s.T())
-			uc := Mock[usecase.ListBefore](ctrl)
-
-			listBeforeOutput := dto.NewListBeforeOutput(
-				true,
-				dto.NewArticle(
-					"1",
-					"happy_path1",
-					"## happy_path1",
-					"1234567890",
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					synchro.New[tz.UTC](2020, 1, 1, 0, 0, 0, 0),
-					dto.NewTag("tag1", "1"),
-					dto.NewTag("tag2", "2"),
-				),
-			)
-			WhenDouble(
-				uc.Execute(
-					AnyContext(),
-					Equal(dto.NewListBeforeInput(1)),
-				),
-			).
-				ThenReturn(&listBeforeOutput, nil)
-
-			conv := Mock[convert.ListBefore](ctrl)
-			WhenDouble(conv.ToResponse(AnyContext(), Equal(&listBeforeOutput))).
-				ThenReturn(nil, false)
-
-			sut := NewArticleServiceServer(WithListBefore(uc, conv))
-			got, err := sut.GetPrevArticles(
-				s.T().Context(),
-				connect.NewRequest(
-					&grpc.GetPrevArticlesRequest{
-						Last: 1,
-					},
-				),
-			)
-			s.Require().Error(err)
-			s.Require().Nil(got)
-			s.Require().ErrorIs(err, ErrConversionToListPrevFailed)
-		},
-	)
+		})
+	}
 }

@@ -1,9 +1,8 @@
 package provider
 
 import (
-	"os"
-
 	"github.com/google/wire"
+	"os"
 
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
