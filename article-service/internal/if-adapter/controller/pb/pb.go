@@ -2,7 +2,6 @@ package pb
 
 import (
 	"context"
-	"log/slog"
 
 	"blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/presenter/convert"
 	"blogapi.miyamo.today/article-service/internal/infra/grpc/grpcconnect"
@@ -11,9 +10,7 @@ import (
 	"blogapi.miyamo.today/article-service/internal/app/usecase/dto"
 	"blogapi.miyamo.today/article-service/internal/if-adapter/controller/pb/usecase"
 	"blogapi.miyamo.today/article-service/internal/infra/grpc"
-	"blogapi.miyamo.today/core/log"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -47,44 +44,20 @@ func (s *ArticleServiceServer) GetAllArticles(
 ) (*connect.Response[grpc.GetAllArticlesResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetAllArticles").End()
-	logger, err := altnrslog.FromContext(ctx)
-	if err != nil {
-		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger = log.DefaultLogger()
-	}
-	logger.InfoContext(
-		ctx, "BEGIN",
-		slog.Group(
-			"parameters",
-			slog.String("in", in.Msg.String()),
-		),
-	)
+
 	oDto, err := s.listAllUsecase.Execute(ctx)
 	if err != nil {
-		err = errors.WithStack(err)
-		logger.InfoContext(
-			ctx, "END",
-			slog.Group(
-				"return",
-				slog.Any("grpc.GetAllArticlesResponse", nil),
-				slog.Any("error", err),
-			),
-		)
+		err = nrpkgerrors.Wrap(errors.WithStack(err))
+		nrtx.NoticeError(err)
 		return nil, err
 	}
 	res, ok := s.listAllConverter.ToResponse(ctx, oDto)
 	if !ok {
-		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToListAllFailed))
-		return nil, ErrConversionToListAllFailed
+		err := nrpkgerrors.Wrap(ErrConversionToListAllFailed)
+		nrtx.NoticeError(err)
+		return nil, err
 	}
-	logger.InfoContext(
-		ctx, "END",
-		slog.Group(
-			"return",
-			slog.Any("error", nil),
-		),
-	)
+
 	return connect.NewResponse(res), nil
 }
 
@@ -94,19 +67,7 @@ func (s *ArticleServiceServer) GetNextArticles(
 ) (*connect.Response[grpc.GetNextArticlesResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetNextArticles").End()
-	logger, err := altnrslog.FromContext(ctx)
-	if err != nil {
-		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger = log.DefaultLogger()
-	}
-	logger.InfoContext(
-		ctx, "BEGIN",
-		slog.Group(
-			"parameters",
-			slog.String("in", in.Msg.String()),
-		),
-	)
+
 	oDto, err := s.listAfterUsecase.Execute(
 		ctx, dto.NewListAfterInput(
 			int(in.Msg.First),
@@ -114,29 +75,17 @@ func (s *ArticleServiceServer) GetNextArticles(
 		),
 	)
 	if err != nil {
-		err = errors.WithStack(err)
-		logger.InfoContext(
-			ctx, "END",
-			slog.Group(
-				"return",
-				slog.Any("grpc.GetNextArticlesResponse", nil),
-				slog.Any("error", err),
-			),
-		)
+		err = nrpkgerrors.Wrap(errors.WithStack(err))
+		nrtx.NoticeError(err)
 		return nil, err
 	}
 	res, ok := s.listAfterConverter.ToResponse(ctx, oDto)
 	if !ok {
-		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToListNextFailed))
-		return nil, ErrConversionToListNextFailed
+		err := nrpkgerrors.Wrap(ErrConversionToListNextFailed)
+		nrtx.NoticeError(err)
+		return nil, err
 	}
-	logger.InfoContext(
-		ctx, "END",
-		slog.Group(
-			"return",
-			slog.Any("error", nil),
-		),
-	)
+
 	return connect.NewResponse(res), nil
 }
 
@@ -146,44 +95,19 @@ func (s *ArticleServiceServer) GetArticleById(
 ) (*connect.Response[grpc.GetArticleByIdResponse], error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetArticleById").End()
-	logger, err := altnrslog.FromContext(ctx)
-	if err != nil {
-		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger = log.DefaultLogger()
-	}
-	logger.InfoContext(
-		ctx, "BEGIN",
-		slog.Group(
-			"parameters",
-			slog.String("in", in.Msg.String()),
-		),
-	)
+
 	oDto, err := s.getByIDUsecase.Execute(ctx, dto.NewGetByIDInput(in.Msg.GetId()))
 	if err != nil {
-		err = errors.WithStack(err)
-		logger.InfoContext(
-			ctx, "END",
-			slog.Group(
-				"return",
-				slog.Any("pb.GetArticleByIdResponse", nil),
-				slog.Any("error", err),
-			),
-		)
+		err = nrpkgerrors.Wrap(errors.WithStack(err))
+		nrtx.NoticeError(err)
 		return nil, err
 	}
 	res, ok := s.getByIDConverter.ToResponse(ctx, oDto)
 	if !ok {
-		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToGetByIDFailed))
-		return nil, ErrConversionToGetByIDFailed
+		err := nrpkgerrors.Wrap(ErrConversionToGetByIDFailed)
+		nrtx.NoticeError(err)
+		return nil, err
 	}
-	logger.InfoContext(
-		ctx, "END",
-		slog.Group(
-			"return",
-			slog.Any("error", nil),
-		),
-	)
 	return connect.NewResponse(res), nil
 }
 
@@ -195,33 +119,14 @@ func (s *ArticleServiceServer) GetPrevArticles(
 ) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("GetPrevArticles").End()
-	logger, err := altnrslog.FromContext(ctx)
-	if err != nil {
-		err = errors.WithStack(err)
-		nrtx.NoticeError(nrpkgerrors.Wrap(err))
-		logger = log.DefaultLogger()
-	}
-	logger.InfoContext(
-		ctx, "BEGIN",
-		slog.Group(
-			"parameters",
-			slog.String("in", in.Msg.String()),
-		),
-	)
+
 	oDto, err := s.listBeforeUsecase.Execute(
 		ctx,
 		dto.NewListBeforeInput(int(in.Msg.Last), dto.ListBeforeInputWithCursor(in.Msg.Before)),
 	)
 	if err != nil {
-		err = errors.WithStack(err)
-		logger.InfoContext(
-			ctx, "END",
-			slog.Group(
-				"return",
-				slog.Any("pb.GetPrevArticlesResponse", nil),
-				slog.Any("error", err),
-			),
-		)
+		err = nrpkgerrors.Wrap(errors.WithStack(err))
+		nrtx.NoticeError(err)
 		return nil, err
 	}
 	res, ok := s.listBeforeConverter.ToResponse(ctx, oDto)
@@ -229,13 +134,6 @@ func (s *ArticleServiceServer) GetPrevArticles(
 		nrtx.NoticeError(nrpkgerrors.Wrap(ErrConversionToListPrevFailed))
 		return nil, ErrConversionToListPrevFailed
 	}
-	logger.InfoContext(
-		ctx, "END",
-		slog.Group(
-			"return",
-			slog.Any("error", nil),
-		),
-	)
 	return connect.NewResponse(res), nil
 }
 
