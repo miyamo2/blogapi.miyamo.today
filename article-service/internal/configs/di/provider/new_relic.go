@@ -15,7 +15,7 @@ func NewRelic() *newrelic.Application {
 		newrelic.ConfigAppLogForwardingEnabled(true),
 	)
 	if err != nil {
-		panic(err)
+		panic(err) // because they are critical errors
 	}
 	return app
 }

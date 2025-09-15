@@ -17,7 +17,7 @@ func QueryService(tx sqlc.DBTX) *sqlc.Queries {
 	defer cancel()
 	q, err := sqlc.Prepare(ctx, tx)
 	if err != nil {
-		panic(err)
+		panic(err) // because they are critical errors
 	}
 	return q
 }

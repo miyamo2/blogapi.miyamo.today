@@ -12,7 +12,11 @@ import (
 func SQLDB() *sql.DB {
 	db, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN"))
 	if err != nil {
-		panic(err)
+		panic(err) // because they are critical errors
+	}
+	err = db.Ping()
+	if err != nil {
+		panic(err) // because they are critical errors
 	}
 	return db
 }
