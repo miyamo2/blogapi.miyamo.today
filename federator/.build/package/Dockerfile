@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
-ARG GO_VERSION=1.25.0
+ARG GO_VERSION=1.25.1
 
-FROM golang:${GO_VERSION}-alpine3.20 as build
+FROM golang:${GO_VERSION}-alpine as build
 
 WORKDIR /go/src/github.com/miyamo2/blogapi.miyamo.today/federator
 
@@ -13,7 +13,7 @@ RUN go mod download
 
 RUN go build -ldflags="-s -w" -trimpath -o ./bin/federator ./cmd/main.go
 
-FROM alpine:3.21
+FROM alpine
 
 WORKDIR /app
 

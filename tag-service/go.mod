@@ -1,6 +1,6 @@
 module blogapi.miyamo.today/tag-service
 
-go 1.25.0
+go 1.25.1
 
 require (
 	blogapi.miyamo.today/core v0.24.0

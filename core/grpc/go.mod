@@ -1,6 +1,6 @@
 module blogapi.miyamo.today/core/grpc
 
-go 1.24
+go 1.25.1
 
 require (
 	blogapi.miyamo.today/core v0.24.0
