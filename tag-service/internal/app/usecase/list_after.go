@@ -45,7 +45,7 @@ func (u *ListAfter) Execute(ctx context.Context, in dto.ListAfterInput) (*dto.Li
 			)
 		}
 	default:
-		rows, err := u.queries.ListAfterWithLimit(ctx, int32(first))
+		rows, err := u.queries.ListAfterWithLimit(ctx, int32(first+1))
 		if err != nil {
 			return nil, err
 		}
