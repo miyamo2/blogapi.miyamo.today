@@ -1,28 +1,22 @@
 name: "Deploy"
 inputs:
+  repository:
+    description: "repository name"
+    required: true
   target:
     description: "target to deploy"
     required: true
-  gcp_credentials:
-    description: "SSIA"
-    required: true
-  gcp_project:
-    description: "SSIA"
-    required: true
-  gcp_region:
-    description: "SSIA"
-    required: true
   app_id:
-    description: "SSIA"
+    description: "GitHub App ID"
     required: true
   app_private_key:
-    description: "SSIA"
+    description: "GitHub App Private Key"
     required: true
   commit_sha:
-    description: "SSIA"
+    description: "Commit SHA"
     required: true
   owner:
-    description: "SSIA"
+    description: "repository owner"
     required: true
 runs:
   using: "composite"
@@ -30,47 +24,28 @@ runs:
     - name: Checkout code
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-    - id: auth
-      uses: google-github-actions/auth@71f986410dfbc7added4569d411d040a91dc6935 # v2.1.8
-      with:
-        credentials_json: ${{ inputs.gcp_credentials }}
-
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@77e7a554d41e2ee56fc945c52dfd3f33d12def9a # v2.1.4
-
-    - name: Get Registry Host
-      id: get-registry-host
-      shell: bash
-      run: |
-        echo "host=${{ inputs.gcp_region }}-docker.pkg.dev" >> $GITHUB_OUTPUT
-
-    - name: Configure docker for artifact registry
-      env:
-        HOST: ${{ steps.get-registry-host.outputs.host }}
-      shell: bash
-      run: |
-        gcloud auth configure-docker ${{ env.HOST }}
-
-    - name: Build & Push Docker Image
-      working-directory: ${{ inputs.target }}
-      env:
-        ENV_NAME: prod
-        REGISTRY: ${{ format('{0}/{1}', steps.get-registry-host.outputs.host, inputs.gcp_project) }}
-        REPOSITORY: ${{ inputs.target }}
-        IMAGE_NAME: ${{ inputs.target }}
-        TAG: ${{ inputs.commit_sha }}
-      shell: bash
-      run: |
-        docker build -t ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }} -f ./.build/package/Dockerfile .
-        docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.IMAGE_NAME }}:${{ env.TAG }} 
-
     - name: Generate a token
       id: generate-token
-      uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
+      uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
       with:
         app-id: ${{ inputs.app_id }}
         private-key: ${{ inputs.app_private_key }}
-        owner: miyamo2
+        owner: ${{ inputs.owner }}
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3.5.0
+      with:
+        registry: ghcr.io
+        username: ${{ inputs.owner }}
+        password: ${{ steps.generate-token.outputs.token }}
+
+    - name: Build and push
+      uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+      with:
+        context: .
+        file: ./.build/package/Dockerfile
+        push: true
+        tags: ghcr.io/${{ inputs.owner }}/${{ inputs.repository }}:${{ inputs.target }}-${{ inputs.commit_sha }}
 
     - name: Dispatch manifest update
       uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
