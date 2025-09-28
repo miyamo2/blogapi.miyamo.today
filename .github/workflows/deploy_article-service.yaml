@@ -29,4 +29,5 @@ jobs:
           commit_sha: ${{ github.sha }}
           repository: ${{ github.repository }}
           owner: ${{ github.repository_owner }}
+          github_secret: ${{ secrets.GITHUB_TOKEN }}
 
