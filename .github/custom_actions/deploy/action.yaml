@@ -39,13 +39,12 @@ runs:
         username: ${{ inputs.owner }}
         password: ${{ steps.generate-token.outputs.token }}
 
-    - name: Build and push
-      uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
-      with:
-        context: .
-        file: ./.build/package/Dockerfile
-        push: true
-        tags: ghcr.io/${{ inputs.owner }}/${{ inputs.repository }}:${{ inputs.target }}-${{ inputs.commit_sha }}
+    - name: Build & Push Docker Image
+      working-directory: ${{ inputs.target }}
+      shell: bash
+      run: |
+        docker build -t ghcr.io/${{ inputs.owner }}/${{ inputs.repository }}:${{ inputs.target }}-${{ inputs.commit_sha }} -f ./.build/package/Dockerfile .
+        docker push ghcr.io/${{ inputs.owner }}/${{ inputs.repository }}:${{ inputs.target }}-${{ inputs.commit_sha }}
 
     - name: Dispatch manifest update
       uses: peter-evans/repository-dispatch@ff45666b9427631e3450c54a1bcbee4d9ff4d7c0 # v3.0.0
