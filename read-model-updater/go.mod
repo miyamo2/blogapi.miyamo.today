@@ -6,7 +6,7 @@ require (
 	blogapi.miyamo.today/core v0.24.0
 	github.com/Code-Hex/synchro v0.5.3
 	github.com/aws/aws-lambda-go v1.47.0
-	github.com/aws/aws-sdk-go v1.55.6
+	github.com/aws/aws-sdk-go v1.55.8
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.12
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.42.0
