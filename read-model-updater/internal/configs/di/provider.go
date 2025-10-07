@@ -71,12 +71,16 @@ func provideRDBGORM() *rdb.DB {
 	tagDialector := postgres.New(postgres.Config{Conn: tagDB})
 	gormDB.Use(
 		dbresolver.
-			Register(dbresolver.Config{
-				Sources: []gorm.Dialector{articleDialector}, TraceResolverMode: true,
-			}, rdb.ArticleDBName).
-			Register(dbresolver.Config{
-				Sources: []gorm.Dialector{tagDialector}, TraceResolverMode: true,
-			}, rdb.TagDBName),
+			Register(
+				dbresolver.Config{
+					Sources: []gorm.Dialector{articleDialector}, TraceResolverMode: true,
+				}, rdb.ArticleDBName,
+			).
+			Register(
+				dbresolver.Config{
+					Sources: []gorm.Dialector{tagDialector}, TraceResolverMode: true,
+				}, rdb.TagDBName,
+			),
 	)
 	return &rdb.DB{DB: gormDB}
 }
@@ -107,8 +111,8 @@ func provideSynUsecaseSet(
 	rdbGorm *rdb.DB,
 	dynamodbGorm *dynamo.DB,
 	bloggingEventQueryService query.BloggingEventService,
-	articleCommandService command.ArticleService,
-	tagCommandService command.TagService,
+	articleCommandService command.Article,
+	tagCommandService command.Tag,
 	blogAPIPublisher externalapi.BlogPublisher,
 ) *usecase.Sync {
 	return usecase.NewSync(

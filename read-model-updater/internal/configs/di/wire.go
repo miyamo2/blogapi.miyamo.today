@@ -30,9 +30,9 @@ var queryServiceSet = wire.NewSet(
 
 var commandServiceSet = wire.NewSet(
 	rdb.NewArticleCommandService,
-	wire.Bind(new(command.ArticleService), new(*rdb.ArticleCommandService)),
+	wire.Bind(new(command.Article), new(*rdb.ArticleCommandService)),
 	rdb.NewTagCommandService,
-	wire.Bind(new(command.TagService), new(*rdb.TagCommandService)),
+	wire.Bind(new(command.Tag), new(*rdb.TagCommandService)),
 )
 
 var externalAPISet = wire.NewSet(

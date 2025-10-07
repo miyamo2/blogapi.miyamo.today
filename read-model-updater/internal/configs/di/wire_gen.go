@@ -53,7 +53,7 @@ var dynamodbSet = wire.NewSet(provideDynamoDBGORM)
 
 var queryServiceSet = wire.NewSet(dynamo.NewBloggingEventQueryService, wire.Bind(new(query.BloggingEventService), new(*dynamo.BloggingEventQueryService)))
 
-var commandServiceSet = wire.NewSet(rdb.NewArticleCommandService, wire.Bind(new(command.ArticleService), new(*rdb.ArticleCommandService)), rdb.NewTagCommandService, wire.Bind(new(command.TagService), new(*rdb.TagCommandService)))
+var commandServiceSet = wire.NewSet(rdb.NewArticleCommandService, wire.Bind(new(command.Article), new(*rdb.ArticleCommandService)), rdb.NewTagCommandService, wire.Bind(new(command.Tag), new(*rdb.TagCommandService)))
 
 var externalAPISet = wire.NewSet(
 	provideBlogPublisher, wire.Bind(new(externalapi.BlogPublisher), new(*githubactions.BlogPublisher)),
