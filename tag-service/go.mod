@@ -8,7 +8,7 @@ require (
 	connectrpc.com/connect v1.18.1
 	connectrpc.com/grpchealth v1.3.0
 	connectrpc.com/grpcreflect v1.3.0
-	github.com/Code-Hex/synchro v0.5.3
+	github.com/Code-Hex/synchro v0.5.4
 	github.com/cockroachdb/errors v1.11.3
 	github.com/goccy/go-json v0.10.5
 	github.com/google/go-cmp v0.7.0

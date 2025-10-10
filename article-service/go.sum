@@ -11,6 +11,8 @@ connectrpc.com/grpcreflect v1.3.0/go.mod h1:nfloOtCS8VUQOQ1+GTdFzVg2CJo4ZGaat8JI
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Code-Hex/synchro v0.5.3 h1:BRpfrQUBXDShRnF9JodEnbezlTopUOy5qcy6u1D5700=
 github.com/Code-Hex/synchro v0.5.3/go.mod h1:USpQ++dx1+FbEeaDWiTAwOQVALdTel2y6Hy61knSJ6c=
+github.com/Code-Hex/synchro v0.5.4 h1:aPfgKaQO+Ij32+wegRXUVUkw2kwaQR7SWcEV/hK/s2M=
+github.com/Code-Hex/synchro v0.5.4/go.mod h1:USpQ++dx1+FbEeaDWiTAwOQVALdTel2y6Hy61knSJ6c=
 github.com/Masterminds/semver/v3 v3.1.1 h1:hLg3sBzpNErnxhQtUy/mmLR2I9foDujNK030IGemrRc=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/cockroachdb/apd v1.1.0 h1:3LFP3629v+1aKXU5Q37mxmRxX/pIu1nijXydLShEq5I=
