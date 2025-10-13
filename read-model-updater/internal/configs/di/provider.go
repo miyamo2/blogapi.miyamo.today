@@ -1,6 +1,12 @@
 package di
 
 import (
+	"context"
+	"database/sql"
+	"net/http"
+	"os"
+	"time"
+
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
@@ -8,21 +14,18 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
-	"context"
-	"database/sql"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
 	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/pqxd"
+	nraws "github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2"
 	"github.com/newrelic/go-agent/v3/integrations/nrlambda"
 	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
-	"net/http"
-	"os"
-	"time"
 )
 
 func provideAWSConfig() *aws.Config {
@@ -31,6 +34,7 @@ func provideAWSConfig() *aws.Config {
 	if err != nil {
 		panic(err)
 	}
+	nraws.AppendMiddlewares(&awsConfig.APIOptions, nil)
 	return &awsConfig
 }
 
@@ -71,12 +75,16 @@ func provideRDBGORM() *rdb.DB {
 	tagDialector := postgres.New(postgres.Config{Conn: tagDB})
 	gormDB.Use(
 		dbresolver.
-			Register(dbresolver.Config{
-				Sources: []gorm.Dialector{articleDialector}, TraceResolverMode: true,
-			}, rdb.ArticleDBName).
-			Register(dbresolver.Config{
-				Sources: []gorm.Dialector{tagDialector}, TraceResolverMode: true,
-			}, rdb.TagDBName),
+			Register(
+				dbresolver.Config{
+					Sources: []gorm.Dialector{articleDialector}, TraceResolverMode: true,
+				}, rdb.ArticleDBName,
+			).
+			Register(
+				dbresolver.Config{
+					Sources: []gorm.Dialector{tagDialector}, TraceResolverMode: true,
+				}, rdb.TagDBName,
+			),
 	)
 	return &rdb.DB{DB: gormDB}
 }
@@ -101,6 +109,15 @@ func provideBlogPublisher() *githubactions.BlogPublisher {
 	endpoint := os.Getenv("BLOG_PUBLISH_ENDPOINT")
 	token := os.Getenv("GITHUB_TOKEN")
 	return githubactions.NewBlogPublisher(endpoint, token, http.DefaultClient)
+}
+
+func provideStreamARN() StreamARN {
+	v := os.Getenv("STREAM_ARN")
+	return &v
+}
+
+func provideDynamoDBStreamClient(awsConfig *aws.Config) *dynamodbstreams.Client {
+	return dynamodbstreams.NewFromConfig(*awsConfig)
 }
 
 func provideSynUsecaseSet(

@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/cockroachdb/errors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
-	"log/slog"
-	"net/http"
 )
 
 const payload = `{"event_type":"sync-read-model", "client_payload": { "event_id": "%s" }}`
@@ -26,9 +26,6 @@ type BlogPublisher struct {
 func (b *BlogPublisher) Publish(ctx context.Context) error {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("BlogPublisher#Publish").End()
-	logger := slog.Default()
-	logger.Info("[RMU] START")
-	defer logger.Info("[RMU] END")
 
 	req, err := http.NewRequest(http.MethodPost, b.endpoint, bytes.NewBuffer([]byte(fmt.Sprintf(payload, ulid.Make()))))
 	if err != nil {

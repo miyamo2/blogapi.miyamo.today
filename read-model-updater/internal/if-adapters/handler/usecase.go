@@ -1,9 +1,10 @@
-package lambda
+package handler
 
 import (
-	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
 	"context"
 	"iter"
+
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
 )
 
 // SyncUsecase is an interface for the usecase of synchronize blog snapshot with events.

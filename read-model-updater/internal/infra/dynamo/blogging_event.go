@@ -1,11 +1,14 @@
 package dynamo
 
 import (
+	"context"
+	"fmt"
+	"os"
+	"slices"
+
 	"blogapi.miyamo.today/core/db"
 	gw "blogapi.miyamo.today/core/db/gorm"
 	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
-	"context"
-	"fmt"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/sqldav"
@@ -13,9 +16,6 @@ import (
 	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"log/slog"
-	"os"
-	"slices"
 )
 
 type DB struct {
@@ -42,47 +42,74 @@ func (b bloggingEvent) TableName() string {
 
 type BloggingEventQueryService struct{}
 
-func (s *BloggingEventQueryService) AllEventsWithArticleID(ctx context.Context, articleId string, out *db.MultipleStatementResult[model.BloggingEvent]) db.Statement {
+func (s *BloggingEventQueryService) AllEventsWithArticleID(
+	ctx context.Context, articleId string, out *db.MultipleStatementResult[model.BloggingEvent],
+) db.Statement {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("BloggingEventQueryService#AllEventsWithArticleID").End()
-	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
-		nrtx := newrelic.FromContext(ctx)
-		defer nrtx.StartSegment("BloggingEventQueryService#AllEventsWithArticleID").End()
-		logger := slog.Default()
-		logger.Info("[RMU] START")
-		tx = tx.WithContext(ctx)
+	return gw.NewStatement(
+		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
+			nrtx := newrelic.FromContext(ctx)
+			defer nrtx.StartSegment("BloggingEventQueryService#AllEventsWithArticleID").End()
+			tx = tx.WithContext(ctx)
 
-		rows := make([]bloggingEvent, 0)
-		err = tx.Select("event_id", "article_id", "title", "content", "thumbnail", "tags", "attach_tags", "detach_tags", "invisible").
-			Table(bloggingEvent{}.TableName()).Clauses(
-			dynmgrm.SecondaryIndex("article_id_event_id-Index")).
-			Where("article_id = ?", articleId).Scan(&rows).Error
-		if err != nil {
-			err = errors.WithStack(err)
-			return err
-		}
-
-		slices.SortFunc(rows, func(i, j bloggingEvent) int {
-			iid := ulid.MustParseStrict(i.EventID)
-			jid := ulid.MustParseStrict(j.EventID)
-			return iid.Compare(jid)
-		})
-		// recover ulid.MustParseStrict
-		defer func() {
-			if rec := recover(); rec != nil {
-				err = fmt.Errorf("recovered: %v", rec)
+			rows := make([]bloggingEvent, 0)
+			err = tx.Select(
+				"event_id",
+				"article_id",
+				"title",
+				"content",
+				"thumbnail",
+				"tags",
+				"attach_tags",
+				"detach_tags",
+				"invisible",
+			).
+				Table(bloggingEvent{}.TableName()).Clauses(
+				dynmgrm.SecondaryIndex("article_id_event_id-Index"),
+			).
+				Where("article_id = ?", articleId).Scan(&rows).Error
+			if err != nil {
 				err = errors.WithStack(err)
+				return err
 			}
-		}()
 
-		result := make([]model.BloggingEvent, 0)
-		for _, r := range rows {
-			result = append(result, model.NewBloggingEvent(r.EventID, r.ArticleID, r.Title, r.Content, r.Thumbnail, r.Tags, r.AttachTags, r.DetachTags, r.Invisible))
-		}
-		out.Set(result)
-		logger.Info("[RMU] END", slog.Int("result count", len(result)))
-		return nil
-	}, out)
+			slices.SortFunc(
+				rows, func(i, j bloggingEvent) int {
+					iid := ulid.MustParseStrict(i.EventID)
+					jid := ulid.MustParseStrict(j.EventID)
+					return iid.Compare(jid)
+				},
+			)
+			// recover ulid.MustParseStrict
+			defer func() {
+				if rec := recover(); rec != nil {
+					err = fmt.Errorf("recovered: %v", rec)
+					err = errors.WithStack(err)
+				}
+			}()
+
+			result := make([]model.BloggingEvent, 0)
+			for _, r := range rows {
+				result = append(
+					result,
+					model.NewBloggingEvent(
+						r.EventID,
+						r.ArticleID,
+						r.Title,
+						r.Content,
+						r.Thumbnail,
+						r.Tags,
+						r.AttachTags,
+						r.DetachTags,
+						r.Invisible,
+					),
+				)
+			}
+			out.Set(result)
+			return nil
+		}, out,
+	)
 }
 
 func NewBloggingEventQueryService() *BloggingEventQueryService {

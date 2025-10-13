@@ -1,6 +1,9 @@
 package usecase
 
 import (
+	"context"
+	"iter"
+
 	"blogapi.miyamo.today/core/db"
 	gw "blogapi.miyamo.today/core/db/gorm"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
@@ -9,12 +12,9 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
-	"context"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
-	"iter"
-	"log/slog"
 )
 
 // Sync is an usecese of sync
@@ -46,45 +46,53 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Sync#executePerEvent").End()
 
-	logger := slog.Default()
-	logger.Info("[RMU] START", slog.Any("dto", dto))
-	defer logger.Info("[RMU] END")
-
 	bloggingEvents := db.NewMultipleStatementResult[model.BloggingEvent]()
-	if err := u.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleId(), bloggingEvents).
-		Execute(ctx, gw.WithTransaction(u.dynamodbGorm.Session(&gorm.Session{
-			PrepareStmt:            false,
-			SkipDefaultTransaction: true,
-		}))); err != nil {
+	if err := u.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleID, bloggingEvents).
+		Execute(
+			ctx, gw.WithTransaction(
+				u.dynamodbGorm.Session(
+					&gorm.Session{
+						PrepareStmt:            false,
+						SkipDefaultTransaction: true,
+					},
+				),
+			),
+		); err != nil {
 		return err
 	}
 
 	articleCommand := model.ArticleCommandFromBloggingEvents(bloggingEvents.StrictGet())
 	if articleCommand == nil {
-		logger.Warn("nil article command")
 		return nil
 	}
 
-	articleTx := u.rdbGorm.Session(&gorm.Session{
-		PrepareStmt:            false,
-		SkipDefaultTransaction: true,
-	}).Clauses(dbresolver.Use(rdb.ArticleDBName)).Begin()
+	articleTx := u.rdbGorm.Session(
+		&gorm.Session{
+			PrepareStmt:            false,
+			SkipDefaultTransaction: true,
+		},
+	).Clauses(dbresolver.Use(rdb.ArticleDBName)).Begin()
 
-	tagTx := u.rdbGorm.Session(&gorm.Session{
-		PrepareStmt:            false,
-		SkipDefaultTransaction: true,
-	}).Clauses(dbresolver.Use(rdb.TagDBName)).Begin()
+	tagTx := u.rdbGorm.Session(
+		&gorm.Session{
+			PrepareStmt:            false,
+			SkipDefaultTransaction: true,
+		},
+	).Clauses(dbresolver.Use(rdb.TagDBName)).Begin()
 
 	done := make(chan struct{})
 	errCh := make(chan error)
 	go func() {
-		err := u.articleCommandService.ExecuteArticleCommand(ctx, *articleCommand).Execute(ctx, gw.WithTransaction(articleTx))
+		err := u.articleCommandService.ExecuteArticleCommand(ctx, *articleCommand, dto.EventAt).Execute(
+			ctx,
+			gw.WithTransaction(articleTx),
+		)
 		if err != nil {
 			errCh <- err
 			return
 		}
 
-		err = u.tagCommandService.ExecuteTagCommand(ctx, *articleCommand).Execute(ctx, gw.WithTransaction(tagTx))
+		err = u.tagCommandService.ExecuteTagCommand(ctx, *articleCommand, dto.EventAt).Execute(ctx, gw.WithTransaction(tagTx))
 		if err != nil {
 			errCh <- err
 			return
