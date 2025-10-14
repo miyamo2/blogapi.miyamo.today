@@ -22,7 +22,7 @@ import (
 )
 
 import (
-	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx5"
 )
 
 // Injectors from wire.go:

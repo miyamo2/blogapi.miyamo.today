@@ -6,7 +6,7 @@ import (
 
 	"blogapi.miyamo.today/article-service/internal/infra/rdb/sqlc"
 	"github.com/google/wire"
-	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx5"
 )
 
 func SQLDB() *sql.DB {

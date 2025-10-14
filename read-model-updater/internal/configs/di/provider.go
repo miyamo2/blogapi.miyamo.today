@@ -20,8 +20,7 @@ import (
 	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/pqxd"
 	nraws "github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2"
-	"github.com/newrelic/go-agent/v3/integrations/nrlambda"
-	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx5"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -40,7 +39,6 @@ func provideAWSConfig() *aws.Config {
 
 func provideNewRelicApp() *newrelic.Application {
 	app, err := newrelic.NewApplication(
-		nrlambda.ConfigOption(),
 		newrelic.ConfigAppLogForwardingEnabled(true),
 		newrelic.ConfigAppName(os.Getenv("NEW_RELIC_CONFIG_APP_NAME")),
 		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_CONFIG_LICENSE")),
