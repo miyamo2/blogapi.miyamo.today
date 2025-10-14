@@ -3,6 +3,7 @@ package converter
 import (
 	"context"
 	"iter"
+	"log/slog"
 	"time"
 
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
@@ -45,6 +46,7 @@ func toDto(in map[string]types.AttributeValue, eventAt *time.Time) (usecase.Sync
 	if err != nil {
 		return v, err
 	}
+	slog.Default().Info("attribute value map", slog.Any("attribute value map", avm))
 	err = attributevalue.UnmarshalMap(avm, &v)
 	if err != nil {
 		return v, err
@@ -52,5 +54,6 @@ func toDto(in map[string]types.AttributeValue, eventAt *time.Time) (usecase.Sync
 	if eventAt != nil {
 		v.EventAt = synchro.In[tz.UTC](*eventAt)
 	}
+	slog.Default().Info("dto", slog.Any("dto", v))
 	return v, nil
 }
