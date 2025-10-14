@@ -12,6 +12,7 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
+	"github.com/cockroachdb/errors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
@@ -33,11 +34,11 @@ func (u *Sync) SyncBlogSnapshotWithEvents(ctx context.Context, in iter.Seq2[int,
 	defer nrtx.StartSegment("Sync#SyncBlogSnapshotWithEvents").End()
 	for _, dto := range in {
 		if err := u.executePerEvent(ctx, dto); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 	if err := u.blogAPIPublisher.Publish(ctx); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
 }
@@ -58,7 +59,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 				),
 			),
 		); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	articleCommand := model.ArticleCommandFromBloggingEvents(bloggingEvents.StrictGet())
@@ -92,7 +93,10 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 			return
 		}
 
-		err = u.tagCommandService.ExecuteTagCommand(ctx, *articleCommand, dto.EventAt).Execute(ctx, gw.WithTransaction(tagTx))
+		err = u.tagCommandService.ExecuteTagCommand(ctx, *articleCommand, dto.EventAt).Execute(
+			ctx,
+			gw.WithTransaction(tagTx),
+		)
 		if err != nil {
 			errCh <- err
 			return
@@ -112,11 +116,11 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	case <-ctx.Done():
 		articleTx.Rollback()
 		tagTx.Rollback()
-		return ctx.Err()
+		return errors.WithStack(ctx.Err())
 	case err := <-errCh:
 		articleTx.Rollback()
 		tagTx.Rollback()
-		return err
+		return errors.WithStack(err)
 	case <-done:
 	}
 	return nil

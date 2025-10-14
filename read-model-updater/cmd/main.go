@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams/types"
+	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
@@ -20,34 +21,37 @@ func main() {
 
 	tx := dependencies.NewRelicApp.StartTransaction(*dependencies.StreamARN)
 	defer tx.End()
-
 	ctx := newrelic.NewContext(context.Background(), tx)
 	logger := slog.New(altnrslog.NewTransactionalHandler(dependencies.NewRelicApp, tx))
 	slog.SetDefault(logger)
 
+	if err := do(ctx, dependencies); err != nil {
+		logger.ErrorContext(ctx, "failed to process stream", slog.String("stream_arn", *dependencies.StreamARN), slog.String("error", err.Error()))
+		tx.NoticeError(nrpkgerrors.Wrap(err))
+		os.Exit(1)
+	}
+}
+
+func do(ctx context.Context, dependencies *di.Dependencies) error {
 	describeStreamOutput, err := dependencies.StreamClient.DescribeStream(
 		ctx, &dynamodbstreams.DescribeStreamInput{
 			StreamArn: dependencies.StreamARN,
 		},
 	)
 	if err != nil {
-		logger.Error("failed to describe stream", slog.Any("error", err))
-		tx.NoticeError(nrpkgerrors.Wrap(err))
-		os.Exit(1)
+		return errors.Wrap(err, "failed to describe stream")
 	}
 	eg, egCtx := errgroup.WithContext(ctx)
 	for _, shard := range describeStreamOutput.StreamDescription.Shards {
 		select {
 		case <-egCtx.Done():
 			err := context.Cause(egCtx)
-			logger.Error("error processing shards", slog.Any("error", err))
-			tx.NoticeError(nrpkgerrors.Wrap(err))
-			os.Exit(1)
+			return errors.Wrap(err, "error processing shards")
 		default:
 			eg.Go(
 				func() error {
 					shardID := *shard.ShardId
-					logger.Info("processing shard", slog.String("shard_id", shardID))
+					slog.Default().InfoContext(ctx, "processing shard", slog.String("shard_id", shardID))
 
 					getShardIteratorOutput, err := dependencies.StreamClient.GetShardIterator(
 						ctx, &dynamodbstreams.GetShardIteratorInput{
@@ -83,8 +87,7 @@ func main() {
 		}
 	}
 	if err := eg.Wait(); err != nil {
-		logger.Error("error processing shards", slog.Any("error", err))
-		tx.NoticeError(nrpkgerrors.Wrap(err))
-		os.Exit(1)
+		return errors.Wrap(err, "error processing shards")
 	}
+	return nil
 }
