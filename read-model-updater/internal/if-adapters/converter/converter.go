@@ -33,7 +33,9 @@ func (c *Converter) ToSyncUsecaseInDtoSeq(
 	slog.Default().InfoContext(ctx, "records", slog.Any("records", records))
 	return func(yield func(int, usecase.SyncUsecaseInDto) bool) {
 		for i, record := range records {
-			slog.Default().InfoContext(ctx, "record", slog.Any("record", record))
+			if record.EventName != types.OperationTypeInsert {
+				continue
+			}
 			dto, err := toDto(ctx, record.Dynamodb.NewImage, record.Dynamodb.ApproximateCreationDateTime)
 			if err != nil {
 				nrtx.NoticeError(nrpkgerrors.Wrap(err))
