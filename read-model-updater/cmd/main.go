@@ -19,8 +19,11 @@ func main() {
 	dependencies := di.GetDependecies()
 
 	tx := dependencies.NewRelicApp.StartTransaction(*dependencies.StreamARN)
+	defer tx.End()
+
 	ctx := newrelic.NewContext(context.Background(), tx)
 	logger := slog.New(altnrslog.NewTransactionalHandler(dependencies.NewRelicApp, tx))
+	slog.SetDefault(logger)
 
 	describeStreamOutput, err := dependencies.StreamClient.DescribeStream(
 		ctx, &dynamodbstreams.DescribeStreamInput{
