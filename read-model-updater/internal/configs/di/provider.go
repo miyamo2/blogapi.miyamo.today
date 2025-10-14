@@ -135,7 +135,7 @@ func provideBlogPublisher() *githubactions.BlogPublisher {
 }
 
 func provideStreamARN() StreamARN {
-	v := os.Getenv("STREAM_ARN")
+	v := os.Getenv("BLOGGING_EVENTS_TABLE_STREAM_ARN")
 	return &v
 }
 

@@ -12,6 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/dynamodbstreams v1.31.0
 	github.com/cockroachdb/errors v1.12.0
 	github.com/google/wire v0.7.0
+	github.com/jackc/pgx/v5 v5.7.6
 	github.com/miyamo2/altnrslog v0.4.2
 	github.com/miyamo2/dynmgrm v0.10.0
 	github.com/miyamo2/pqxd v0.6.0
@@ -52,7 +53,6 @@ require (
 	github.com/itchyny/timefmt-go v0.1.7 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
-	github.com/jackc/pgx/v5 v5.7.6 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
