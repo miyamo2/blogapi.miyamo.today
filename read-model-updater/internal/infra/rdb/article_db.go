@@ -97,7 +97,7 @@ func (s *ArticleCommandService) ExecuteArticleCommand(
 				return ids
 			}()
 			tx.Where("article_id = ?", in.ID()).
-				Where("articleID NOT IN (?)", existsTagIDs).
+				Where("id NOT IN (?)", existsTagIDs).
 				Delete(&articleTag{})
 
 			var articleTags []*articleTag
