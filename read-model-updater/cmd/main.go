@@ -17,6 +17,11 @@ import (
 )
 
 func main() {
+	var code int
+	defer func() {
+		os.Exit(code)
+	}()
+
 	dependencies := di.GetDependecies()
 
 	tx := dependencies.NewRelicApp.StartTransaction(*dependencies.StreamARN)
@@ -28,7 +33,7 @@ func main() {
 	if err := do(ctx, dependencies); err != nil {
 		logger.ErrorContext(ctx, "failed to process stream", slog.String("stream_arn", *dependencies.StreamARN), slog.String("error", err.Error()))
 		tx.NoticeError(nrpkgerrors.Wrap(err))
-		os.Exit(1)
+		code = 1
 	}
 }
 

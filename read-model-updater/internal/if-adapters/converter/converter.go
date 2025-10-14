@@ -30,7 +30,6 @@ func (c *Converter) ToSyncUsecaseInDtoSeq(
 	seg := nrtx.StartSegment("ToSyncUsecaseInDtoSeq")
 	defer seg.End()
 	seg.AddAttribute("records", fmt.Sprintf("%+v", records))
-	slog.Default().InfoContext(ctx, "records", slog.Any("records", records))
 	return func(yield func(int, usecase.SyncUsecaseInDto) bool) {
 		for i, record := range records {
 			if record.EventName != types.OperationTypeInsert {
