@@ -1,19 +1,29 @@
 package provider
 
 import (
+	"context"
 	"database/sql"
 	"os"
 
 	"blogapi.miyamo.today/article-service/internal/infra/rdb/sqlc"
 	"github.com/google/wire"
-	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/newrelic/go-agent/v3/integrations/nrpgx5"
 )
 
 func SQLDB() *sql.DB {
-	db, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN"))
+	cfg, err := pgxpool.ParseConfig(os.Getenv("COCKROACHDB_DSN"))
 	if err != nil {
 		panic(err) // because they are critical errors
 	}
+
+	cfg.ConnConfig.Tracer = nrpgx5.NewTracer()
+	pool, err := pgxpool.NewWithConfig(context.Background(), cfg)
+	if err != nil {
+		panic(err) // because they are critical errors
+	}
+	db := stdlib.OpenDBFromPool(pool)
 	err = db.Ping()
 	if err != nil {
 		panic(err) // because they are critical errors

@@ -17,10 +17,12 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/pqxd"
 	nraws "github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2"
-	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx5"
+	"github.com/newrelic/go-agent/v3/integrations/nrpgx5"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -54,9 +56,20 @@ func provideNewRelicApp() *newrelic.Application {
 }
 
 func provideRDBGORM() *rdb.DB {
-	articleDB, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN_ARTICLE"))
+	articleDBConfig, err := pgxpool.ParseConfig(os.Getenv("COCKROACHDB_DSN_ARTICLE"))
 	if err != nil {
-		panic(err)
+		panic(err) // because they are critical errors
+	}
+
+	articleDBConfig.ConnConfig.Tracer = nrpgx5.NewTracer()
+	articlePool, err := pgxpool.NewWithConfig(context.Background(), articleDBConfig)
+	if err != nil {
+		panic(err) // because they are critical errors
+	}
+	articleDB := stdlib.OpenDBFromPool(articlePool)
+	err = articleDB.Ping()
+	if err != nil {
+		panic(err) // because they are critical errors
 	}
 	articleDialector := postgres.New(postgres.Config{Conn: articleDB})
 
@@ -66,10 +79,22 @@ func provideRDBGORM() *rdb.DB {
 		panic(err)
 	}
 
-	tagDB, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN_TAG"))
+	tagDBConfig, err := pgxpool.ParseConfig(os.Getenv("COCKROACHDB_DSN_TAG"))
 	if err != nil {
-		panic(err)
+		panic(err) // because they are critical errors
 	}
+
+	tagDBConfig.ConnConfig.Tracer = nrpgx5.NewTracer()
+	tagPool, err := pgxpool.NewWithConfig(context.Background(), tagDBConfig)
+	if err != nil {
+		panic(err) // because they are critical errors
+	}
+	tagDB := stdlib.OpenDBFromPool(tagPool)
+	err = tagDB.Ping()
+	if err != nil {
+		panic(err) // because they are critical errors
+	}
+
 	tagDialector := postgres.New(postgres.Config{Conn: tagDB})
 	gormDB.Use(
 		dbresolver.
