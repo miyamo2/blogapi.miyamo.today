@@ -77,7 +77,7 @@ func (s *ArticleCommandService) ExecuteArticleCommand(
 
 			tx.Clauses(
 				clause.OnConflict{
-					Columns: []clause.Column{{Name: "articleID"}},
+					Columns: []clause.Column{{Name: "id"}},
 					DoUpdates: clause.Assignments(
 						map[string]interface{}{
 							"title":      v.Title,
