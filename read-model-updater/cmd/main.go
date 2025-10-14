@@ -29,6 +29,8 @@ func main() {
 	)
 	if err != nil {
 		slog.Default().Error("failed to describe stream", slog.Any("error", err))
+		tx.NoticeError(nrpkgerrors.Wrap(err))
+		os.Exit(1)
 	}
 	eg, egCtx := errgroup.WithContext(ctx)
 	for _, shard := range describeStreamOutput.StreamDescription.Shards {
