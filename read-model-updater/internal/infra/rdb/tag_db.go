@@ -1,17 +1,18 @@
 package rdb
 
 import (
+	"context"
+
 	"blogapi.miyamo.today/core/db"
 	gw "blogapi.miyamo.today/core/db/gorm"
 	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
-	"context"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
-	"log/slog"
 )
 
 const TagDBName = "tag"
@@ -47,55 +48,64 @@ func (t *tagArticle) TableName() string {
 
 type TagCommandService struct{}
 
-func (c *TagCommandService) ExecuteTagCommand(ctx context.Context, in model.ArticleCommand) db.Statement {
+func (c *TagCommandService) ExecuteTagCommand(
+	ctx context.Context, in model.ArticleCommand, eventAt synchro.Time[tz.UTC],
+) db.Statement {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("ArticleCommandService#ExecuteTagCommand").End()
-	return gw.NewStatement(func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
-		nrtx := newrelic.FromContext(ctx)
-		defer nrtx.StartSegment("ArticleCommandService#ExecuteTagCommand#Execute").End()
+	return gw.NewStatement(
+		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) error {
+			nrtx := newrelic.FromContext(ctx)
+			defer nrtx.StartSegment("ArticleCommandService#ExecuteTagCommand#Execute").End()
 
-		logger := slog.Default()
-		logger.Info("[RMU] START")
+			tx = tx.WithContext(ctx)
 
-		tx = tx.WithContext(ctx)
-		now := synchro.Now[tz.UTC]()
+			var (
+				tags         []tag
+				tagArticles  []tagArticle
+				existsTagIDs []string
+			)
+			for _, v := range in.Tags() {
+				tagID, err := ulid.Parse(v.ID())
+				if err != nil {
+					return err
+				}
+				tags = append(
+					tags, tag{
+						ID:        v.ID(),
+						Name:      v.Name(),
+						CreatedAt: synchro.UnixMilli[tz.UTC](int64(tagID.Time())),
+						UpdatedAt: eventAt,
+					},
+				)
+				existsTagIDs = append(existsTagIDs, v.ID())
+				tagArticles = append(
+					tagArticles, tagArticle{
+						ID:        in.ID(),
+						TagID:     v.ID(),
+						Title:     in.Title(),
+						Thumbnail: in.Thumbnail(),
+						CreatedAt: synchro.UnixMilli[tz.UTC](int64(tagID.Time())),
+						UpdatedAt: eventAt,
+					},
+				)
+			}
+			tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&tags)
 
-		var (
-			tags         []tag
-			tagArticles  []tagArticle
-			existsTagIDs []string
-		)
-		for _, ti := range in.Tags() {
-			tags = append(tags, tag{
-				ID:        ti.ID(),
-				Name:      ti.Name(),
-				CreatedAt: now,
-				UpdatedAt: now,
-			})
-			existsTagIDs = append(existsTagIDs, ti.ID())
-			tagArticles = append(tagArticles, tagArticle{
-				ID:        in.ID(),
-				TagID:     ti.ID(),
-				Title:     in.Title(),
-				Thumbnail: in.Thumbnail(),
-				CreatedAt: now,
-				UpdatedAt: now,
-			})
-		}
-		tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&tags)
+			tx.Clauses(
+				clause.OnConflict{
+					Columns:   []clause.Column{{Name: "id"}, {Name: "tag_id"}},
+					DoUpdates: clause.AssignmentColumns([]string{"title", "thumbnail", "updated_at"}),
+				},
+			).Create(&tagArticles)
 
-		tx.Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "id"}, {Name: "tag_id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"title", "thumbnail", "updated_at"}),
-		}).Create(&tagArticles)
+			tx.Where("id = ?", in.ID()).
+				Where("tag_id NOT IN (?)", existsTagIDs).Delete(&tagArticle{})
 
-		tx.Where("id = ?", in.ID()).
-			Where("tag_id NOT IN (?)", existsTagIDs).Delete(&tagArticle{})
-		logger.Info("[RMU] END")
-
-		tx.Where("NOT EXISTS (SELECT 1 FROM articles WHERE articles.tag_id = tags.id)").Delete(&tag{})
-		return nil
-	}, nil)
+			tx.Where("NOT EXISTS (SELECT 1 FROM articles WHERE articles.tag_id = tags.id)").Delete(&tag{})
+			return nil
+		}, nil,
+	)
 }
 
 func NewTagCommandService() *TagCommandService {

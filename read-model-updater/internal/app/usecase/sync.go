@@ -35,11 +35,11 @@ func (u *Sync) SyncBlogSnapshotWithEvents(ctx context.Context, in iter.Seq2[int,
 	defer nrtx.StartSegment("Sync#SyncBlogSnapshotWithEvents").End()
 	for _, dto := range in {
 		if err := u.executePerEvent(ctx, dto); err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 	}
 	if err := u.blogAPIPublisher.Publish(ctx); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	return nil
 }
@@ -48,8 +48,12 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Sync#executePerEvent").End()
 
+	logger := slog.Default()
+	logger.Info("[RMU] START", slog.Any("dto", dto))
+	defer logger.Info("[RMU] END")
+
 	bloggingEvents := db.NewMultipleStatementResult[model.BloggingEvent]()
-	if err := u.bloggingEventQueryService.ListEventsByArticleID(ctx, dto.ArticleId(), bloggingEvents).
+	if err := u.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleId(), bloggingEvents).
 		Execute(
 			ctx, gw.WithTransaction(
 				u.dynamodbGorm.Session(
@@ -60,7 +64,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 				),
 			),
 		); err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	articleCommand := model.ArticleCommandFromBloggingEvents(bloggingEvents.StrictGet())
@@ -115,11 +119,11 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	case <-ctx.Done():
 		articleTx.Rollback()
 		tagTx.Rollback()
-		return ctx.Err()
+		return errors.WithStack(ctx.Err())
 	case err := <-errCh:
 		articleTx.Rollback()
 		tagTx.Rollback()
-		return err
+		return errors.WithStack(err)
 	case <-done:
 	}
 	return nil

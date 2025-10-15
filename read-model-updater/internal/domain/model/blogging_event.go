@@ -54,7 +54,9 @@ func (b BloggingEvent) Invisible() *bool {
 	return b.invisible
 }
 
-func NewBloggingEvent(eventID, articleID string, title, content, thumbnail *string, tags, attachTag, detacheTag []string, invisible *bool) BloggingEvent {
+func NewBloggingEvent(
+	eventID, articleID string, title, content, thumbnail *string, tags, attachTag, detacheTag []string, invisible *bool,
+) BloggingEvent {
 	return BloggingEvent{
 		eventID:    eventID,
 		articleID:  articleID,

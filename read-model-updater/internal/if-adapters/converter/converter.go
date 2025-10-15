@@ -1,17 +1,20 @@
 package converter
 
 import (
-	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
-	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/model"
 	"context"
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"fmt"
+	"iter"
+	"log/slog"
+	"time"
+
+	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams/types"
 	"github.com/cockroachdb/errors"
-	"github.com/goccy/go-json"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"iter"
 )
 
 type Converter struct{}
@@ -20,12 +23,19 @@ func NewConverter() *Converter {
 	return &Converter{}
 }
 
-func (c *Converter) ToSyncUsecaseInDtoSeq(ctx context.Context, records []events.DynamoDBEventRecord) iter.Seq2[int, usecase.SyncUsecaseInDto] {
+func (c *Converter) ToSyncUsecaseInDtoSeq(
+	ctx context.Context, records []types.Record,
+) iter.Seq2[int, usecase.SyncUsecaseInDto] {
 	nrtx := newrelic.FromContext(ctx)
-	defer nrtx.StartSegment("ToSyncUsecaseInDtoSeq").End()
+	seg := nrtx.StartSegment("ToSyncUsecaseInDtoSeq")
+	defer seg.End()
+	seg.AddAttribute("records", fmt.Sprintf("%+v", records))
 	return func(yield func(int, usecase.SyncUsecaseInDto) bool) {
 		for i, record := range records {
-			dto, err := toDto(record.Change.NewImage)
+			if record.EventName != types.OperationTypeInsert {
+				continue
+			}
+			dto, err := toDto(ctx, record.Dynamodb.NewImage, record.Dynamodb.ApproximateCreationDateTime)
 			if err != nil {
 				nrtx.NoticeError(nrpkgerrors.Wrap(err))
 				continue
@@ -37,37 +47,26 @@ func (c *Converter) ToSyncUsecaseInDtoSeq(ctx context.Context, records []events.
 	}
 }
 
-func toDto(in map[string]events.DynamoDBAttributeValue) (usecase.SyncUsecaseInDto, error) {
-	attributevalueMap := make(map[string]*dynamodb.AttributeValue)
-	var image model.Image
-	for k, v := range in {
-		var av dynamodb.AttributeValue
-		bytes, err := v.MarshalJSON()
-		if err != nil {
-			err = errors.WithStack(err)
-			return usecase.SyncUsecaseInDto{}, err
-		}
+func toDto(ctx context.Context, in map[string]types.AttributeValue, eventAt *time.Time) (
+	usecase.SyncUsecaseInDto, error,
+) {
+	nrtx := newrelic.FromContext(ctx)
+	seg := nrtx.StartSegment("toDto")
+	defer seg.End()
 
-		if err := json.Unmarshal(bytes, &av); err != nil {
-			err = errors.WithStack(err)
-			return usecase.SyncUsecaseInDto{}, err
-		}
-
-		attributevalueMap[k] = &av
+	var v usecase.SyncUsecaseInDto
+	avm, err := attributevalue.FromDynamoDBStreamsMap(in)
+	if err != nil {
+		return v, errors.WithStack(err)
 	}
-
-	if err := dynamodbattribute.UnmarshalMap(attributevalueMap, &image); err != nil {
-		err = errors.WithStack(err)
-		return usecase.SyncUsecaseInDto{}, err
+	slog.Default().InfoContext(ctx, "attribute value map", slog.Any("attribute value map", avm))
+	err = attributevalue.UnmarshalMap(avm, &v)
+	if err != nil {
+		return v, errors.WithStack(err)
 	}
-	return usecase.NewSyncUsecaseInDto(
-		image.EventID,
-		image.ArticleID,
-		image.Title,
-		image.Content,
-		image.Thumbnail,
-		image.AttachTags,
-		image.DetachTags,
-		image.Invisible,
-	), nil
+	if eventAt != nil {
+		v.EventAt = synchro.In[tz.UTC](*eventAt)
+	}
+	slog.Default().InfoContext(ctx, "dto", slog.Any("dto", v))
+	return v, nil
 }

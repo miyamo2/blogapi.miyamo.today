@@ -8,10 +8,12 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/query"
 	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/converter"
-	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/lambda"
+	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/handler"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/streams"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
 	"github.com/google/wire"
 )
 
@@ -42,17 +44,24 @@ var externalAPISet = wire.NewSet(
 
 var usecaseSet = wire.NewSet(
 	provideSynUsecaseSet,
-	wire.Bind(new(lambda.SyncUsecase), new(*usecase.Sync)),
+	wire.Bind(new(handler.SyncUsecase), new(*usecase.Sync)),
 )
 
 var converterSet = wire.NewSet(
 	converter.NewConverter,
-	wire.Bind(new(lambda.ToSyncUsecaseInDtoConverter), new(*converter.Converter)),
+	wire.Bind(new(handler.ToSyncUsecaseInDtoConverter), new(*converter.Converter)),
 )
 
 var handlerSet = wire.NewSet(
-	lambda.NewSyncHandler,
+	handler.NewSyncHandler,
 )
+
+var streamSet = wire.NewSet(
+	provideDynamoDBStreamClient,
+	wire.Bind(new(streams.Client), new(*dynamodbstreams.Client)),
+)
+
+var streamARNSet = wire.NewSet(provideStreamARN)
 
 var dependenciesSet = wire.NewSet(newDependencies)
 
@@ -60,6 +69,8 @@ func GetDependecies() *Dependencies {
 	wire.Build(
 		awsConfigSet,
 		dynamodbSet,
+		streamSet,
+		streamARNSet,
 		rdbSet,
 		newRelicSet,
 		queryServiceSet,

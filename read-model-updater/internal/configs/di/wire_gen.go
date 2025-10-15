@@ -12,15 +12,17 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/query"
 	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/converter"
-	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/lambda"
+	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/handler"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/streams"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
 	"github.com/google/wire"
 )
 
 import (
-	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
+	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx5"
 )
 
 // Injectors from wire.go:
@@ -36,8 +38,10 @@ func GetDependecies() *Dependencies {
 	tagCommandService := rdb.NewTagCommandService()
 	blogPublisher := provideBlogPublisher()
 	sync := provideSynUsecaseSet(db, dynamoDB, bloggingEventQueryService, articleCommandService, tagCommandService, blogPublisher)
-	syncHandler := lambda.NewSyncHandler(converterConverter, sync)
-	dependencies := newDependencies(config, application, syncHandler)
+	syncHandler := handler.NewSyncHandler(converterConverter, sync)
+	client := provideDynamoDBStreamClient(config)
+	streamARN := provideStreamARN()
+	dependencies := newDependencies(config, application, syncHandler, client, streamARN)
 	return dependencies
 }
 
@@ -60,11 +64,17 @@ var externalAPISet = wire.NewSet(
 )
 
 var usecaseSet = wire.NewSet(
-	provideSynUsecaseSet, wire.Bind(new(lambda.SyncUsecase), new(*usecase.Sync)),
+	provideSynUsecaseSet, wire.Bind(new(handler.SyncUsecase), new(*usecase.Sync)),
 )
 
-var converterSet = wire.NewSet(converter.NewConverter, wire.Bind(new(lambda.ToSyncUsecaseInDtoConverter), new(*converter.Converter)))
+var converterSet = wire.NewSet(converter.NewConverter, wire.Bind(new(handler.ToSyncUsecaseInDtoConverter), new(*converter.Converter)))
 
-var handlerSet = wire.NewSet(lambda.NewSyncHandler)
+var handlerSet = wire.NewSet(handler.NewSyncHandler)
+
+var streamSet = wire.NewSet(
+	provideDynamoDBStreamClient, wire.Bind(new(streams.Client), new(*dynamodbstreams.Client)),
+)
+
+var streamARNSet = wire.NewSet(provideStreamARN)
 
 var dependenciesSet = wire.NewSet(newDependencies)

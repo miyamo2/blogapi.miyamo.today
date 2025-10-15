@@ -12,45 +12,21 @@ permissions: write-all
 
 jobs:
   deploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: read-model-updater
+
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: ./.github/custom_actions/deploy/
         with:
-          ref: main
-
-      - name: Set up aws cli
-        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 # v4.1.0
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-1
-          mask-aws-account-id: true
-
-      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
-        with:
-          go-version: ">=1.23"
-
-      - name: Build
-        working-directory: ./read-model-updater
-        run: |
-          GOOS=linux GOARCH=amd64 go build -tags lambda.norpc -o bootstrap ./cmd
-          zip bootstrap.zip bootstrap
-
-      - name: Deploy
-        working-directory: ./read-model-updater/.deploy
-        run: |
-          sam package --output-template-file packaged.yaml --s3-bucket ${{ secrets.SAM_ARTIFACTS_BUCKET_NAME }}
-          sam deploy --template-file packaged.yaml --stack-name miyamo-today-read-model-updater-prod --capabilities CAPABILITY_IAM \
-            --parameter-overrides \
-            Env=prod \
-            NewRelicAppName=miyamo-today-api-read-model-updater-prod \
-            NewRelicLicenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            BlogPublishEndpoint=${{ secrets.BLOG_PUBLISH_ENDPOINT }} \
-            GitHubToken=${{ secrets.READ_MY_PRIVATE_REPO_TOKEN }} \
-            NewRelicAccountId=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
-            BloggingEventsTableName=/miyamo-today/cicd/prod/dynamodb/blogging-events/name \
-            BloggingEventsStream=/miyamo-today/cicd/prod/dynamodb/blogging-events/stream \
-            CockroachDBDsnForArticle=/miyamo-today/cicd/prod/cockroachdb/dsn/article \
-            CockroachDBDsnForTag=/miyamo-today/cicd/prod/cockroachdb/dsn/tag \
-            --no-fail-on-empty-changeset
+          target: read-model-updater
+          app_id: ${{ secrets.GH_APP_ID }}
+          app_private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          commit_sha: ${{ github.sha }}
+          repository: ${{ github.repository }}
+          owner: ${{ github.repository_owner }}
+          github_secret: ${{ secrets.GITHUB_TOKEN }}

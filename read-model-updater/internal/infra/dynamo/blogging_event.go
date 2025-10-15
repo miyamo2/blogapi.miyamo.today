@@ -1,11 +1,14 @@
 package dynamo
 
 import (
+	"context"
+	"fmt"
+	"os"
+	"slices"
+
 	"blogapi.miyamo.today/core/db"
 	gw "blogapi.miyamo.today/core/db/gorm"
 	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
-	"context"
-	"fmt"
 	"github.com/cockroachdb/errors"
 	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/sqldav"
@@ -13,9 +16,6 @@ import (
 	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"log/slog"
-	"os"
-	"slices"
 )
 
 type DB struct {
@@ -46,13 +46,11 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(
 	ctx context.Context, articleId string, out *db.MultipleStatementResult[model.BloggingEvent],
 ) db.Statement {
 	nrtx := newrelic.FromContext(ctx)
-	defer nrtx.StartSegment("BloggingEventQueryService#ListEventsByArticleID").End()
+	defer nrtx.StartSegment("BloggingEventQueryService#AllEventsWithArticleID").End()
 	return gw.NewStatement(
 		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
 			nrtx := newrelic.FromContext(ctx)
-			defer nrtx.StartSegment("BloggingEventQueryService#ListEventsByArticleID").End()
-			logger := slog.Default()
-			logger.Info("[RMU] START")
+			defer nrtx.StartSegment("BloggingEventQueryService#AllEventsWithArticleID").End()
 			tx = tx.WithContext(ctx)
 
 			rows := make([]bloggingEvent, 0)
@@ -109,7 +107,6 @@ func (s *BloggingEventQueryService) AllEventsWithArticleID(
 				)
 			}
 			out.Set(result)
-			logger.Info("[RMU] END", slog.Int("result count", len(result)))
 			return nil
 		}, out,
 	)

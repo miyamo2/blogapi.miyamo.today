@@ -1,6 +1,12 @@
 package di
 
 import (
+	"context"
+	"database/sql"
+	"net/http"
+	"os"
+	"time"
+
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
@@ -8,21 +14,19 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
-	"context"
-	"database/sql"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/pqxd"
-	"github.com/newrelic/go-agent/v3/integrations/nrlambda"
-	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx"
+	nraws "github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2"
+	"github.com/newrelic/go-agent/v3/integrations/nrpgx5"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/plugin/dbresolver"
-	"net/http"
-	"os"
-	"time"
 )
 
 func provideAWSConfig() *aws.Config {
@@ -31,12 +35,12 @@ func provideAWSConfig() *aws.Config {
 	if err != nil {
 		panic(err)
 	}
+	nraws.AppendMiddlewares(&awsConfig.APIOptions, nil)
 	return &awsConfig
 }
 
 func provideNewRelicApp() *newrelic.Application {
 	app, err := newrelic.NewApplication(
-		nrlambda.ConfigOption(),
 		newrelic.ConfigAppLogForwardingEnabled(true),
 		newrelic.ConfigAppName(os.Getenv("NEW_RELIC_CONFIG_APP_NAME")),
 		newrelic.ConfigLicense(os.Getenv("NEW_RELIC_CONFIG_LICENSE")),
@@ -52,9 +56,20 @@ func provideNewRelicApp() *newrelic.Application {
 }
 
 func provideRDBGORM() *rdb.DB {
-	articleDB, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN_ARTICLE"))
+	articleDBConfig, err := pgxpool.ParseConfig(os.Getenv("COCKROACHDB_DSN_ARTICLE"))
 	if err != nil {
-		panic(err)
+		panic(err) // because they are critical errors
+	}
+
+	articleDBConfig.ConnConfig.Tracer = nrpgx5.NewTracer()
+	articlePool, err := pgxpool.NewWithConfig(context.Background(), articleDBConfig)
+	if err != nil {
+		panic(err) // because they are critical errors
+	}
+	articleDB := stdlib.OpenDBFromPool(articlePool)
+	err = articleDB.Ping()
+	if err != nil {
+		panic(err) // because they are critical errors
 	}
 	articleDialector := postgres.New(postgres.Config{Conn: articleDB})
 
@@ -64,10 +79,22 @@ func provideRDBGORM() *rdb.DB {
 		panic(err)
 	}
 
-	tagDB, err := sql.Open("nrpgx", os.Getenv("COCKROACHDB_DSN_TAG"))
+	tagDBConfig, err := pgxpool.ParseConfig(os.Getenv("COCKROACHDB_DSN_TAG"))
 	if err != nil {
-		panic(err)
+		panic(err) // because they are critical errors
 	}
+
+	tagDBConfig.ConnConfig.Tracer = nrpgx5.NewTracer()
+	tagPool, err := pgxpool.NewWithConfig(context.Background(), tagDBConfig)
+	if err != nil {
+		panic(err) // because they are critical errors
+	}
+	tagDB := stdlib.OpenDBFromPool(tagPool)
+	err = tagDB.Ping()
+	if err != nil {
+		panic(err) // because they are critical errors
+	}
+
 	tagDialector := postgres.New(postgres.Config{Conn: tagDB})
 	gormDB.Use(
 		dbresolver.
@@ -105,6 +132,15 @@ func provideBlogPublisher() *githubactions.BlogPublisher {
 	endpoint := os.Getenv("BLOG_PUBLISH_ENDPOINT")
 	token := os.Getenv("GITHUB_TOKEN")
 	return githubactions.NewBlogPublisher(endpoint, token, http.DefaultClient)
+}
+
+func provideStreamARN() StreamARN {
+	v := os.Getenv("BLOGGING_EVENTS_TABLE_STREAM_ARN")
+	return &v
+}
+
+func provideDynamoDBStreamClient(awsConfig *aws.Config) *dynamodbstreams.Client {
+	return dynamodbstreams.NewFromConfig(*awsConfig)
 }
 
 func provideSynUsecaseSet(
