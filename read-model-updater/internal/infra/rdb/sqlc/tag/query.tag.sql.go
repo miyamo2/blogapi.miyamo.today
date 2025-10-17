@@ -82,9 +82,9 @@ DELETE
 FROM
     "articles"
 WHERE
-    "article"."id" NOT IN (SELECT "id" FROM "inserted")
+    "articles"."id" NOT IN (SELECT "id" FROM "inserted")
 AND
-    "article"."tag_id" NOT IN (SELECT "tag_id" FROM "inserted")
+    "articles"."tag_id" NOT IN (SELECT "tag_id" FROM "inserted")
 `
 
 func (q *Queries) PutArticle(ctx context.Context) error {
