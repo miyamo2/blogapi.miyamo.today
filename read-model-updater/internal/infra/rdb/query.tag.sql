@@ -28,7 +28,7 @@ INSERT INTO "tags" (
     ,"created_at"
     ,"updated_at"
 )
-SELECT * FROM "tmp_tags"
+SELECT id, name, created_at, updated_at FROM "tmp_tags"
 ON CONFLICT DO NOTHING;
 
 -- name: CreateTempArticlesTable :exec
