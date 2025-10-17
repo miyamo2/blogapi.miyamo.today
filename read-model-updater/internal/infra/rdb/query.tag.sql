@@ -71,7 +71,7 @@ WITH "inserted" AS (
         ,"created_at"
         ,"updated_at"
     )
-    SELECT id, title, NULL AS body, thumbnail, created_at, updated_at FROM "tmp_articles"
+    SELECT id, tag_id, title, thumbnail, created_at, updated_at FROM "tmp_articles"
     ON CONFLICT ("id","tag_id") DO UPDATE
         SET "title" = EXCLUDED.title
         ,"body" = EXCLUDED.body
@@ -83,6 +83,6 @@ DELETE
 FROM
     "articles"
 WHERE
-    "article"."id" NOT IN (SELECT "id" FROM "inserted")
+    "articles"."id" NOT IN (SELECT "id" FROM "inserted")
 AND
-    "article"."tag_id" NOT IN (SELECT "tag_id" FROM "inserted");
+    "articles"."tag_id" NOT IN (SELECT "tag_id" FROM "inserted");
