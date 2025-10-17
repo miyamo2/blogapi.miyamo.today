@@ -155,7 +155,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 				return errors.WithStack(err)
 			}
 			_, err = q.PrePutTags(
-				ctx, slices.Collect(
+				egCtx, slices.Collect(
 					func(yield func(tag.PrePutTagsParams) bool) {
 						for _, v := range articleCommand.Tags() {
 							if yield(
