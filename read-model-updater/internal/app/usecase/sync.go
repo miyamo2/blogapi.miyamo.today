@@ -3,30 +3,35 @@ package usecase
 import (
 	"context"
 	"iter"
+	"log/slog"
+	"slices"
 
-	"blogapi.miyamo.today/core/db"
-	gw "blogapi.miyamo.today/core/db/gorm"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/query"
 	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
-	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
-	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/article"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/tag"
 	"github.com/cockroachdb/errors"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"gorm.io/gorm"
-	"gorm.io/plugin/dbresolver"
+	"golang.org/x/sync/errgroup"
 )
 
 // Sync is an usecese of sync
 type Sync struct {
-	rdbGorm                   *rdb.DB
-	dynamodbGorm              *dynamo.DB
 	bloggingEventQueryService query.BloggingEventService
-	articleCommandService     command.ArticleService
-	tagCommandService         command.TagService
+	articleTx                 command.ArticleTx
+	tagTx                     command.TagTx
 	blogAPIPublisher          externalapi.BlogPublisher
+	articleDBPool             *pgxpool.Pool
+	tagDBPool                 *pgxpool.Pool
 }
+
+type ArticleDBPool *pgxpool.Pool
+
+type TagDBPool *pgxpool.Pool
 
 // SyncBlogSnapshotWithEvents synchronized blog snapshot with event
 func (u *Sync) SyncBlogSnapshotWithEvents(ctx context.Context, in iter.Seq2[int, SyncUsecaseInDto]) error {
@@ -47,100 +52,184 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Sync#executePerEvent").End()
 
-	bloggingEvents := db.NewMultipleStatementResult[model.BloggingEvent]()
-	if err := u.bloggingEventQueryService.AllEventsWithArticleID(ctx, dto.ArticleID, bloggingEvents).
-		Execute(
-			ctx, gw.WithTransaction(
-				u.dynamodbGorm.Session(
-					&gorm.Session{
-						PrepareStmt:            false,
-						SkipDefaultTransaction: true,
-					},
-				),
-			),
-		); err != nil {
+	logger := slog.Default()
+	logger.Info("[RMU] START", slog.Any("dto", dto))
+	defer logger.Info("[RMU] END")
+
+	bloggingEvents, err := u.bloggingEventQueryService.ListEventsByArticleID(ctx, dto.ArticleID)
+	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	articleCommand := model.ArticleCommandFromBloggingEvents(bloggingEvents.StrictGet())
+	articleCommand := model.ArticleCommandFromBloggingEvents(bloggingEvents)
 	if articleCommand == nil {
+		logger.Warn("nil article command")
 		return nil
 	}
-
-	articleTx := u.rdbGorm.Session(
-		&gorm.Session{
-			PrepareStmt:            false,
-			SkipDefaultTransaction: true,
+	articleTx, err := u.articleDBPool.BeginTx(
+		ctx, pgx.TxOptions{
+			IsoLevel:   pgx.Serializable,
+			AccessMode: pgx.ReadWrite,
 		},
-	).Clauses(dbresolver.Use(rdb.ArticleDBName)).Begin()
-
-	tagTx := u.rdbGorm.Session(
-		&gorm.Session{
-			PrepareStmt:            false,
-			SkipDefaultTransaction: true,
-		},
-	).Clauses(dbresolver.Use(rdb.TagDBName)).Begin()
-
-	done := make(chan struct{})
-	errCh := make(chan error)
-	go func() {
-		err := u.articleCommandService.ExecuteArticleCommand(ctx, *articleCommand, dto.EventAt).Execute(
-			ctx,
-			gw.WithTransaction(articleTx),
-		)
-		if err != nil {
-			errCh <- err
-			return
-		}
-
-		err = u.tagCommandService.ExecuteTagCommand(ctx, *articleCommand, dto.EventAt).Execute(
-			ctx,
-			gw.WithTransaction(tagTx),
-		)
-		if err != nil {
-			errCh <- err
-			return
-		}
-
-		if err := articleTx.Commit().Error; err != nil {
-			errCh <- err
-			return
-		}
-		if err := tagTx.Commit().Error; err != nil {
-			errCh <- err
-			return
-		}
-		done <- struct{}{}
-	}()
-	select {
-	case <-ctx.Done():
-		articleTx.Rollback()
-		tagTx.Rollback()
-		return errors.WithStack(ctx.Err())
-	case err := <-errCh:
-		articleTx.Rollback()
-		tagTx.Rollback()
+	)
+	if err != nil {
 		return errors.WithStack(err)
-	case <-done:
+	}
+	defer func() {
+		_ = articleTx.Rollback(ctx)
+	}()
+
+	tagTx, err := u.tagDBPool.BeginTx(
+		ctx, pgx.TxOptions{
+			IsoLevel:   pgx.Serializable,
+			AccessMode: pgx.ReadWrite,
+		},
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	defer func() {
+		_ = tagTx.Rollback(ctx)
+	}()
+
+	errGroup, egCtx := errgroup.WithContext(ctx)
+	errGroup.Go(
+		func() error {
+			q := u.articleTx.Begin(articleTx)
+			err := q.CreateTempTagsTable(egCtx)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			err = q.PutArticle(
+				egCtx, article.PutArticleParams{
+					ID:        articleCommand.ID(),
+					Title:     articleCommand.Title(),
+					Body:      articleCommand.Body(),
+					Thumbnail: articleCommand.Thumbnail(),
+					CreatedAt: dto.EventAt,
+					UpdatedAt: dto.EventAt,
+				},
+			)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			_, err = q.PreAttachTags(
+				egCtx,
+				slices.Collect(
+					func(yield func(article.PreAttachTagsParams) bool) {
+						for _, v := range articleCommand.Tags() {
+							if yield(
+								article.PreAttachTagsParams{
+									ID:        v.ID(),
+									ArticleID: articleCommand.ID(),
+									Name:      v.Name(),
+									CreatedAt: dto.EventAt,
+									UpdatedAt: dto.EventAt,
+								},
+							) {
+								return
+							}
+						}
+					},
+				),
+			)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			err = q.AttachTags(egCtx, dto.ArticleID)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			return articleTx.Commit(egCtx)
+		},
+	)
+	errGroup.Go(
+		func() error {
+			q := u.tagTx.Begin(tagTx)
+			err := q.CreateTempArticlesTable(egCtx)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			err = q.CreateTempTagsTable(egCtx)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			_, err = q.PrePutTags(
+				egCtx, slices.Collect(
+					func(yield func(tag.PrePutTagsParams) bool) {
+						for _, v := range articleCommand.Tags() {
+							if yield(
+								tag.PrePutTagsParams{
+									ID:        v.ID(),
+									Name:      v.Name(),
+									CreatedAt: dto.EventAt,
+									UpdatedAt: dto.EventAt,
+								},
+							) {
+								return
+							}
+						}
+					},
+				),
+			)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			err = q.PutTags(egCtx)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			_, err = q.PrePutArticle(
+				egCtx, slices.Collect(
+					func(yield func(tag.PrePutArticleParams) bool) {
+						for _, v := range articleCommand.Tags() {
+							if yield(
+								tag.PrePutArticleParams{
+									ID:        articleCommand.ID(),
+									TagID:     v.ID(),
+									Title:     articleCommand.Title(),
+									Thumbnail: articleCommand.Thumbnail(),
+									CreatedAt: dto.EventAt,
+									UpdatedAt: dto.EventAt,
+								},
+							) {
+								return
+							}
+						}
+					},
+				),
+			)
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			err = q.PutArticle(egCtx, articleCommand.ID())
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			return tagTx.Commit(egCtx)
+		},
+	)
+	if err := errGroup.Wait(); err != nil {
+		return errors.WithStack(err)
 	}
 	return nil
 }
 
 // NewSync returns new Sync
 func NewSync(
-	rdbGorm *rdb.DB,
-	dynamodbGorm *dynamo.DB,
 	bloggingEventQueryService query.BloggingEventService,
-	articleCommandService command.ArticleService,
-	tagCommandService command.TagService,
+	articleTx command.ArticleTx,
+	tagTx command.TagTx,
+	articleDBPool ArticleDBPool,
+	tagDBPool TagDBPool,
 	blogAPIPublisher externalapi.BlogPublisher,
 ) *Sync {
 	return &Sync{
-		rdbGorm:                   rdbGorm,
-		dynamodbGorm:              dynamodbGorm,
-		articleCommandService:     articleCommandService,
+		articleTx:                 articleTx,
 		bloggingEventQueryService: bloggingEventQueryService,
-		tagCommandService:         tagCommandService,
+		tagTx:                     tagTx,
 		blogAPIPublisher:          blogAPIPublisher,
+		articleDBPool:             articleDBPool,
+		tagDBPool:                 tagDBPool,
 	}
 }

@@ -12,12 +12,6 @@ type BloggingEvent struct {
 	invisible  *bool
 }
 
-// IsQueryModel is a marker method for the QueryModel.
-func (b BloggingEvent) IsQueryModel() {}
-
-// IsCommandModel is a marker method for the CommandModel.
-func (b BloggingEvent) IsCommandModel() {}
-
 func (b BloggingEvent) EventID() string {
 	return b.eventID
 }

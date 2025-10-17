@@ -9,24 +9,20 @@ import (
 
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
-	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/query"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
-	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/article"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/tag"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
-	"github.com/miyamo2/dynmgrm"
+	"github.com/jmoiron/sqlx"
 	"github.com/miyamo2/pqxd"
 	nraws "github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2"
 	"github.com/newrelic/go-agent/v3/integrations/nrpgx5"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	"gorm.io/plugin/dbresolver"
 )
 
 func provideAWSConfig() *aws.Config {
@@ -55,7 +51,7 @@ func provideNewRelicApp() *newrelic.Application {
 	return app
 }
 
-func provideRDBGORM() *rdb.DB {
+func provideArticleDBPool() usecase.ArticleDBPool {
 	articleDBConfig, err := pgxpool.ParseConfig(os.Getenv("COCKROACHDB_DSN_ARTICLE"))
 	if err != nil {
 		panic(err) // because they are critical errors
@@ -66,19 +62,14 @@ func provideRDBGORM() *rdb.DB {
 	if err != nil {
 		panic(err) // because they are critical errors
 	}
-	articleDB := stdlib.OpenDBFromPool(articlePool)
-	err = articleDB.Ping()
-	if err != nil {
-		panic(err) // because they are critical errors
-	}
-	articleDialector := postgres.New(postgres.Config{Conn: articleDB})
+	return articlePool
+}
 
-	// default connection
-	gormDB, err := gorm.Open(articleDialector)
-	if err != nil {
-		panic(err)
-	}
+func provideArticleQuery(pool usecase.ArticleDBPool) *article.Queries {
+	return article.New((*pgxpool.Pool)(pool))
+}
 
+func provideTagDBPool() usecase.TagDBPool {
 	tagDBConfig, err := pgxpool.ParseConfig(os.Getenv("COCKROACHDB_DSN_TAG"))
 	if err != nil {
 		panic(err) // because they are critical errors
@@ -89,43 +80,20 @@ func provideRDBGORM() *rdb.DB {
 	if err != nil {
 		panic(err) // because they are critical errors
 	}
-	tagDB := stdlib.OpenDBFromPool(tagPool)
-	err = tagDB.Ping()
-	if err != nil {
-		panic(err) // because they are critical errors
-	}
-
-	tagDialector := postgres.New(postgres.Config{Conn: tagDB})
-	gormDB.Use(
-		dbresolver.
-			Register(
-				dbresolver.Config{
-					Sources: []gorm.Dialector{articleDialector}, TraceResolverMode: true,
-				}, rdb.ArticleDBName,
-			).
-			Register(
-				dbresolver.Config{
-					Sources: []gorm.Dialector{tagDialector}, TraceResolverMode: true,
-				}, rdb.TagDBName,
-			),
-	)
-	return &rdb.DB{DB: gormDB}
+	return tagPool
 }
 
-func provideDynamoDBGORM(awsConfig *aws.Config) *dynamo.DB {
+func provideTagQuery(pool usecase.TagDBPool) *tag.Queries {
+	return tag.New((*pgxpool.Pool)(pool))
+}
+
+func provideDynamoDB(awsConfig *aws.Config) dynamo.DB {
 	db := sql.OpenDB(pqxd.NewConnector(*awsConfig))
 	err := db.Ping()
 	if err != nil {
-		panic(err)
+		panic(err) // because they are critical errors
 	}
-	dynamoDialector := dynmgrm.New(dynmgrm.WithConnection(db))
-
-	// default connection
-	gormDB, err := gorm.Open(dynamoDialector)
-	if err != nil {
-		panic(err)
-	}
-	return &dynamo.DB{DB: gormDB}
+	return sqlx.NewDb(db, "dynamodb")
 }
 
 func provideBlogPublisher() *githubactions.BlogPublisher {
@@ -144,19 +112,19 @@ func provideDynamoDBStreamClient(awsConfig *aws.Config) *dynamodbstreams.Client 
 }
 
 func provideSynUsecaseSet(
-	rdbGorm *rdb.DB,
-	dynamodbGorm *dynamo.DB,
 	bloggingEventQueryService query.BloggingEventService,
-	articleCommandService command.ArticleService,
-	tagCommandService command.TagService,
-	blogAPIPublisher externalapi.BlogPublisher,
+	articleTx command.ArticleTx,
+	tagTx command.TagTx,
+	articleDBPool usecase.ArticleDBPool,
+	tagDBPool usecase.TagDBPool,
+	blogAPIPublisher *githubactions.BlogPublisher,
 ) *usecase.Sync {
 	return usecase.NewSync(
-		rdbGorm,
-		dynamodbGorm,
 		bloggingEventQueryService,
-		articleCommandService,
-		tagCommandService,
+		articleTx,
+		tagTx,
+		articleDBPool,
+		tagDBPool,
 		blogAPIPublisher,
 	)
 }

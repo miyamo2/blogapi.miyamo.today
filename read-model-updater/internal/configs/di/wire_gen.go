@@ -15,14 +15,11 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/handler"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
-	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/article"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/tag"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/streams"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
 	"github.com/google/wire"
-)
-
-import (
-	_ "github.com/newrelic/go-agent/v3/integrations/nrpgx5"
 )
 
 // Injectors from wire.go:
@@ -31,13 +28,16 @@ func GetDependecies() *Dependencies {
 	config := provideAWSConfig()
 	application := provideNewRelicApp()
 	converterConverter := converter.NewConverter()
-	db := provideRDBGORM()
-	dynamoDB := provideDynamoDBGORM(config)
-	bloggingEventQueryService := dynamo.NewBloggingEventQueryService()
-	articleCommandService := rdb.NewArticleCommandService()
-	tagCommandService := rdb.NewTagCommandService()
+	db := provideDynamoDB(config)
+	bloggingEventQueryService := dynamo.NewBloggingEventQueryService(db)
+	articleDBPool := provideArticleDBPool()
+	queries := provideArticleQuery(articleDBPool)
+	articleTx := command.NewArticleTx(queries)
+	tagDBPool := provideTagDBPool()
+	tagQueries := provideTagQuery(tagDBPool)
+	tagTx := command.NewTagTx(tagQueries)
 	blogPublisher := provideBlogPublisher()
-	sync := provideSynUsecaseSet(db, dynamoDB, bloggingEventQueryService, articleCommandService, tagCommandService, blogPublisher)
+	sync := provideSynUsecaseSet(bloggingEventQueryService, articleTx, tagTx, articleDBPool, tagDBPool, blogPublisher)
 	syncHandler := handler.NewSyncHandler(converterConverter, sync)
 	client := provideDynamoDBStreamClient(config)
 	streamARN := provideStreamARN()
@@ -51,13 +51,17 @@ var awsConfigSet = wire.NewSet(provideAWSConfig)
 
 var newRelicSet = wire.NewSet(provideNewRelicApp)
 
-var rdbSet = wire.NewSet(provideRDBGORM)
+var rdbSet = wire.NewSet(provideArticleDBPool, provideTagDBPool)
 
-var dynamodbSet = wire.NewSet(provideDynamoDBGORM)
+var dynamodbSet = wire.NewSet(provideDynamoDB)
 
 var queryServiceSet = wire.NewSet(dynamo.NewBloggingEventQueryService, wire.Bind(new(query.BloggingEventService), new(*dynamo.BloggingEventQueryService)))
 
-var commandServiceSet = wire.NewSet(rdb.NewArticleCommandService, wire.Bind(new(command.ArticleService), new(*rdb.ArticleCommandService)), rdb.NewTagCommandService, wire.Bind(new(command.TagService), new(*rdb.TagCommandService)))
+var commandSet = wire.NewSet(
+	provideArticleQuery, wire.Bind(new(command.Article), new(*article.Queries)), provideTagQuery, wire.Bind(new(command.Tag), new(*tag.Queries)),
+)
+
+var txSet = wire.NewSet(command.NewArticleTx, command.NewTagTx)
 
 var externalAPISet = wire.NewSet(
 	provideBlogPublisher, wire.Bind(new(externalapi.BlogPublisher), new(*githubactions.BlogPublisher)),

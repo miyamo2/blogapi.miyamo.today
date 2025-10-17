@@ -11,7 +11,8 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/handler"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
-	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/article"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/tag"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/streams"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
 	"github.com/google/wire"
@@ -21,20 +22,25 @@ var awsConfigSet = wire.NewSet(provideAWSConfig)
 
 var newRelicSet = wire.NewSet(provideNewRelicApp)
 
-var rdbSet = wire.NewSet(provideRDBGORM)
+var rdbSet = wire.NewSet(provideArticleDBPool, provideTagDBPool)
 
-var dynamodbSet = wire.NewSet(provideDynamoDBGORM)
+var dynamodbSet = wire.NewSet(provideDynamoDB)
 
 var queryServiceSet = wire.NewSet(
 	dynamo.NewBloggingEventQueryService,
 	wire.Bind(new(query.BloggingEventService), new(*dynamo.BloggingEventQueryService)),
 )
 
-var commandServiceSet = wire.NewSet(
-	rdb.NewArticleCommandService,
-	wire.Bind(new(command.ArticleService), new(*rdb.ArticleCommandService)),
-	rdb.NewTagCommandService,
-	wire.Bind(new(command.TagService), new(*rdb.TagCommandService)),
+var commandSet = wire.NewSet(
+	provideArticleQuery,
+	wire.Bind(new(command.Article), new(*article.Queries)),
+	provideTagQuery,
+	wire.Bind(new(command.Tag), new(*tag.Queries)),
+)
+
+var txSet = wire.NewSet(
+	command.NewArticleTx,
+	command.NewTagTx,
 )
 
 var externalAPISet = wire.NewSet(
@@ -72,9 +78,10 @@ func GetDependecies() *Dependencies {
 		streamSet,
 		streamARNSet,
 		rdbSet,
+		commandSet,
+		txSet,
 		newRelicSet,
 		queryServiceSet,
-		commandServiceSet,
 		externalAPISet,
 		usecaseSet,
 		converterSet,

@@ -13,8 +13,8 @@ require (
 	github.com/cockroachdb/errors v1.12.0
 	github.com/google/wire v0.7.0
 	github.com/jackc/pgx/v5 v5.7.6
+	github.com/jmoiron/sqlx v1.4.0
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/miyamo2/dynmgrm v0.10.0
 	github.com/miyamo2/pqxd v0.6.0
 	github.com/miyamo2/sqldav v0.2.1
 	github.com/newrelic/go-agent/v3 v3.41.0
@@ -23,9 +23,7 @@ require (
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	github.com/oklog/ulid/v2 v2.1.1
 	golang.org/x/sync v0.17.0
-	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.0
-	gorm.io/plugin/dbresolver v1.6.2
 )
 
 require (
@@ -43,8 +41,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.38.6 // indirect
 	github.com/aws/smithy-go v1.23.0 // indirect
-	github.com/btnguyen2k/consu/g18 v0.1.0 // indirect
-	github.com/btnguyen2k/consu/reddo v0.1.9 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20241215232642-bb51bb14a506 // indirect
 	github.com/cockroachdb/redact v1.1.6 // indirect
 	github.com/getsentry/sentry-go v0.36.0 // indirect
@@ -58,7 +54,6 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/miyamo2/godynamo v1.4.0 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.3 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
@@ -72,4 +67,6 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251007200510-49b9836ed3ff // indirect
 	google.golang.org/grpc v1.76.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
+	gorm.io/driver/postgres v1.6.0 // indirect
+	gorm.io/plugin/dbresolver v1.6.2 // indirect
 )
