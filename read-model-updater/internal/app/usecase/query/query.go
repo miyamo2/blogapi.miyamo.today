@@ -9,5 +9,5 @@ import (
 // BloggingEventService is a query service interface for the BloggingEvent.
 type BloggingEventService interface {
 	// ListEventsByArticleID returns all blogging events by article id.
-	ListEventsByArticleID(ctx context.Context, articleID string) []model.BloggingEvent
+	ListEventsByArticleID(ctx context.Context, articleID string) ([]model.BloggingEvent, error)
 }

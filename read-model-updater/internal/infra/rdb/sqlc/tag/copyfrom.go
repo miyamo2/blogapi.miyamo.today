@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-// iteratorForPreTagArticles implements pgx.CopyFromSource.
-type iteratorForPreTagArticles struct {
-	rows                 []PreTagArticlesParams
+// iteratorForPrePutArticle implements pgx.CopyFromSource.
+type iteratorForPrePutArticle struct {
+	rows                 []PrePutArticleParams
 	skippedFirstNextCall bool
 }
 
-func (r *iteratorForPreTagArticles) Next() bool {
+func (r *iteratorForPrePutArticle) Next() bool {
 	if len(r.rows) == 0 {
 		return false
 	}
@@ -27,7 +27,7 @@ func (r *iteratorForPreTagArticles) Next() bool {
 	return len(r.rows) > 0
 }
 
-func (r iteratorForPreTagArticles) Values() ([]interface{}, error) {
+func (r iteratorForPrePutArticle) Values() ([]interface{}, error) {
 	return []interface{}{
 		r.rows[0].ID,
 		r.rows[0].TagID,
@@ -38,10 +38,45 @@ func (r iteratorForPreTagArticles) Values() ([]interface{}, error) {
 	}, nil
 }
 
-func (r iteratorForPreTagArticles) Err() error {
+func (r iteratorForPrePutArticle) Err() error {
 	return nil
 }
 
-func (q *Queries) PreTagArticles(ctx context.Context, arg []PreTagArticlesParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"tmp_articles"}, []string{"id", "tag_id", "title", "thumbnail", "created_at", "updated_at"}, &iteratorForPreTagArticles{rows: arg})
+func (q *Queries) PrePutArticle(ctx context.Context, arg []PrePutArticleParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"tmp_articles"}, []string{"id", "tag_id", "title", "thumbnail", "created_at", "updated_at"}, &iteratorForPrePutArticle{rows: arg})
+}
+
+// iteratorForPrePutTags implements pgx.CopyFromSource.
+type iteratorForPrePutTags struct {
+	rows                 []PrePutTagsParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForPrePutTags) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForPrePutTags) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].ID,
+		r.rows[0].Name,
+		r.rows[0].CreatedAt,
+		r.rows[0].UpdatedAt,
+	}, nil
+}
+
+func (r iteratorForPrePutTags) Err() error {
+	return nil
+}
+
+func (q *Queries) PrePutTags(ctx context.Context, arg []PrePutTagsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"tmp_tags"}, []string{"id", "name", "created_at", "updated_at"}, &iteratorForPrePutTags{rows: arg})
 }

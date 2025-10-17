@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// Article is a command service interface for the Article.
+// Article provides commands for Article.
 type Article interface {
 	PreAttachTags(ctx context.Context, arg []article.PreAttachTagsParams) (int64, error)
 	WithTx(tx pgx.Tx) *article.Queries
@@ -17,10 +17,46 @@ type Article interface {
 	PutArticle(ctx context.Context, arg article.PutArticleParams) error
 }
 
+// Tag provides commands for Tag.
 type Tag interface {
-	PreTagArticles(ctx context.Context, arg []tag.PreTagArticlesParams) (int64, error)
+	PrePutArticle(ctx context.Context, arg []tag.PrePutArticleParams) (int64, error)
+	PrePutTags(ctx context.Context, arg []tag.PrePutTagsParams) (int64, error)
 	CreateTempArticlesTable(ctx context.Context) error
-	PutTag(ctx context.Context, arg tag.PutTagParams) error
-	TagArticles(ctx context.Context, tagID string) error
-	WithTx(tx pgx.Tx) *tag.Queries
+	CreateTempTagsTable(ctx context.Context) error
+	PutArticle(ctx context.Context) error
+	PutTags(ctx context.Context) error
+}
+
+// ArticleTx provides transaction for Article.
+type ArticleTx interface {
+	Begin(tx pgx.Tx) Article
+}
+
+type articleTx struct {
+	queries *article.Queries
+}
+
+func (a *articleTx) Begin(tx pgx.Tx) Article {
+	return a.queries.WithTx(tx)
+}
+
+func NewArticleTx(queries *article.Queries) ArticleTx {
+	return &articleTx{queries: queries}
+}
+
+// TagTx provides transaction for Tag.
+type TagTx interface {
+	Begin(tx pgx.Tx) Tag
+}
+
+type tagTx struct {
+	queries *tag.Queries
+}
+
+func (t *tagTx) Begin(tx pgx.Tx) Tag {
+	return t.queries.WithTx(tx)
+}
+
+func NewTagTx(queries *tag.Queries) TagTx {
+	return &tagTx{queries: queries}
 }

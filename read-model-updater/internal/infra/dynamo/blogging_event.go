@@ -6,112 +6,102 @@ import (
 	"os"
 	"slices"
 
-	"blogapi.miyamo.today/core/db"
-	gw "blogapi.miyamo.today/core/db/gorm"
 	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
 	"github.com/cockroachdb/errors"
-	"github.com/miyamo2/dynmgrm"
 	"github.com/miyamo2/sqldav"
 	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/oklog/ulid/v2"
-	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
-type DB struct {
-	*gorm.DB
-}
-
-var _ schema.Tabler = (*bloggingEvent)(nil)
-
 type bloggingEvent struct {
-	EventID    string `gorm:"primaryKey"`
-	ArticleID  string `gorm:"primaryKey"`
-	Title      *string
-	Content    *string
-	Thumbnail  *string
-	Tags       sqldav.Set[string]
-	AttachTags sqldav.Set[string]
-	DetachTags sqldav.Set[string]
-	Invisible  *bool
+	EventID    string             `db:"event_id"`
+	ArticleID  string             `db:"article_id"`
+	Title      *string            `db:"title"`
+	Content    *string            `db:"content"`
+	Thumbnail  *string            `db:"thumbnail"`
+	Tags       sqldav.Set[string] `db:"tags"`
+	AttachTags sqldav.Set[string] `db:"attach_tags"`
+	DetachTags sqldav.Set[string] `db:"detach_tags"`
+	Invisible  *bool              `db:"invisible"`
 }
 
-func (b bloggingEvent) TableName() string {
-	return os.Getenv("BLOGGING_EVENTS_TABLE_NAME")
+var listEventsByArticleID = fmt.Sprintf(
+	`SELECT "event_id",
+		"article_id", 
+		"title", 
+		"content", 
+		"thumbnail", 
+		"tags", 
+		"attach_tags", 
+		"detach_tags", 
+		"invisible" 
+FROM %s."article_id_event_id-Index" 
+WHERE "article_id" = $1
+`, os.Getenv("BLOGGING_EVENTS_TABLE_NAME"),
+)
+
+type DB interface {
+	SelectContext(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 }
 
-type BloggingEventQueryService struct{}
+type BloggingEventQueryService struct {
+	db DB
+}
 
-func (s *BloggingEventQueryService) AllEventsWithArticleID(
-	ctx context.Context, articleId string, out *db.MultipleStatementResult[model.BloggingEvent],
-) db.Statement {
+func (s *BloggingEventQueryService) ListEventsByArticleID(
+	ctx context.Context,
+	articleID string,
+) ([]model.BloggingEvent, error) {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("BloggingEventQueryService#AllEventsWithArticleID").End()
-	return gw.NewStatement(
-		func(ctx context.Context, tx *gorm.DB, out db.StatementResult) (err error) {
-			nrtx := newrelic.FromContext(ctx)
-			defer nrtx.StartSegment("BloggingEventQueryService#AllEventsWithArticleID").End()
-			tx = tx.WithContext(ctx)
 
-			rows := make([]bloggingEvent, 0)
-			err = tx.Select(
-				"event_id",
-				"article_id",
-				"title",
-				"content",
-				"thumbnail",
-				"tags",
-				"attach_tags",
-				"detach_tags",
-				"invisible",
-			).
-				Table(bloggingEvent{}.TableName()).Clauses(
-				dynmgrm.SecondaryIndex("article_id_event_id-Index"),
-			).
-				Where("article_id = ?", articleId).Scan(&rows).Error
+	rows := make([]bloggingEvent, 0)
+	err := s.db.SelectContext(ctx, &rows, listEventsByArticleID, articleID)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	slices.SortFunc(
+		rows, func(i, j bloggingEvent) int {
+			var iid ulid.ULID
+			iid, err = ulid.Parse(i.EventID)
 			if err != nil {
-				err = errors.WithStack(err)
-				return err
+				return 0
 			}
-
-			slices.SortFunc(
-				rows, func(i, j bloggingEvent) int {
-					iid := ulid.MustParseStrict(i.EventID)
-					jid := ulid.MustParseStrict(j.EventID)
-					return iid.Compare(jid)
-				},
-			)
-			// recover ulid.MustParseStrict
-			defer func() {
-				if rec := recover(); rec != nil {
-					err = fmt.Errorf("recovered: %v", rec)
-					err = errors.WithStack(err)
-				}
-			}()
-
-			result := make([]model.BloggingEvent, 0)
-			for _, r := range rows {
-				result = append(
-					result,
-					model.NewBloggingEvent(
-						r.EventID,
-						r.ArticleID,
-						r.Title,
-						r.Content,
-						r.Thumbnail,
-						r.Tags,
-						r.AttachTags,
-						r.DetachTags,
-						r.Invisible,
-					),
-				)
+			var jid ulid.ULID
+			jid, err = ulid.Parse(j.EventID)
+			if err != nil {
+				return 0
 			}
-			out.Set(result)
-			return nil
-		}, out,
+			return iid.Compare(jid)
+		},
 	)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	result := make([]model.BloggingEvent, 0, len(rows))
+	for _, r := range rows {
+		result = append(
+			result,
+			model.NewBloggingEvent(
+				r.EventID,
+				r.ArticleID,
+				r.Title,
+				r.Content,
+				r.Thumbnail,
+				r.Tags,
+				r.AttachTags,
+				r.DetachTags,
+				r.Invisible,
+			),
+		)
+	}
+	return result, nil
 }
 
-func NewBloggingEventQueryService() *BloggingEventQueryService {
-	return &BloggingEventQueryService{}
+func NewBloggingEventQueryService(db DB) *BloggingEventQueryService {
+	return &BloggingEventQueryService{
+		db: db,
+	}
 }

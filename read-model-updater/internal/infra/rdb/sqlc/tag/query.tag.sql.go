@@ -9,7 +9,6 @@ import (
 	"context"
 
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/types"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createTempArticlesTable = `-- name: CreateTempArticlesTable :exec
@@ -30,67 +29,81 @@ func (q *Queries) CreateTempArticlesTable(ctx context.Context) error {
 	return err
 }
 
-type PreTagArticlesParams struct {
+const createTempTagsTable = `-- name: CreateTempTagsTable :exec
+CREATE TEMP TABLE tmp_tags (
+    id VARCHAR(144),
+    name VARCHAR(35) NOT NULL,
+    created_at timestamp WITH TIME ZONE NOT NULL,
+    updated_at timestamp WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (id)
+) ON COMMIT PRESERVE ROWS
+`
+
+func (q *Queries) CreateTempTagsTable(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, createTempTagsTable)
+	return err
+}
+
+type PrePutArticleParams struct {
 	ID        string        `db:"id"`
 	TagID     string        `db:"tag_id"`
 	Title     string        `db:"title"`
-	Thumbnail pgtype.Text   `db:"thumbnail"`
+	Thumbnail string        `db:"thumbnail"`
 	CreatedAt types.UTCTime `db:"created_at"`
 	UpdatedAt types.UTCTime `db:"updated_at"`
 }
 
-const putTag = `-- name: PutTag :exec
-INSERT INTO "tags" (
-    "id"
-    ,"name"
-    ,"created_at"
-    ,"updated_at"
-)
-VALUES (
-    $1
-    ,$2
-    ,$3
-    ,$4
-)
-ON CONFLICT ("id") DO UPDATE
-SET "name" = EXCLUDED.name
-,"updated_at" = EXCLUDED.updated_at
-`
-
-type PutTagParams struct {
+type PrePutTagsParams struct {
 	ID        string        `db:"id"`
 	Name      string        `db:"name"`
 	CreatedAt types.UTCTime `db:"created_at"`
 	UpdatedAt types.UTCTime `db:"updated_at"`
 }
 
-func (q *Queries) PutTag(ctx context.Context, arg PutTagParams) error {
-	_, err := q.db.Exec(ctx, putTag,
-		arg.ID,
-		arg.Name,
-		arg.CreatedAt,
-		arg.UpdatedAt,
-	)
-	return err
-}
-
-const tagArticles = `-- name: TagArticles :exec
+const putArticle = `-- name: PutArticle :exec
 WITH "inserted" AS (
     INSERT INTO "articles" (
         "id"
-        ,"tag_id"
         ,"title"
+        ,"body"
         ,"thumbnail"
         ,"created_at"
         ,"updated_at"
-    ) SELECT id, tag_id, title, thumbnail, created_at, updated_at FROM "tmp_articles"
-    ON CONFLICT DO NOTHING
-    RETURNING "id"
+    )
+    SELECT id, tag_id, title, thumbnail, created_at, updated_at FROM "tmp_articles"
+    ON CONFLICT ("id","tag_id") DO UPDATE
+        SET "title" = EXCLUDED.title
+        ,"body" = EXCLUDED.body
+        ,"thumbnail" = EXCLUDED.thumbnail
+        ,"updated_at" = EXCLUDED.updated_at
+    RETURNING "id", "tag_id"
 )
-DELETE FROM "articles" WHERE "articles"."tag_id" = $1 AND "articles"."id" NOT IN (SELECT "id" FROM "inserted")
+DELETE
+FROM
+    "articles"
+WHERE
+    "article"."id" NOT IN (SELECT "id" FROM "inserted")
+AND
+    "article"."tag_id" NOT IN (SELECT "tag_id" FROM "inserted")
 `
 
-func (q *Queries) TagArticles(ctx context.Context, tagID string) error {
-	_, err := q.db.Exec(ctx, tagArticles, tagID)
+func (q *Queries) PutArticle(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, putArticle)
+	return err
+}
+
+const putTags = `-- name: PutTags :exec
+INSERT INTO "tags" (
+    "id"
+    ,"name"
+    ,"created_at"
+    ,"updated_at"
+)
+SELECT id, name, created_at, updated_at FROM "tmp_tags"
+ON CONFLICT DO NOTHING
+`
+
+func (q *Queries) PutTags(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, putTags)
 	return err
 }

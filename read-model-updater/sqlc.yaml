@@ -36,6 +36,6 @@ sql:
                     go_type:
                         import: "blogapi.miyamo.today/read-model-updater/internal/infra/rdb/types"
                         type: UTCTime
-                  - column: "articles.thumbnail"
+                  - column: "tmp_articles.thumbnail"
                     go_type:
                         type: string

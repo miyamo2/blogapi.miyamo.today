@@ -1,5 +1,14 @@
--- name: PutTag :exec
-INSERT INTO "tags" (
+-- name: CreateTempTagsTable :exec
+CREATE TEMP TABLE tmp_tags (
+    id VARCHAR(144),
+    name VARCHAR(35) NOT NULL,
+    created_at timestamp WITH TIME ZONE NOT NULL,
+    updated_at timestamp WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (id)
+) ON COMMIT PRESERVE ROWS;
+
+-- name: PrePutTags :copyfrom
+INSERT INTO "tmp_tags" (
     "id"
     ,"name"
     ,"created_at"
@@ -10,10 +19,17 @@ VALUES (
     ,$2
     ,$3
     ,$4
+);
+
+-- name: PutTags :exec
+INSERT INTO "tags" (
+    "id"
+    ,"name"
+    ,"created_at"
+    ,"updated_at"
 )
-ON CONFLICT ("id") DO UPDATE
-SET "name" = EXCLUDED.name
-,"updated_at" = EXCLUDED.updated_at;
+SELECT * FROM "tmp_tags"
+ON CONFLICT DO NOTHING;
 
 -- name: CreateTempArticlesTable :exec
 CREATE TEMP TABLE tmp_articles (
@@ -27,7 +43,7 @@ CREATE TEMP TABLE tmp_articles (
     PRIMARY KEY (id, tag_id)
 ) ON COMMIT PRESERVE ROWS;
 
--- name: PreTagArticles :copyfrom
+-- name: PrePutArticle :copyfrom
 INSERT INTO "tmp_articles" (
     "id"
     ,"tag_id"
@@ -35,7 +51,8 @@ INSERT INTO "tmp_articles" (
     ,"thumbnail"
     ,"created_at"
     ,"updated_at"
-) VALUES (
+)
+VALUES (
     $1
     ,$2
     ,$3
@@ -44,18 +61,28 @@ INSERT INTO "tmp_articles" (
     ,$6
 );
 
--- name: TagArticles :exec
+-- name: PutArticle :exec
 WITH "inserted" AS (
     INSERT INTO "articles" (
         "id"
-        ,"tag_id"
         ,"title"
+        ,"body"
         ,"thumbnail"
         ,"created_at"
         ,"updated_at"
-    ) SELECT * FROM "tmp_articles"
-    ON CONFLICT DO NOTHING
-    RETURNING "id"
+    )
+    SELECT * FROM "tmp_articles"
+    ON CONFLICT ("id","tag_id") DO UPDATE
+        SET "title" = EXCLUDED.title
+        ,"body" = EXCLUDED.body
+        ,"thumbnail" = EXCLUDED.thumbnail
+        ,"updated_at" = EXCLUDED.updated_at
+    RETURNING "id", "tag_id"
 )
-DELETE FROM "articles" WHERE "articles"."tag_id" = $1 AND "articles"."id" NOT IN (SELECT "id" FROM "inserted");
-
+DELETE
+FROM
+    "articles"
+WHERE
+    "article"."id" NOT IN (SELECT "id" FROM "inserted")
+AND
+    "article"."tag_id" NOT IN (SELECT "tag_id" FROM "inserted");
