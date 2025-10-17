@@ -202,7 +202,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			err = q.PutArticle(egCtx)
+			err = q.PutArticle(egCtx, articleCommand.ID())
 			if err != nil {
 				return errors.WithStack(err)
 			}

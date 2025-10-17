@@ -23,7 +23,7 @@ type Tag interface {
 	PrePutTags(ctx context.Context, arg []tag.PrePutTagsParams) (int64, error)
 	CreateTempArticlesTable(ctx context.Context) error
 	CreateTempTagsTable(ctx context.Context) error
-	PutArticle(ctx context.Context) error
+	PutArticle(ctx context.Context, id string) error
 	PutTags(ctx context.Context) error
 }
 
