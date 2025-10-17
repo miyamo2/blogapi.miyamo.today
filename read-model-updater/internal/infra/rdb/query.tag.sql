@@ -65,8 +65,8 @@ VALUES (
 WITH "inserted" AS (
     INSERT INTO "articles" (
         "id"
+        ,"tag_id"
         ,"title"
-        ,"body"
         ,"thumbnail"
         ,"created_at"
         ,"updated_at"
