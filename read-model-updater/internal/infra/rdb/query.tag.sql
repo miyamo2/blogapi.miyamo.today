@@ -71,7 +71,7 @@ WITH "inserted" AS (
         ,"created_at"
         ,"updated_at"
     )
-    SELECT * FROM "tmp_articles"
+    SELECT id, title, NULL AS body, thumbnail, created_at, updated_at FROM "tmp_articles"
     ON CONFLICT ("id","tag_id") DO UPDATE
         SET "title" = EXCLUDED.title
         ,"body" = EXCLUDED.body
