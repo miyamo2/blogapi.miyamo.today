@@ -31,7 +31,12 @@ func main() {
 	slog.SetDefault(logger)
 
 	if err := do(ctx, dependencies); err != nil {
-		logger.ErrorContext(ctx, "failed to process stream", slog.String("stream_arn", *dependencies.StreamARN), slog.String("error", err.Error()))
+		logger.ErrorContext(
+			ctx,
+			"failed to process stream",
+			slog.String("stream_arn", *dependencies.StreamARN),
+			slog.String("error", err.Error()),
+		)
 		tx.NoticeError(nrpkgerrors.Wrap(err))
 		code = 1
 	}
@@ -56,10 +61,11 @@ func do(ctx context.Context, dependencies *di.Dependencies) error {
 			eg.Go(
 				func() error {
 					shardID := *shard.ShardId
-					slog.Default().InfoContext(ctx, "processing shard", slog.String("shard_id", shardID))
+					slog.Default().InfoContext(egCtx, "processing shard", slog.String("shard_id", shardID))
+					defer slog.Default().InfoContext(egCtx, "processed shard", slog.String("shard_id", shardID))
 
 					getShardIteratorOutput, err := dependencies.StreamClient.GetShardIterator(
-						ctx, &dynamodbstreams.GetShardIteratorInput{
+						egCtx, &dynamodbstreams.GetShardIteratorInput{
 							StreamArn:         dependencies.StreamARN,
 							ShardId:           &shardID,
 							ShardIteratorType: types.ShardIteratorTypeTrimHorizon,
@@ -70,9 +76,9 @@ func do(ctx context.Context, dependencies *di.Dependencies) error {
 					}
 					shardIterator := getShardIteratorOutput.ShardIterator
 
-					for shardIterator != nil {
+					for {
 						getRecordsOutput, err := dependencies.StreamClient.GetRecords(
-							ctx, &dynamodbstreams.GetRecordsInput{
+							egCtx, &dynamodbstreams.GetRecordsInput{
 								ShardIterator: shardIterator,
 								Limit:         aws.Int32(1000),
 							},
@@ -80,11 +86,14 @@ func do(ctx context.Context, dependencies *di.Dependencies) error {
 						if err != nil {
 							return err
 						}
-						err = dependencies.SyncHandler.Invoke(ctx, getRecordsOutput.Records)
+						err = dependencies.SyncHandler.Invoke(egCtx, getRecordsOutput.Records)
 						if err != nil {
 							return err
 						}
 						shardIterator = getRecordsOutput.NextShardIterator
+						if shardIterator == nil {
+							break
+						}
 					}
 					return nil
 				},
