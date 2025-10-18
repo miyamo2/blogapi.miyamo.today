@@ -93,7 +93,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 		_ = tagTx.Rollback(ctx)
 	}()
 
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	errGroup, egCtx := errgroup.WithContext(ctx)
