@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 
+	blogapictx "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/read-model-updater/internal/configs/di"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
@@ -63,6 +64,9 @@ func do(ctx context.Context, dependencies *di.Dependencies) error {
 					shardID := *shard.ShardId
 					slog.Default().InfoContext(egCtx, "processing shard", slog.String("shard_id", shardID))
 					defer slog.Default().InfoContext(egCtx, "processed shard", slog.String("shard_id", shardID))
+
+					blogAPICtx := blogapictx.New(shardID, *dependencies.StreamARN, "queue", nil, nil)
+					egCtx := blogapictx.StoreToContext(egCtx, blogAPICtx)
 
 					getShardIteratorOutput, err := dependencies.StreamClient.GetShardIterator(
 						egCtx, &dynamodbstreams.GetShardIteratorInput{
