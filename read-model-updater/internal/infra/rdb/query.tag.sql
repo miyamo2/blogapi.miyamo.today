@@ -3,8 +3,7 @@ CREATE TEMP TABLE IF NOT EXISTS tmp_tags (
     id VARCHAR(144),
     name VARCHAR(35) NOT NULL,
     created_at timestamp WITH TIME ZONE NOT NULL,
-    updated_at timestamp WITH TIME ZONE NOT NULL,
-    PRIMARY KEY (id)
+    updated_at timestamp WITH TIME ZONE NOT NULL
 ) ON COMMIT PRESERVE ROWS;
 
 -- name: PrePutTags :copyfrom
