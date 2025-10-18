@@ -22,7 +22,7 @@ SET "title" = EXCLUDED.title
     ,"updated_at" = EXCLUDED.updated_at;
 
 -- name: CreateTempTagsTable :exec
-CREATE TEMP TABLE tmp_tags (
+CREATE TEMP TABLE IF NOT EXISTS tmp_tags (
     id VARCHAR(144),
     article_id VARCHAR(26),
     name VARCHAR(35) NOT NULL,
@@ -56,7 +56,7 @@ WITH "inserted" AS (
         ,"created_at"
         ,"updated_at"
     )
-    SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags"
+    SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags" WHERE "tags"."article_id" IN (sqlc.slice('ids'))
     ON CONFLICT DO NOTHING
     RETURNING "id"
 )

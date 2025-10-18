@@ -10,21 +10,20 @@ import (
 
 // Article provides commands for Article.
 type Article interface {
-	PreAttachTags(ctx context.Context, arg []article.PreAttachTagsParams) (int64, error)
-	WithTx(tx pgx.Tx) *article.Queries
-	AttachTags(ctx context.Context, articleID string) error
+	AttachTags(ctx context.Context, arg article.AttachTagsParams) error
 	CreateTempTagsTable(ctx context.Context) error
 	PutArticle(ctx context.Context, arg article.PutArticleParams) error
+	PreAttachTags(ctx context.Context, arg []article.PreAttachTagsParams) (int64, error)
 }
 
 // Tag provides commands for Tag.
 type Tag interface {
-	PrePutArticle(ctx context.Context, arg []tag.PrePutArticleParams) (int64, error)
-	PrePutTags(ctx context.Context, arg []tag.PrePutTagsParams) (int64, error)
 	CreateTempArticlesTable(ctx context.Context) error
 	CreateTempTagsTable(ctx context.Context) error
 	PutArticle(ctx context.Context, id string) error
-	PutTags(ctx context.Context) error
+	PutTags(ctx context.Context, ids []string) error
+	PrePutArticle(ctx context.Context, arg []tag.PrePutArticleParams) (int64, error)
+	PrePutTags(ctx context.Context, arg []tag.PrePutTagsParams) (int64, error)
 }
 
 // ArticleTx provides transaction for Article.

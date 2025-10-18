@@ -136,7 +136,20 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			err = q.AttachTags(egCtx, dto.ArticleID)
+			err = q.AttachTags(
+				egCtx, article.AttachTagsParams{
+					ArticleID: articleCommand.ID(),
+					Ids: slices.Collect(
+						func(yield func(string) bool) {
+							for _, v := range articleCommand.Tags() {
+								if yield(v.ID()) {
+									return
+								}
+							}
+						},
+					),
+				},
+			)
 			if err != nil {
 				return errors.WithStack(err)
 			}
@@ -175,7 +188,17 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			err = q.PutTags(egCtx)
+			err = q.PutTags(
+				egCtx, slices.Collect(
+					func(yield func(string) bool) {
+						for _, v := range articleCommand.Tags() {
+							if yield(v.ID()) {
+								return
+							}
+						}
+					},
+				),
+			)
 			if err != nil {
 				return errors.WithStack(err)
 			}

@@ -20,20 +20,25 @@ WITH "inserted" AS (
         ,"created_at"
         ,"updated_at"
     )
-    SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags"
+    SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags" WHERE "tags"."article_id" IN ($2)
     ON CONFLICT DO NOTHING
     RETURNING "id"
 )
 DELETE FROM "tags" WHERE "tags"."article_id" = $1 AND "tags"."id" NOT IN (SELECT "id" FROM "inserted")
 `
 
-func (q *Queries) AttachTags(ctx context.Context, articleID string) error {
-	_, err := q.db.Exec(ctx, attachTags, articleID)
+type AttachTagsParams struct {
+	ArticleID string   `db:"article_id"`
+	Ids       []string `db:"ids"`
+}
+
+func (q *Queries) AttachTags(ctx context.Context, arg AttachTagsParams) error {
+	_, err := q.db.Exec(ctx, attachTags, arg.ArticleID, arg.Ids)
 	return err
 }
 
 const createTempTagsTable = `-- name: CreateTempTagsTable :exec
-CREATE TEMP TABLE tmp_tags (
+CREATE TEMP TABLE IF NOT EXISTS tmp_tags (
     id VARCHAR(144),
     article_id VARCHAR(26),
     name VARCHAR(35) NOT NULL,

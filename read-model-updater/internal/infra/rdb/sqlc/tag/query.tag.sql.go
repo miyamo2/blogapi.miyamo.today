@@ -30,7 +30,7 @@ func (q *Queries) CreateTempArticlesTable(ctx context.Context) error {
 }
 
 const createTempTagsTable = `-- name: CreateTempTagsTable :exec
-CREATE TEMP TABLE tmp_tags (
+CREATE TEMP TABLE IF NOT EXISTS tmp_tags (
     id VARCHAR(144),
     name VARCHAR(35) NOT NULL,
     created_at timestamp WITH TIME ZONE NOT NULL,
@@ -70,7 +70,7 @@ WITH "inserted" AS (
         ,"created_at"
         ,"updated_at"
     )
-    SELECT id, tag_id, title, thumbnail, created_at, updated_at FROM "tmp_articles"
+    SELECT id, tag_id, title, thumbnail, created_at, updated_at FROM "tmp_articles" WHERE "tmp_articles"."id" = $1
     ON CONFLICT ("id","tag_id") DO UPDATE
         SET "title" = EXCLUDED.title
         ,"thumbnail" = EXCLUDED.thumbnail
@@ -98,11 +98,11 @@ INSERT INTO "tags" (
     ,"created_at"
     ,"updated_at"
 )
-SELECT id, name, created_at, updated_at FROM "tmp_tags"
-ON CONFLICT DO NOTHING
+SELECT id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."id" IN ($1)
+    ON CONFLICT DO NOTHING
 `
 
-func (q *Queries) PutTags(ctx context.Context) error {
-	_, err := q.db.Exec(ctx, putTags)
+func (q *Queries) PutTags(ctx context.Context, ids []string) error {
+	_, err := q.db.Exec(ctx, putTags, ids)
 	return err
 }
