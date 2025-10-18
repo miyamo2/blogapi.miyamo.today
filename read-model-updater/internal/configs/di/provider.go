@@ -58,6 +58,7 @@ func provideArticleDBPool() usecase.ArticleDBPool {
 	}
 
 	articleDBConfig.ConnConfig.Tracer = nrpgx5.NewTracer()
+	articleDBConfig.ConnConfig.RuntimeParams["experimental_enable_temp_tables"] = "on"
 	articlePool, err := pgxpool.NewWithConfig(context.Background(), articleDBConfig)
 	if err != nil {
 		panic(err) // because they are critical errors
@@ -76,6 +77,7 @@ func provideTagDBPool() usecase.TagDBPool {
 	}
 
 	tagDBConfig.ConnConfig.Tracer = nrpgx5.NewTracer()
+	tagDBConfig.ConnConfig.RuntimeParams["experimental_enable_temp_tables"] = "on"
 	tagPool, err := pgxpool.NewWithConfig(context.Background(), tagDBConfig)
 	if err != nil {
 		panic(err) // because they are critical errors
