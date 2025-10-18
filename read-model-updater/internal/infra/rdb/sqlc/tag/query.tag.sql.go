@@ -12,7 +12,7 @@ import (
 )
 
 const createTempArticlesTable = `-- name: CreateTempArticlesTable :exec
-CREATE TEMP TABLE tmp_articles (
+CREATE TEMP TABLE IF NOT EXISTS tmp_articles (
     id VARCHAR(26),
     tag_id VARCHAR(144),
     title VARCHAR(255) NOT NULL,
