@@ -39,7 +39,6 @@ CREATE TEMP TABLE tmp_articles (
     thumbnail VARCHAR(524271),
     created_at timestamp WITH TIME ZONE NOT NULL,
     updated_at timestamp WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (tag_id) REFERENCES tags(id),
     PRIMARY KEY (id, tag_id)
 ) ON COMMIT PRESERVE ROWS;
 

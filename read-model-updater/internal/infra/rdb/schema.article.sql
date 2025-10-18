@@ -24,6 +24,5 @@ CREATE TEMP TABLE tmp_tags (
     name VARCHAR(35) NOT NULL,
     created_at timestamp WITH TIME ZONE NOT NULL,
     updated_at timestamp WITH TIME ZONE NOT NULL,
-    FOREIGN KEY (article_id) REFERENCES articles(id),
     PRIMARY KEY (id, article_id)
 ) ON COMMIT PRESERVE ROWS;
