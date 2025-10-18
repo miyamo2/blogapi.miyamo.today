@@ -5,6 +5,7 @@ import (
 	"iter"
 	"log/slog"
 	"slices"
+	"time"
 
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/command"
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase/externalapi"
@@ -68,7 +69,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	}
 	articleTx, err := u.articleDBPool.BeginTx(
 		ctx, pgx.TxOptions{
-			IsoLevel:   pgx.Serializable,
+			IsoLevel:   pgx.ReadCommitted,
 			AccessMode: pgx.ReadWrite,
 		},
 	)
@@ -81,7 +82,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 
 	tagTx, err := u.tagDBPool.BeginTx(
 		ctx, pgx.TxOptions{
-			IsoLevel:   pgx.Serializable,
+			IsoLevel:   pgx.ReadCommitted,
 			AccessMode: pgx.ReadWrite,
 		},
 	)
@@ -91,6 +92,9 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	defer func() {
 		_ = tagTx.Rollback(ctx)
 	}()
+
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
 
 	errGroup, egCtx := errgroup.WithContext(ctx)
 	errGroup.Go(
