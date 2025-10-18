@@ -53,20 +53,13 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Sync#executePerEvent").End()
 
-	logger := slog.Default()
-	logger.Info("[RMU] START", slog.Any("dto", dto))
-	defer logger.Info("[RMU] END")
-
 	bloggingEvents, err := u.bloggingEventQueryService.ListEventsByArticleID(ctx, dto.ArticleID)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
 	articleCommand := model.ArticleCommandFromBloggingEvents(bloggingEvents)
-	if articleCommand == nil {
-		logger.Warn("nil article command")
-		return nil
-	}
+
 	articleTx, err := u.articleDBPool.BeginTx(
 		ctx, pgx.TxOptions{
 			IsoLevel:   pgx.ReadCommitted,
@@ -122,7 +115,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 				slices.Collect(
 					func(yield func(article.PreAttachTagsParams) bool) {
 						for _, v := range articleCommand.Tags() {
-							if yield(
+							if !yield(
 								article.PreAttachTagsParams{
 									ID:        v.ID(),
 									ArticleID: articleCommand.ID(),
@@ -162,7 +155,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 				egCtx, slices.Collect(
 					func(yield func(tag.PrePutTagsParams) bool) {
 						for _, v := range articleCommand.Tags() {
-							if yield(
+							if !yield(
 								tag.PrePutTagsParams{
 									ID:        v.ID(),
 									Name:      v.Name(),
@@ -183,7 +176,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 				egCtx, slices.Collect(
 					func(yield func(string) bool) {
 						for _, v := range articleCommand.Tags() {
-							if yield(v.ID()) {
+							if !yield(v.ID()) {
 								return
 							}
 						}
@@ -197,7 +190,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 				egCtx, slices.Collect(
 					func(yield func(tag.PrePutArticleParams) bool) {
 						for _, v := range articleCommand.Tags() {
-							if yield(
+							if !yield(
 								tag.PrePutArticleParams{
 									ID:        articleCommand.ID(),
 									TagID:     v.ID(),
