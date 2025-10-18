@@ -95,7 +95,7 @@ func do(ctx context.Context, dependencies *di.Dependencies) error {
 							return err
 						}
 						shardIterator = getRecordsOutput.NextShardIterator
-						if shardIterator == nil || len(getRecordsOutput.Records) == 0 {
+						if shardIterator == nil {
 							break
 						}
 					}
