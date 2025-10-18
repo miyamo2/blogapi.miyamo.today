@@ -72,7 +72,7 @@ func do(ctx context.Context, dependencies *di.Dependencies) error {
 						egCtx, &dynamodbstreams.GetShardIteratorInput{
 							StreamArn:         dependencies.StreamARN,
 							ShardId:           &shardID,
-							ShardIteratorType: types.ShardIteratorTypeTrimHorizon,
+							ShardIteratorType: types.ShardIteratorTypeLatest,
 						},
 					)
 					if err != nil {
