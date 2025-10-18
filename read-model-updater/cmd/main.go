@@ -72,7 +72,7 @@ func do(ctx context.Context, dependencies *di.Dependencies) error {
 						egCtx, &dynamodbstreams.GetShardIteratorInput{
 							StreamArn:         dependencies.StreamARN,
 							ShardId:           &shardID,
-							ShardIteratorType: types.ShardIteratorTypeTrimHorizon,
+							ShardIteratorType: types.ShardIteratorTypeLatest,
 						},
 					)
 					if err != nil {
@@ -80,31 +80,16 @@ func do(ctx context.Context, dependencies *di.Dependencies) error {
 					}
 					shardIterator := getShardIteratorOutput.ShardIterator
 
-					for {
-						getRecordsOutput, err := dependencies.StreamClient.GetRecords(
-							egCtx, &dynamodbstreams.GetRecordsInput{
-								ShardIterator: shardIterator,
-								Limit:         aws.Int32(1000),
-							},
-						)
-						if err != nil {
-							return err
-						}
-						err = dependencies.SyncHandler.Invoke(egCtx, getRecordsOutput.Records)
-						if err != nil {
-							return err
-						}
-						shardIterator = getRecordsOutput.NextShardIterator
-						if shardIterator == nil {
-							break
-						}
-						slog.Default().InfoContext(
-							egCtx,
-							"shard iterator",
-							slog.String("shard_id", shardID),
-							slog.String("shard_iterator", *shardIterator))
+					getRecordsOutput, err := dependencies.StreamClient.GetRecords(
+						egCtx, &dynamodbstreams.GetRecordsInput{
+							ShardIterator: shardIterator,
+							Limit:         aws.Int32(1000),
+						},
+					)
+					if err != nil {
+						return err
 					}
-					return nil
+					return dependencies.SyncHandler.Invoke(egCtx, getRecordsOutput.Records)
 				},
 			)
 		}
