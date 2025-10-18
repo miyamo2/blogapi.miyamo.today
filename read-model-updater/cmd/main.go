@@ -98,6 +98,11 @@ func do(ctx context.Context, dependencies *di.Dependencies) error {
 						if shardIterator == nil {
 							break
 						}
+						slog.Default().InfoContext(
+							egCtx,
+							"shard iterator",
+							slog.String("shard_id", shardID),
+							slog.String("shard_iterator", *shardIterator))
 					}
 					return nil
 				},

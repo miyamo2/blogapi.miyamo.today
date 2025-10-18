@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"iter"
+	"log/slog"
 	"slices"
 	"time"
 
@@ -51,6 +52,19 @@ func (u *Sync) SyncBlogSnapshotWithEvents(ctx context.Context, in iter.Seq2[int,
 func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Sync#executePerEvent").End()
+
+	slog.Default().InfoContext(
+		ctx,
+		"Syncing blog snapshot",
+		slog.String("article_id", dto.ArticleID),
+		slog.Time("event_at", dto.EventAt.StdTime()),
+	)
+	defer slog.Default().InfoContext(
+		ctx,
+		"Synced blog snapshot",
+		slog.String("article_id", dto.ArticleID),
+		slog.Time("event_at", dto.EventAt.StdTime()),
+	)
 
 	bloggingEvents, err := u.bloggingEventQueryService.ListEventsByArticleID(ctx, dto.ArticleID)
 	if err != nil {
