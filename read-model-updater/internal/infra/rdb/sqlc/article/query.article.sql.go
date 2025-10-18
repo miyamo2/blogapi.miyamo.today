@@ -20,7 +20,7 @@ WITH "inserted" AS (
         ,"created_at"
         ,"updated_at"
     )
-    SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags" WHERE "tags"."article_id" IN ($2)
+    SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."article_id" IN ($2)
     ON CONFLICT DO NOTHING
     RETURNING "id"
 )
