@@ -24,7 +24,13 @@ WITH "inserted" AS (
     ON CONFLICT DO NOTHING
     RETURNING "id"
 )
-DELETE FROM "tags" WHERE "tags"."article_id" = $1 AND "tags"."id" NOT IN (SELECT "id" FROM "inserted")
+DELETE
+FROM
+    "tags"
+WHERE
+    "tags"."article_id" = $1
+AND
+    "tags"."id" NOT IN (SELECT id FROM "tmp_tags" WHERE "tmp_tags"."article_id" = $1)
 `
 
 func (q *Queries) AttachTags(ctx context.Context, articleID string) error {
