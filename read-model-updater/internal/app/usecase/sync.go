@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"iter"
-	"log/slog"
 	"slices"
 	"time"
 
