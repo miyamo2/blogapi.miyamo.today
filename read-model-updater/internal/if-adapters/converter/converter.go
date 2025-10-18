@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"iter"
-	"log/slog"
 	"time"
 
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
@@ -59,7 +58,6 @@ func toDto(ctx context.Context, in map[string]types.AttributeValue, eventAt *tim
 	if err != nil {
 		return v, errors.WithStack(err)
 	}
-	slog.Default().InfoContext(ctx, "attribute value map", slog.Any("attribute value map", avm))
 	err = attributevalue.UnmarshalMap(avm, &v)
 	if err != nil {
 		return v, errors.WithStack(err)
@@ -67,6 +65,5 @@ func toDto(ctx context.Context, in map[string]types.AttributeValue, eventAt *tim
 	if eventAt != nil {
 		v.EventAt = synchro.In[tz.UTC](*eventAt)
 	}
-	slog.Default().InfoContext(ctx, "dto", slog.Any("dto", v))
 	return v, nil
 }
