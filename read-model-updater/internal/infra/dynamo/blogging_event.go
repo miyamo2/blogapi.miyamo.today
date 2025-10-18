@@ -26,17 +26,17 @@ type bloggingEvent struct {
 }
 
 var listEventsByArticleID = fmt.Sprintf(
-	`SELECT "event_id",
-		"article_id", 
-		"title", 
-		"content", 
-		"thumbnail", 
-		"tags", 
-		"attach_tags", 
-		"detach_tags", 
-		"invisible" 
-FROM %s."article_id_event_id-Index" 
-WHERE "article_id" = $1
+	`SELECT "event_id"
+	,"article_id"
+	,"title"
+	,"content"
+	,"thumbnail"
+	,"tags"
+	,"attach_tags"
+	,"detach_tags"
+	,"invisible" 
+FROM "%s"."article_id_event_id-Index" 
+WHERE "article_id" = ?
 `, os.Getenv("BLOGGING_EVENTS_TABLE_NAME"),
 )
 
