@@ -97,11 +97,11 @@ INSERT INTO "tags" (
     ,"created_at"
     ,"updated_at"
 )
-SELECT id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."id" IN ($1)
+SELECT id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."id" = ANY($1::varchar[])
     ON CONFLICT DO NOTHING
 `
 
-func (q *Queries) PutTags(ctx context.Context, ids []string) error {
-	_, err := q.db.Exec(ctx, putTags, ids)
+func (q *Queries) PutTags(ctx context.Context, dollar_1 []string) error {
+	_, err := q.db.Exec(ctx, putTags, dollar_1)
 	return err
 }

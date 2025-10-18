@@ -55,7 +55,7 @@ WITH "inserted" AS (
         ,"created_at"
         ,"updated_at"
     )
-    SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."article_id" IN (sqlc.slice('ids'))
+    SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."article_id" = $1
     ON CONFLICT DO NOTHING
     RETURNING "id"
 )

@@ -10,7 +10,7 @@ import (
 
 // Article provides commands for Article.
 type Article interface {
-	AttachTags(ctx context.Context, arg article.AttachTagsParams) error
+	AttachTags(ctx context.Context, articleID string) error
 	CreateTempTagsTable(ctx context.Context) error
 	PutArticle(ctx context.Context, arg article.PutArticleParams) error
 	PreAttachTags(ctx context.Context, arg []article.PreAttachTagsParams) (int64, error)
@@ -21,7 +21,7 @@ type Tag interface {
 	CreateTempArticlesTable(ctx context.Context) error
 	CreateTempTagsTable(ctx context.Context) error
 	PutArticle(ctx context.Context, id string) error
-	PutTags(ctx context.Context, ids []string) error
+	PutTags(ctx context.Context, tagIDs []string) error
 	PrePutArticle(ctx context.Context, arg []tag.PrePutArticleParams) (int64, error)
 	PrePutTags(ctx context.Context, arg []tag.PrePutTagsParams) (int64, error)
 }

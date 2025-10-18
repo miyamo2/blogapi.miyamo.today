@@ -28,7 +28,7 @@ INSERT INTO "tags" (
     ,"created_at"
     ,"updated_at"
 )
-SELECT id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."id" IN (sqlc.slice('ids'))
+SELECT id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."id" = ANY($1::varchar[])
     ON CONFLICT DO NOTHING;
 
 -- name: CreateTempArticlesTable :exec
