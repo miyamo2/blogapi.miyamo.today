@@ -110,13 +110,17 @@ func (u *Sync) execute(ctx context.Context, dto *SyncUsecaseInDto) error {
 	errGroup, egCtx := errgroup.WithContext(ctx)
 	errGroup.Go(
 		func() error {
+			nrtx := nrtx.NewGoroutine()
+			ctx := newrelic.NewContext(egCtx, nrtx)
+			defer nrtx.StartSegment("ArticleTx").End()
+
 			q := u.articleTx.Begin(articleTx)
-			err := q.CreateTempTagsTable(egCtx)
+			err := q.CreateTempTagsTable(ctx)
 			if err != nil {
 				return errors.WithStack(err)
 			}
 			err = q.PutArticle(
-				egCtx, article.PutArticleParams{
+				ctx, article.PutArticleParams{
 					ID:        articleCommand.ID(),
 					Title:     articleCommand.Title(),
 					Body:      articleCommand.Body(),
@@ -129,7 +133,7 @@ func (u *Sync) execute(ctx context.Context, dto *SyncUsecaseInDto) error {
 				return errors.WithStack(err)
 			}
 			_, err = q.PreAttachTags(
-				egCtx,
+				ctx,
 				slices.Collect(
 					func(yield func(article.PreAttachTagsParams) bool) {
 						for _, v := range articleCommand.Tags() {
@@ -151,26 +155,30 @@ func (u *Sync) execute(ctx context.Context, dto *SyncUsecaseInDto) error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			err = q.AttachTags(egCtx, articleCommand.ID())
+			err = q.AttachTags(ctx, articleCommand.ID())
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			return articleTx.Commit(egCtx)
+			return articleTx.Commit(ctx)
 		},
 	)
 	errGroup.Go(
 		func() error {
+			nrtx := nrtx.NewGoroutine()
+			ctx := newrelic.NewContext(egCtx, nrtx)
+			defer nrtx.StartSegment("TagTx").End()
+
 			q := u.tagTx.Begin(tagTx)
-			err := q.CreateTempArticlesTable(egCtx)
+			err := q.CreateTempArticlesTable(ctx)
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			err = q.CreateTempTagsTable(egCtx)
+			err = q.CreateTempTagsTable(ctx)
 			if err != nil {
 				return errors.WithStack(err)
 			}
 			_, err = q.PrePutTags(
-				egCtx, slices.Collect(
+				ctx, slices.Collect(
 					func(yield func(tag.PrePutTagsParams) bool) {
 						for _, v := range articleCommand.Tags() {
 							if !yield(
@@ -191,7 +199,7 @@ func (u *Sync) execute(ctx context.Context, dto *SyncUsecaseInDto) error {
 				return errors.WithStack(err)
 			}
 			err = q.PutTags(
-				egCtx, slices.Collect(
+				ctx, slices.Collect(
 					func(yield func(string) bool) {
 						for _, v := range articleCommand.Tags() {
 							if !yield(v.ID()) {
@@ -205,7 +213,7 @@ func (u *Sync) execute(ctx context.Context, dto *SyncUsecaseInDto) error {
 				return errors.WithStack(err)
 			}
 			_, err = q.PrePutArticle(
-				egCtx, slices.Collect(
+				ctx, slices.Collect(
 					func(yield func(tag.PrePutArticleParams) bool) {
 						for _, v := range articleCommand.Tags() {
 							if !yield(
@@ -227,11 +235,11 @@ func (u *Sync) execute(ctx context.Context, dto *SyncUsecaseInDto) error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			err = q.PutArticle(egCtx, articleCommand.ID())
+			err = q.PutArticle(ctx, articleCommand.ID())
 			if err != nil {
 				return errors.WithStack(err)
 			}
-			return tagTx.Commit(egCtx)
+			return tagTx.Commit(ctx)
 		},
 	)
 	if err := errGroup.Wait(); err != nil {
