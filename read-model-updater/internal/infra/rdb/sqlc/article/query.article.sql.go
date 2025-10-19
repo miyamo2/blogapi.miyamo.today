@@ -21,7 +21,8 @@ WITH "inserted" AS (
         ,"updated_at"
     )
     SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."article_id" = $1
-    ON CONFLICT DO NOTHING
+    ON CONFLICT ("id","article_id") DO UPDATE
+    SET "updated_at" = EXCLUDED.updated_at
     RETURNING "id"
 )
 DELETE
@@ -30,7 +31,7 @@ FROM
 WHERE
     "tags"."article_id" = $1
 AND
-    "tags"."id" NOT IN (SELECT id FROM "tmp_tags" WHERE "tmp_tags"."article_id" = $1)
+    "tags"."id" NOT IN (SELECT id FROM "inserted")
 `
 
 func (q *Queries) AttachTags(ctx context.Context, articleID string) error {

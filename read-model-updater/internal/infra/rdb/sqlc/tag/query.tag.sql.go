@@ -81,7 +81,7 @@ FROM
 WHERE
     "articles"."id" = $1
 AND
-    "articles"."tag_id" NOT IN (SELECT id FROM "tmp_articles" WHERE "tmp_articles"."id" = $1)
+    "articles"."tag_id" NOT IN (SELECT tag_id FROM "inserted")
 `
 
 func (q *Queries) PutArticle(ctx context.Context, id string) error {
