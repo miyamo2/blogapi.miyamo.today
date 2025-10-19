@@ -37,8 +37,7 @@ CREATE TEMP TABLE IF NOT EXISTS tmp_articles (
     title VARCHAR(255) NOT NULL,
     thumbnail VARCHAR(524271),
     created_at timestamp WITH TIME ZONE NOT NULL,
-    updated_at timestamp WITH TIME ZONE NOT NULL,
-    PRIMARY KEY (id, tag_id)
+    updated_at timestamp WITH TIME ZONE NOT NULL
 ) ON COMMIT PRESERVE ROWS;
 
 -- name: PrePutArticle :copyfrom

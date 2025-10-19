@@ -45,8 +45,7 @@ CREATE TEMP TABLE IF NOT EXISTS tmp_tags (
     article_id VARCHAR(26),
     name VARCHAR(35) NOT NULL,
     created_at timestamp WITH TIME ZONE NOT NULL,
-    updated_at timestamp WITH TIME ZONE NOT NULL,
-    PRIMARY KEY (id, article_id)
+    updated_at timestamp WITH TIME ZONE NOT NULL
 ) ON COMMIT PRESERVE ROWS
 `
 
