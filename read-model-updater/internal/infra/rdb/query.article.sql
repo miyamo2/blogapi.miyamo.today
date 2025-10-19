@@ -54,7 +54,18 @@ WITH "inserted" AS (
         ,"created_at"
         ,"updated_at"
     )
-    SELECT id, article_id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."article_id" = $1
+    SELECT
+        DISTINCT ON(id, article_id) id, article_id, name, created_at, updated_at
+    FROM (
+        SELECT
+            id, article_id, name, created_at, updated_at
+        FROM
+            "tmp_tags"
+        WHERE
+            "tmp_tags"."article_id" = $1
+        ORDER BY
+            updated_at
+    )
     ON CONFLICT ("id","article_id") DO UPDATE
     SET "updated_at" = EXCLUDED.updated_at
     RETURNING "id"

@@ -27,8 +27,16 @@ INSERT INTO "tags" (
     ,"created_at"
     ,"updated_at"
 )
-SELECT id, name, created_at, updated_at FROM "tmp_tags" WHERE "tmp_tags"."id" = ANY($1::varchar[])
-    ON CONFLICT DO NOTHING;
+SELECT
+    DISTINCT ON(id) id, name, created_at, updated_at
+FROM (
+    SELECT
+        id, name, created_at, updated_at
+    WHERE
+        "tmp_tags"."id" = ANY ($1:: varchar [])
+    ORDER BY updated_at DESC
+)
+ON CONFLICT DO NOTHING;
 
 -- name: CreateTempArticlesTable :exec
 CREATE TEMP TABLE IF NOT EXISTS tmp_articles (
@@ -68,7 +76,18 @@ WITH "inserted" AS (
         ,"created_at"
         ,"updated_at"
     )
-    SELECT id, tag_id, title, thumbnail, created_at, updated_at FROM "tmp_articles" WHERE "tmp_articles"."id" = $1
+    SELECT
+        DISTINCT ON(id, tag_id) id, tag_id, title, thumbnail, created_at, updated_at
+    FROM (
+        SELECT
+            id, tag_id, title, thumbnail, created_at, updated_at
+        FROM
+            "tmp_articles"
+        WHERE
+            "tmp_articles"."id" = $1
+        ORDER BY
+            updated_at DESC
+    )
     ON CONFLICT ("id","tag_id") DO UPDATE
         SET "title" = EXCLUDED.title
         ,"thumbnail" = EXCLUDED.thumbnail
