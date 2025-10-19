@@ -7,6 +7,7 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
+	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/cockroachdb/errors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
@@ -18,7 +19,7 @@ type Message struct {
 
 // DynamoDB represents the DynamoDB data in the stream event.
 type DynamoDB struct {
-	NewImage usecase.SyncUsecaseInDto `json:"NewImage"`
+	NewImage json.RawMessage `json:"NewImage"`
 }
 
 type Converter struct{}
@@ -39,7 +40,17 @@ func (c *Converter) ToSyncUsecaseInDto(ctx context.Context, body []byte, eventAt
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal body")
 	}
-	dto := message.DynamoDB.NewImage
+
+	avm, err := attributevalue.UnmarshalMapJSON(message.DynamoDB.NewImage)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode new image json to attribute value map")
+	}
+
+	var dto usecase.SyncUsecaseInDto
+	err = attributevalue.UnmarshalMap(avm, &dto)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal attribute value map to dto")
+	}
 	dto.EventAt = eventAt
 
 	return &dto, nil
