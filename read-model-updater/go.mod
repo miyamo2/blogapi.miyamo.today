@@ -5,6 +5,7 @@ go 1.25.1
 require (
 	blogapi.miyamo.today/core v0.24.0
 	github.com/Code-Hex/synchro v0.5.4
+	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/aws/aws-sdk-go-v2 v1.39.2
 	github.com/aws/aws-sdk-go-v2/config v1.31.12
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.14
@@ -14,7 +15,6 @@ require (
 	github.com/google/wire v0.7.0
 	github.com/jackc/pgx/v5 v5.7.6
 	github.com/jmoiron/sqlx v1.4.0
-	github.com/miyamo2/altnrslog v0.4.2
 	github.com/miyamo2/pqxd v0.6.0
 	github.com/miyamo2/sqldav v0.2.1
 	github.com/newrelic/go-agent/v3 v3.41.0
@@ -54,6 +54,7 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/miyamo2/altnrslog v0.4.2 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/logWriter v1.0.3 // indirect
 	github.com/newrelic/go-agent/v3/integrations/logcontext-v2/nrwriter v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
