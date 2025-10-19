@@ -3,7 +3,8 @@ package handler
 import (
 	"context"
 
-	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams/types"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 )
 
 // SyncHandler is a handler for the Sync usecase.
@@ -13,9 +14,12 @@ type SyncHandler struct {
 }
 
 // Invoke invokes the Sync usecase.
-func (h *SyncHandler) Invoke(ctx context.Context, records []types.Record) error {
-	dtoSeq := h.syncUsecaseConverter.ToSyncUsecaseInDtoSeq(ctx, records)
-	return h.syncUsecase.SyncBlogSnapshotWithEvents(ctx, dtoSeq)
+func (h *SyncHandler) Invoke(ctx context.Context, body []byte, eventAt synchro.Time[tz.UTC]) error {
+	dto, err := h.syncUsecaseConverter.ToSyncUsecaseInDto(ctx, body, eventAt)
+	if err != nil {
+		return err
+	}
+	return h.syncUsecase.SyncBlogSnapshotWithEvents(ctx, dto)
 }
 
 // NewSyncHandler creates a new SyncHandler.

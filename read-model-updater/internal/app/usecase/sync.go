@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"iter"
 	"log/slog"
 	"slices"
 	"time"
@@ -38,13 +37,11 @@ type ArticleDBPool *pgxpool.Pool
 type TagDBPool *pgxpool.Pool
 
 // SyncBlogSnapshotWithEvents synchronized blog snapshot with event
-func (u *Sync) SyncBlogSnapshotWithEvents(ctx context.Context, in iter.Seq2[int, SyncUsecaseInDto]) error {
+func (u *Sync) SyncBlogSnapshotWithEvents(ctx context.Context, dto *SyncUsecaseInDto) error {
 	nrtx := newrelic.FromContext(ctx)
 	defer nrtx.StartSegment("Sync#SyncBlogSnapshotWithEvents").End()
-	for _, dto := range in {
-		if err := u.executePerEvent(ctx, dto); err != nil {
-			return errors.WithStack(err)
-		}
+	if err := u.execute(ctx, dto); err != nil {
+		return errors.WithStack(err)
 	}
 	if err := u.blogAPIPublisher.Publish(ctx); err != nil {
 		return errors.WithStack(err)
@@ -52,9 +49,9 @@ func (u *Sync) SyncBlogSnapshotWithEvents(ctx context.Context, in iter.Seq2[int,
 	return nil
 }
 
-func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error {
+func (u *Sync) execute(ctx context.Context, dto *SyncUsecaseInDto) error {
 	nrtx := newrelic.FromContext(ctx)
-	defer nrtx.StartSegment("Sync#executePerEvent").End()
+	defer nrtx.StartSegment("Sync#execute").End()
 
 	slog.Default().InfoContext(
 		ctx,

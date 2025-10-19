@@ -5,37 +5,36 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"strconv"
+	"sync"
+	"time"
 
 	blogapictx "blogapi.miyamo.today/core/context"
 	"blogapi.miyamo.today/read-model-updater/internal/configs/di"
+	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/handler"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/queue"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"github.com/avast/retry-go"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams/types"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
+	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/cockroachdb/errors"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"golang.org/x/sync/errgroup"
 )
 
 var dependencies = di.GetDependecies()
 
-type RecordsInfo struct {
-	shardID       string
-	shardIterator string
-	records       []types.Record
-}
-
 func main() {
-	recordsInfoCh := make(chan RecordsInfo, 1)
+	messageCh := make(chan types.Message, 1)
 	errCh := make(chan error, 1)
-	workerQueue := make(chan RecordsInfo, 1)
+	workerQueue := make(chan types.Message, 1)
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
-	go polling(ctx, recordsInfoCh, errCh)
-	go work(ctx, workerQueue)
+	go polling(ctx, messageCh, errCh, dependencies.QueueClient, dependencies.QueueURL)
+	go work(ctx, workerQueue, dependencies.NewRelicApp, dependencies.QueueClient, dependencies.QueueURL, dependencies.SyncHandler)
 
 	for {
 		select {
@@ -48,17 +47,24 @@ func main() {
 			slog.Default().ErrorContext(
 				ctx,
 				"error occurred during polling",
-				slog.String("stream_arn", *dependencies.StreamARN),
+				slog.String("queue_url", *dependencies.QueueURL),
 				slog.String("error", err.Error()),
 			)
-		case recordsInfo := <-recordsInfoCh:
-			workerQueue <- recordsInfo
+		case message := <-messageCh:
+			workerQueue <- message
 		}
 	}
 }
 
-func polling(ctx context.Context, recordsInfoCh chan<- RecordsInfo, errCh chan<- error) {
-	for {
+func polling(
+	ctx context.Context,
+	messageCh chan<- types.Message,
+	errCh chan<- error,
+	queueClient queue.Client,
+	queueURL *string,
+) {
+	c := time.Tick(time.Second)
+	for range c {
 		select {
 		case <-ctx.Done():
 			err := context.Cause(ctx)
@@ -67,120 +73,105 @@ func polling(ctx context.Context, recordsInfoCh chan<- RecordsInfo, errCh chan<-
 			}
 			return
 		default:
-			describeStreamOutput, err := dependencies.StreamClient.DescribeStream(
-				ctx, &dynamodbstreams.DescribeStreamInput{
-					StreamArn: dependencies.StreamARN,
+			message, err := queueClient.ReceiveMessage(
+				ctx, &sqs.ReceiveMessageInput{
+					MessageSystemAttributeNames: []types.MessageSystemAttributeName{
+						types.MessageSystemAttributeNameSentTimestamp,
+					},
+					MessageAttributeNames: []string{"dynamodb.NewImage"},
+					QueueUrl:              queueURL,
+					MaxNumberOfMessages:   10,
 				},
 			)
 			if err != nil {
-				errCh <- errors.Wrap(err, "failed to describe stream")
+				errCh <- errors.Wrap(err, "failed to receive message from queue")
+				continue
 			}
-			eg, egCtx := errgroup.WithContext(ctx)
-			for _, shard := range describeStreamOutput.StreamDescription.Shards {
-				select {
-				case <-egCtx.Done():
-					err := context.Cause(egCtx)
-					errCh <- errors.Wrap(err, "error processing shards")
-				default:
-					eg.Go(
-						func() error {
-							shardID := *shard.ShardId
-							slog.Default().InfoContext(
-								egCtx,
-								"processing shard",
-								slog.String("shard_id", shardID),
-							)
-							defer slog.Default().InfoContext(
-								egCtx,
-								"processed shard",
-								slog.String("shard_id", shardID),
-							)
-
-							getShardIteratorOutput, err := dependencies.StreamClient.GetShardIterator(
-								egCtx, &dynamodbstreams.GetShardIteratorInput{
-									StreamArn:         dependencies.StreamARN,
-									ShardId:           &shardID,
-									ShardIteratorType: types.ShardIteratorTypeTrimHorizon,
-								},
-							)
-							if err != nil {
-								return err
-							}
-							shardIterator := getShardIteratorOutput.ShardIterator
-
-							for shardIterator != nil {
-								slog.Default().InfoContext(
-									egCtx,
-									"shard iterator",
-									slog.String("shard_id", shardID),
-									slog.String("shard_iterator", *shardIterator),
-								)
-								getRecordsOutput, err := dependencies.StreamClient.GetRecords(
-									egCtx, &dynamodbstreams.GetRecordsInput{
-										ShardIterator: shardIterator,
-										Limit:         aws.Int32(1000),
-									},
-								)
-								if err != nil {
-									return err
-								}
-								recordsInfoCh <- RecordsInfo{
-									shardID:       shardID,
-									shardIterator: *shardIterator,
-									records:       getRecordsOutput.Records,
-								}
-								shardIterator = getRecordsOutput.NextShardIterator
-							}
-							return nil
-						},
-					)
-				}
-			}
-			if err := eg.Wait(); err != nil {
-				errCh <- errors.Wrap(err, "error processing shards")
+			for _, msg := range message.Messages {
+				messageCh <- msg
 			}
 		}
 	}
+
 }
 
-func work(ctx context.Context, queue <-chan RecordsInfo) {
-	eg, egCtx := errgroup.WithContext(ctx)
-	eg.SetLimit(5)
+func work(
+	ctx context.Context,
+	queue <-chan types.Message,
+	nr *newrelic.Application,
+	queueClient queue.Client,
+	queueURL *string,
+	syncHandler *handler.SyncHandler,
+) {
+	var wg sync.WaitGroup
 	for {
 		select {
-		case <-egCtx.Done():
+		case <-ctx.Done():
 			err := context.Cause(ctx)
 			if err != nil && !errors.Is(err, context.Canceled) {
 				slog.Default().ErrorContext(
 					ctx,
-					"worker context done",
+					"worker context canceled with error",
 					slog.String("error", err.Error()),
 				)
 			}
+			wg.Wait()
 			return
 		case msg := <-queue:
-			eg.Go(
-				func() error {
-					return retry.Do(
+			wg.Go(
+				func() {
+					tx := nr.StartTransaction("stream-worker")
+					defer tx.End()
+
+					blogAPICtx := blogapictx.New(*msg.MessageId, "", "queue", nil, nil)
+					ctx := newrelic.NewContext(blogapictx.StoreToContext(context.Background(), blogAPICtx), tx)
+
+					if msg.Body == nil {
+						tx.NoticeError(nrpkgerrors.Wrap(errors.New("message body is nil")))
+						return
+					}
+					body := []byte(*msg.Body)
+
+					sentTs, err := strconv.ParseInt(
+						msg.Attributes[string(types.MessageSystemAttributeNameSentTimestamp)], 10, 64,
+					)
+					if err != nil {
+						tx.NoticeError(nrpkgerrors.Wrap(errors.Wrap(err, "failed to parse sent timestamp")))
+						return
+					}
+					eventAt := synchro.UnixMilli[tz.UTC](sentTs)
+
+					err = retry.Do(
 						func() error {
-							tx := dependencies.NewRelicApp.StartTransaction("stream-worker")
-							defer tx.End()
-
-							blogAPICtx := blogapictx.New(msg.shardID, msg.shardIterator, "queue", nil, nil)
-							ctx := newrelic.NewContext(blogapictx.StoreToContext(egCtx, blogAPICtx), tx)
-
-							err := dependencies.SyncHandler.Invoke(ctx, msg.records)
+							err := syncHandler.Invoke(ctx, body, eventAt)
 							if err != nil {
-								slog.Default().ErrorContext(
-									ctx,
-									"failed to process stream in worker",
-									slog.String("error", err.Error()),
-								)
-								tx.NoticeError(nrpkgerrors.Wrap(err))
+								return errors.WithStack(err)
 							}
 							return nil
 						},
 					)
+					if err != nil {
+						tx.NoticeError(nrpkgerrors.Wrap(errors.Wrap(err, "failed to process message in worker")))
+						return
+					}
+					err = retry.Do(
+						func() error {
+							_, err = queueClient.DeleteMessage(
+								ctx, &sqs.DeleteMessageInput{
+									QueueUrl:      queueURL,
+									ReceiptHandle: msg.ReceiptHandle,
+								},
+							)
+							if err != nil {
+								return errors.WithStack(err)
+							}
+							return nil
+						},
+					)
+					if err != nil {
+						tx.NoticeError(nrpkgerrors.Wrap(errors.Wrap(err, "failed to delete message from queue")))
+					}
+					return
 				},
 			)
 		}

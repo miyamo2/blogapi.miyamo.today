@@ -15,10 +15,10 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/handler"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/queue"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/article"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/tag"
-	"blogapi.miyamo.today/read-model-updater/internal/infra/streams"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/google/wire"
 )
 
@@ -39,9 +39,9 @@ func GetDependecies() *Dependencies {
 	blogPublisher := provideBlogPublisher()
 	sync := provideSynUsecaseSet(bloggingEventQueryService, articleTx, tagTx, articleDBPool, tagDBPool, blogPublisher)
 	syncHandler := handler.NewSyncHandler(converterConverter, sync)
-	client := provideDynamoDBStreamClient(config)
-	streamARN := provideStreamARN()
-	dependencies := newDependencies(config, application, syncHandler, client, streamARN)
+	client := provideSQSClient(config)
+	queueURL := provideQueueURL()
+	dependencies := newDependencies(config, application, syncHandler, client, queueURL)
 	return dependencies
 }
 
@@ -75,10 +75,10 @@ var converterSet = wire.NewSet(converter.NewConverter, wire.Bind(new(handler.ToS
 
 var handlerSet = wire.NewSet(handler.NewSyncHandler)
 
-var streamSet = wire.NewSet(
-	provideDynamoDBStreamClient, wire.Bind(new(streams.Client), new(*dynamodbstreams.Client)),
+var queueSet = wire.NewSet(
+	provideSQSClient, wire.Bind(new(queue.Client), new(*sqs.Client)),
 )
 
-var streamARNSet = wire.NewSet(provideStreamARN)
+var queueURLSet = wire.NewSet(provideQueueURL)
 
 var dependenciesSet = wire.NewSet(newDependencies)

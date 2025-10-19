@@ -16,7 +16,7 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/tag"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 	"github.com/miyamo2/pqxd"
@@ -104,13 +104,13 @@ func provideBlogPublisher() *githubactions.BlogPublisher {
 	return githubactions.NewBlogPublisher(endpoint, token, http.DefaultClient)
 }
 
-func provideStreamARN() StreamARN {
-	v := os.Getenv("BLOGGING_EVENTS_TABLE_STREAM_ARN")
+func provideQueueURL() QueueURL {
+	v := os.Getenv("QUEUE_URL")
 	return &v
 }
 
-func provideDynamoDBStreamClient(awsConfig *aws.Config) *dynamodbstreams.Client {
-	return dynamodbstreams.NewFromConfig(*awsConfig)
+func provideSQSClient(awsConfig *aws.Config) *sqs.Client {
+	return sqs.NewFromConfig(*awsConfig)
 }
 
 func provideSynUsecaseSet(

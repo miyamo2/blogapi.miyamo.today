@@ -11,10 +11,10 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/if-adapters/handler"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/dynamo"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/githubactions"
+	"blogapi.miyamo.today/read-model-updater/internal/infra/queue"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/article"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/tag"
-	"blogapi.miyamo.today/read-model-updater/internal/infra/streams"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams"
+	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/google/wire"
 )
 
@@ -62,12 +62,12 @@ var handlerSet = wire.NewSet(
 	handler.NewSyncHandler,
 )
 
-var streamSet = wire.NewSet(
-	provideDynamoDBStreamClient,
-	wire.Bind(new(streams.Client), new(*dynamodbstreams.Client)),
+var queueSet = wire.NewSet(
+	provideSQSClient,
+	wire.Bind(new(queue.Client), new(*sqs.Client)),
 )
 
-var streamARNSet = wire.NewSet(provideStreamARN)
+var queueURLSet = wire.NewSet(provideQueueURL)
 
 var dependenciesSet = wire.NewSet(newDependencies)
 
@@ -75,8 +75,8 @@ func GetDependecies() *Dependencies {
 	wire.Build(
 		awsConfigSet,
 		dynamodbSet,
-		streamSet,
-		streamARNSet,
+		queueSet,
+		queueURLSet,
 		rdbSet,
 		commandSet,
 		txSet,

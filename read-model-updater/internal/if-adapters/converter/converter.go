@@ -2,19 +2,24 @@ package converter
 
 import (
 	"context"
-	"fmt"
-	"iter"
-	"time"
+	"encoding/json"
 
 	"blogapi.miyamo.today/read-model-updater/internal/app/usecase"
 	"github.com/Code-Hex/synchro"
 	"github.com/Code-Hex/synchro/tz"
-	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodbstreams/types"
 	"github.com/cockroachdb/errors"
-	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
 )
+
+// Message represents a DynamoDB stream event message.
+type Message struct {
+	DynamoDB DynamoDB `json:"dynamodb"`
+}
+
+// DynamoDB represents the DynamoDB data in the stream event.
+type DynamoDB struct {
+	NewImage usecase.SyncUsecaseInDto `json:"NewImage"`
+}
 
 type Converter struct{}
 
@@ -22,48 +27,20 @@ func NewConverter() *Converter {
 	return &Converter{}
 }
 
-func (c *Converter) ToSyncUsecaseInDtoSeq(
-	ctx context.Context, records []types.Record,
-) iter.Seq2[int, usecase.SyncUsecaseInDto] {
+func (c *Converter) ToSyncUsecaseInDto(ctx context.Context, body []byte, eventAt synchro.Time[tz.UTC]) (
+	*usecase.SyncUsecaseInDto, error,
+) {
 	nrtx := newrelic.FromContext(ctx)
 	seg := nrtx.StartSegment("ToSyncUsecaseInDtoSeq")
 	defer seg.End()
-	seg.AddAttribute("records", fmt.Sprintf("%+v", records))
-	return func(yield func(int, usecase.SyncUsecaseInDto) bool) {
-		for i, record := range records {
-			if record.EventName != types.OperationTypeInsert {
-				continue
-			}
-			dto, err := toDto(ctx, record.Dynamodb.NewImage, record.Dynamodb.ApproximateCreationDateTime)
-			if err != nil {
-				nrtx.NoticeError(nrpkgerrors.Wrap(err))
-				continue
-			}
-			if !yield(i, dto) {
-				return
-			}
-		}
-	}
-}
 
-func toDto(ctx context.Context, in map[string]types.AttributeValue, eventAt *time.Time) (
-	usecase.SyncUsecaseInDto, error,
-) {
-	nrtx := newrelic.FromContext(ctx)
-	seg := nrtx.StartSegment("toDto")
-	defer seg.End()
+	var message Message
+	err := json.Unmarshal(body, &message)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal body")
+	}
+	dto := message.DynamoDB.NewImage
+	dto.EventAt = eventAt
 
-	var v usecase.SyncUsecaseInDto
-	avm, err := attributevalue.FromDynamoDBStreamsMap(in)
-	if err != nil {
-		return v, errors.WithStack(err)
-	}
-	err = attributevalue.UnmarshalMap(avm, &v)
-	if err != nil {
-		return v, errors.WithStack(err)
-	}
-	if eventAt != nil {
-		v.EventAt = synchro.In[tz.UTC](*eventAt)
-	}
-	return v, nil
+	return &dto, nil
 }
