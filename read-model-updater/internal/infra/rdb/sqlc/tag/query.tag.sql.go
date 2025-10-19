@@ -111,6 +111,8 @@ SELECT
 FROM (
     SELECT
         id, name, created_at, updated_at
+    FROM
+        "tmp_tags"
     WHERE
         "tmp_tags"."id" = ANY ($1:: varchar [])
     ORDER BY updated_at DESC
