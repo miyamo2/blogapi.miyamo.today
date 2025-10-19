@@ -13,10 +13,13 @@ import (
 	"blogapi.miyamo.today/read-model-updater/internal/domain/model"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/article"
 	"blogapi.miyamo.today/read-model-updater/internal/infra/rdb/sqlc/tag"
+	"github.com/Code-Hex/synchro"
+	"github.com/Code-Hex/synchro/tz"
 	"github.com/cockroachdb/errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/newrelic/go-agent/v3/newrelic"
+	"github.com/oklog/ulid/v2"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -102,6 +105,11 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
+	articleULID, err := ulid.Parse(articleCommand.ID())
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	errGroup, egCtx := errgroup.WithContext(ctx)
 	errGroup.Go(
 		func() error {
@@ -116,7 +124,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 					Title:     articleCommand.Title(),
 					Body:      articleCommand.Body(),
 					Thumbnail: articleCommand.Thumbnail(),
-					CreatedAt: dto.EventAt,
+					CreatedAt: synchro.In[tz.UTC](articleULID.Timestamp()),
 					UpdatedAt: dto.EventAt,
 				},
 			)
@@ -209,7 +217,7 @@ func (u *Sync) executePerEvent(ctx context.Context, dto SyncUsecaseInDto) error 
 									TagID:     v.ID(),
 									Title:     articleCommand.Title(),
 									Thumbnail: articleCommand.Thumbnail(),
-									CreatedAt: dto.EventAt,
+									CreatedAt: synchro.In[tz.UTC](articleULID.Timestamp()),
 									UpdatedAt: dto.EventAt,
 								},
 							) {
