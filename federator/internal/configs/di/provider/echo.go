@@ -1,9 +1,14 @@
 package provider
 
 import (
+	_ "embed"
+	"fmt"
+	"log/slog"
+
+	"net/http"
+
 	"blogapi.miyamo.today/core/echo/middlewares"
 	"blogapi.miyamo.today/core/echo/s11n"
-	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/goccy/go-json"
@@ -13,8 +18,10 @@ import (
 	"github.com/newrelic/go-agent/v3/integrations/nrecho-v4"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
 	"github.com/newrelic/go-agent/v3/newrelic"
-	"log/slog"
 )
+
+//go:embed remote_import_paths.html
+var remoteImportPaths string
 
 func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Verifier) *echo.Echo {
 	slog.Info("creating echo server")
@@ -24,7 +31,10 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 	e.POST("/query", echo.WrapHandler(srv), nrecho.Middleware(nr), middlewares.SetLoggerToContext(nr), middlewares.RequestLog(), authMiddleware)
 	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL playground", "/query")), authMiddleware)
 	e.GET("/health", func(c echo.Context) error {
-		return c.String(200, "ok")
+		return c.String(http.StatusOK, "ok")
+	})
+	e.Any("/", func(c echo.Context) error {
+		return c.HTML(http.StatusOK, remoteImportPaths)
 	})
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		req := c.Request()
