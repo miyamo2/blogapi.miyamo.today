@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 mcr.microsoft.com/devcontainers/go:1-1.24-bookworm
+FROM --platform=linux/arm64 mcr.microsoft.com/devcontainers/go:1-1.24-bookworm
 
 RUN apt-get update \
     && sudo apt install build-essential \

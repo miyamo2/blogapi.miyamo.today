@@ -33,6 +33,6 @@
   ],
   "postStartCommand": "/bin/bash git config --global --add safe.directory ${containerWorkspaceFolder}",
   "runArgs": [
-    "--platform=linux/amd64",
+    "--platform=linux/arm64",
   ]
 }

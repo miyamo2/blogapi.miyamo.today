@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG GO_VERSION=1.25.1
 
-FROM --platform=linux/amd64 golang:${GO_VERSION}-alpine as build
+FROM --platform=linux/arm64 golang:${GO_VERSION}-alpine as build
 
 WORKDIR /go/src/github.com/miyamo2/blogapi.miyamo.today/article-service
 
@@ -12,7 +12,7 @@ RUN go mod download
 
 RUN go build -ldflags="-s -w" -trimpath -o ./bin/article-service ./cmd/main.go
 
-FROM alpine
+FROM --platform=linux/arm64 alpine
 
 WORKDIR /app
 
