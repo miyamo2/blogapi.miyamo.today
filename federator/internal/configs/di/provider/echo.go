@@ -27,6 +27,7 @@ var remoteImportPaths string
 func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Verifier) *echo.Echo {
 	slog.Info("creating echo server")
 	e := echo.New()
+	e.Pre(middleware.RemoveTrailingSlash())
 
 	authMiddleware := middlewares.Auth(verifier)
 
@@ -59,14 +60,7 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
-	e.Any("/", func(c echo.Context) error {
-		switch c.Request().Method {
-		case http.MethodGet, http.MethodHead:
-			return c.HTML(http.StatusOK, remoteImportPaths)
-		default:
-			return echo.NewHTTPError(http.StatusMethodNotAllowed, fmt.Sprintf("%s / unsupported", c.Request().Method))
-		}
-	})
+	e.Any("/", remoteImportPathHandler)
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		req := c.Request()
 		ctx := req.Context()
@@ -87,6 +81,15 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 	}
 	slog.Info("echo server created")
 	return e
+}
+
+func remoteImportPathHandler(c echo.Context) error {
+	switch c.Request().Method {
+	case http.MethodGet, http.MethodHead:
+		return c.HTML(http.StatusOK, remoteImportPaths)
+	default:
+		return echo.NewHTTPError(http.StatusMethodNotAllowed, fmt.Sprintf("%s / unsupported", c.Request().Method))
+	}
 }
 
 var EchoSet = wire.NewSet(Echo)
