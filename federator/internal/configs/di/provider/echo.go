@@ -60,7 +60,7 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
-	e.Any("/", remoteImportPathHandler)
+	e.GET("/*", remoteImportPathHandler)
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		req := c.Request()
 		ctx := req.Context()
