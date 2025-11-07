@@ -65,8 +65,7 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 		case http.MethodGet, http.MethodHead:
 			return c.HTML(http.StatusOK, remoteImportPaths)
 		default:
-			c.Error(fmt.Errorf("%s / unsupported", c.Request().Method))
-			return nil
+			return echo.NewHTTPError(http.StatusMethodNotAllowed, fmt.Sprintf("%s / unsupported", c.Request().Method))
 		}
 	})
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
