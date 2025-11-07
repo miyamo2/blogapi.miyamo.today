@@ -39,7 +39,6 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 			echo.HeaderAccept,
 			echo.HeaderAuthorization,
 			echo.HeaderAccessControlRequestHeaders,
-			echo.HeaderAccessControlRequestHeaders,
 		},
 		AllowMethods: []string{
 			http.MethodOptions,
