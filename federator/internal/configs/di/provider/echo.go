@@ -14,6 +14,7 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/miyamo2/altnrslog"
 	"github.com/newrelic/go-agent/v3/integrations/nrecho-v4"
 	"github.com/newrelic/go-agent/v3/integrations/nrpkgerrors"
@@ -28,13 +29,45 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 	e := echo.New()
 
 	authMiddleware := middlewares.Auth(verifier)
-	e.POST("/query", echo.WrapHandler(srv), nrecho.Middleware(nr), middlewares.SetLoggerToContext(nr), middlewares.RequestLog(), authMiddleware)
-	e.GET("/playground", echo.WrapHandler(playground.Handler("GraphQL playground", "/query")), authMiddleware)
+
+	queryGroup := e.Group("/query")
+	queryGroup.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+			echo.HeaderAccessControlRequestHeaders,
+			echo.HeaderAccessControlRequestHeaders,
+		},
+		AllowMethods: []string{
+			http.MethodOptions,
+			http.MethodPost,
+		},
+	}))
+	queryGroup.POST("/",
+		echo.WrapHandler(srv),
+		nrecho.Middleware(nr),
+		middlewares.SetLoggerToContext(nr),
+		middlewares.RequestLog(),
+		authMiddleware,
+	)
+	e.GET("/playground",
+		echo.WrapHandler(playground.Handler("GraphQL playground", "/query")),
+		authMiddleware,
+	)
 	e.GET("/health", func(c echo.Context) error {
 		return c.String(http.StatusOK, "ok")
 	})
 	e.Any("/", func(c echo.Context) error {
-		return c.HTML(http.StatusOK, remoteImportPaths)
+		switch c.Request().Method {
+		case http.MethodGet, http.MethodHead:
+			return c.HTML(http.StatusOK, remoteImportPaths)
+		default:
+			c.Error(fmt.Errorf("%s / unsupported", c.Request().Method))
+			return nil
+		}
 	})
 	e.HTTPErrorHandler = func(err error, c echo.Context) {
 		req := c.Request()
