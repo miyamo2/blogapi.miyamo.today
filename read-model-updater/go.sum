@@ -109,6 +109,8 @@ github.com/miyamo2/sqldav v0.2.1/go.mod h1:kiJbN9nSiYRk6S2ZxcP8FkiUETU1acKW+6LX3
 github.com/newrelic/go-agent/v3 v3.0.0/go.mod h1:H28zDNUC0U/b7kLoY4EFOhuth10Xu/9dchozUiOseQQ=
 github.com/newrelic/go-agent/v3 v3.41.0 h1:kc1Y8HRe1sZe5/ZkgOYIsClo1Jc+2fcdJ4+NlrxDmSg=
 github.com/newrelic/go-agent/v3 v3.41.0/go.mod h1:sCgxDCVydoKD/C4S8BFxDtmFHvdWHtaIz/a3kiyNB/k=
+github.com/newrelic/go-agent/v3 v3.42.0 h1:aA2Ea1RT5eD59LtOS1KGFXSmaDs6kM3Jeqo7PpuQoFQ=
+github.com/newrelic/go-agent/v3 v3.42.0/go.mod h1:sCgxDCVydoKD/C4S8BFxDtmFHvdWHtaIz/a3kiyNB/k=
 github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2 v1.2.5 h1:BGQ5uiP4mEfNWP0eTx3jGy73rzJhcQA36HulbmKU3q0=
 github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2 v1.2.5/go.mod h1:+DEYx40wzWuArjHeHVxNKRDE2EBBF1P6nVfUYYAWv9M=
 github.com/newrelic/go-agent/v3/integrations/nrpgx5 v1.3.2 h1:Xk+PmDyGIanVjLiB6zgzTBl12lb8EttOS5va04prwbQ=
