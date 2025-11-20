@@ -8,6 +8,7 @@ require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/aws/aws-sdk-go-v2 v1.39.2
 	github.com/aws/aws-sdk-go-v2/config v1.31.12
+	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.14
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.8
 	github.com/cockroachdb/errors v1.12.0
 	github.com/google/wire v0.7.0
@@ -15,7 +16,7 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/miyamo2/pqxd v0.6.0
 	github.com/miyamo2/sqldav v0.2.1
-	github.com/newrelic/go-agent/v3 v3.41.0
+	github.com/newrelic/go-agent/v3 v3.42.0
 	github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2 v1.2.5
 	github.com/newrelic/go-agent/v3/integrations/nrpgx5 v1.3.2
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
@@ -26,7 +27,6 @@ require (
 require (
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.6.7 // indirect
 	github.com/aws/aws-sdk-go-v2/credentials v1.18.16 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue v1.20.14 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.9 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.9 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.9 // indirect
