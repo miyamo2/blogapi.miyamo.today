@@ -46,7 +46,7 @@ func Echo(srv *handler.Server, nr *newrelic.Application, verifier middlewares.Ve
 			http.MethodPost,
 		},
 	}))
-	queryGroup.POST("/",
+	queryGroup.POST("",
 		echo.WrapHandler(srv),
 		nrecho.Middleware(nr),
 		middlewares.SetLoggerToContext(nr),
