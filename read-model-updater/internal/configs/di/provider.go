@@ -28,11 +28,13 @@ import (
 
 func provideAWSConfig() *aws.Config {
 	ctx := context.Background()
-	awsConfig, err := config.LoadDefaultConfig(ctx)
+	awsConfig, err := config.LoadDefaultConfig(ctx, config.WithRegion("ap-northeast-1"))
 	if err != nil {
 		panic(err)
 	}
-	slog.Default().Info("awsConfig", slog.Any("awsConfig", awsConfig))
+	slog.Default().Info("credential",
+		slog.Any("AWS_ACCESS_KEY_ID", os.Getenv("AWS_ACCESS_KEY_ID")),
+		slog.Any("AWS_SECRET_ACCESS_KEY", os.Getenv("AWS_SECRET_ACCESS_KEY")))
 	nraws.AppendMiddlewares(&awsConfig.APIOptions, nil)
 	return &awsConfig
 }
