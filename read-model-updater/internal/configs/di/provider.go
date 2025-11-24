@@ -90,10 +90,10 @@ func provideTagQuery(pool usecase.TagDBPool) *tag.Queries {
 
 func provideDynamoDB(awsConfig *aws.Config) dynamo.DB {
 	db := sql.OpenDB(pqxd.NewConnector(*awsConfig))
-	_ = db.Ping()
-	// if err != nil {
-	// 	panic(err) // because they are critical errors
-	// }
+	err := db.Ping()
+	if err != nil {
+		panic(err) // because they are critical errors
+	}
 	return sqlx.NewDb(db, "dynamodb")
 }
 
