@@ -28,7 +28,7 @@ import (
 
 func provideAWSConfig() *aws.Config {
 	ctx := context.Background()
-	awsConfig, err := config.LoadDefaultConfig(ctx)
+	awsConfig, err := config.LoadDefaultConfig(ctx, config.WithRegion("ap-northeast-1"))
 	if err != nil {
 		panic(err)
 	}
