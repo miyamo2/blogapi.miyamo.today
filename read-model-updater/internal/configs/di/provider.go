@@ -3,6 +3,7 @@ package di
 import (
 	"context"
 	"database/sql"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -31,6 +32,7 @@ func provideAWSConfig() *aws.Config {
 	if err != nil {
 		panic(err)
 	}
+	slog.Default().Info("awsConfig", slog.Any("awsConfig", awsConfig))
 	nraws.AppendMiddlewares(&awsConfig.APIOptions, nil)
 	return &awsConfig
 }
