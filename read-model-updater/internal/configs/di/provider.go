@@ -44,10 +44,7 @@ func provideNewRelicApp() *newrelic.Application {
 	if err != nil {
 		panic(err)
 	}
-	err = app.WaitForConnection(5 * time.Second)
-	if err != nil {
-		panic(err)
-	}
+	_ = app.WaitForConnection(5 * time.Second)
 	return app
 }
 
