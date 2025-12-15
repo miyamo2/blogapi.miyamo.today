@@ -7,7 +7,7 @@ require (
 	github.com/99designs/gqlgen v0.17.68
 	github.com/Code-Hex/synchro v0.5.3
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/newrelic/go-agent/v3 v3.35.1
+	github.com/newrelic/go-agent/v3 v3.42.0
 	github.com/oklog/ulid/v2 v2.1.0
 )
 
