@@ -17,7 +17,7 @@ require (
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/lestrrat-go/jwx/v3 v3.0.0
 	github.com/miyamo2/altnrslog v0.4.2
-	github.com/newrelic/go-agent/v3 v3.38.0
+	github.com/newrelic/go-agent/v3 v3.42.0
 	github.com/newrelic/go-agent/v3/integrations/nrecho-v4 v1.1.3
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	github.com/vektah/gqlparser/v2 v2.5.23
