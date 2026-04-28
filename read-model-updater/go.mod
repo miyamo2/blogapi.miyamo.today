@@ -12,16 +12,16 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.42.16
 	github.com/cockroachdb/errors v1.12.0
 	github.com/google/wire v0.7.0
-	github.com/jackc/pgx/v5 v5.7.6
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/miyamo2/pqxd v0.7.0
 	github.com/miyamo2/sqldav v0.2.1
-	github.com/newrelic/go-agent/v3 v3.42.0
+	github.com/newrelic/go-agent/v3 v3.43.3
 	github.com/newrelic/go-agent/v3/integrations/nrawssdk-v2 v1.2.5
-	github.com/newrelic/go-agent/v3/integrations/nrpgx5 v1.3.3
+	github.com/newrelic/go-agent/v3/integrations/nrpgx5 v1.3.4
 	github.com/newrelic/go-agent/v3/integrations/nrpkgerrors v1.1.0
 	github.com/oklog/ulid/v2 v2.1.1
-	golang.org/x/sync v0.18.0
+	golang.org/x/sync v0.19.0
 )
 
 require (
@@ -54,14 +54,14 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
-	github.com/stretchr/testify v1.9.0 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/mock v0.6.0 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/net v0.47.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251111163417-95abcf5c77ba // indirect
-	google.golang.org/grpc v1.77.0 // indirect
-	google.golang.org/protobuf v1.36.10 // indirect
+	golang.org/x/crypto v0.47.0 // indirect
+	golang.org/x/net v0.49.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260120221211-b8f7ae30c516 // indirect
+	google.golang.org/grpc v1.80.0 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )
