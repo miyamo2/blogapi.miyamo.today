@@ -10,6 +10,8 @@ github.com/99designs/gqlgen v0.17.70 h1:xgLIgQuG+Q2L/AE9cW595CT7xCWCe/bpPIFGSfsG
 github.com/99designs/gqlgen v0.17.70/go.mod h1:fvCiqQAu2VLhKXez2xFvLmE47QgAPf/KTPN5XQ4rsHQ=
 github.com/Code-Hex/synchro v0.5.3 h1:BRpfrQUBXDShRnF9JodEnbezlTopUOy5qcy6u1D5700=
 github.com/Code-Hex/synchro v0.5.3/go.mod h1:USpQ++dx1+FbEeaDWiTAwOQVALdTel2y6Hy61knSJ6c=
+github.com/Code-Hex/synchro v0.5.4 h1:aPfgKaQO+Ij32+wegRXUVUkw2kwaQR7SWcEV/hK/s2M=
+github.com/Code-Hex/synchro v0.5.4/go.mod h1:USpQ++dx1+FbEeaDWiTAwOQVALdTel2y6Hy61knSJ6c=
 github.com/PuerkitoBio/goquery v1.10.2 h1:7fh2BdHcG6VFZsK7toXBT/Bh1z5Wmy8Q9MV9HqT2AM8=
 github.com/PuerkitoBio/goquery v1.10.2/go.mod h1:0guWGjcLu9AYC7C1GHnpysHy056u9aEkUHwhdnePMCU=
 github.com/agnivade/levenshtein v1.2.1 h1:EHBY3UOn1gwdy/VbFwgo4cxecRznFk7fKWN1KOX7eoM=
